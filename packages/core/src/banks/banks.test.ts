@@ -20,7 +20,8 @@ describe("banks", () => {
   });
 
   it("keeps only 4 to 19 digits of a card number and drops spaces and dashes", () => {
-    expect(normalizeCardNumber("4152 3133-1234 5678")).toEqual({ ok: true, value: "4152313312345678" });
+    expect(normalizeCardNumber("4152 3133-1234 5678")).toEqual({ ok: true, value: "5678" });
+    expect(normalizeCardNumber("1234")).toEqual({ ok: true, value: "1234" });
     expect(normalizeCardNumber("")).toEqual({ ok: true, value: null });
     expect(normalizeCardNumber("12")).toMatchObject({ ok: false });
     expect(normalizeCardNumber("12ab5678")).toMatchObject({ ok: false });

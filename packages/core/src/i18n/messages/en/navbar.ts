@@ -38,6 +38,8 @@ const en: Record<keyof typeof navbar, string> = {
   "navbar.hint.categories": "The categories and subcategories you sort your transactions with.",
   "navbar.hint.theme": "Switch between light and dark mode.",
   "navbar.hint.addTransaction": "Record an expense, income, transfer, account or budget.",
+  "navbar.people": "People",
+  "navbar.hint.people": "How much you spend around the people who matter to you and how much you want to spend.",
 };
 
 export default en;

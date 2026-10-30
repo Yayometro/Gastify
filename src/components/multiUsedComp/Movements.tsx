@@ -1,5 +1,5 @@
 "use client";
-import { shortDate } from "@gastify/core/i18n/dates";
+import { shortDateOrEmpty } from "@gastify/core/i18n/dates";
 
 import React, { useEffect, useRef, useState, useContext, useMemo } from "react";
 import "@/components/styles/animations.css";
@@ -14,6 +14,7 @@ import Tag from "./Tag";
 import fetcher from "@/helpers/fetcher";
 import EditSingleTransModal from "./EditSingleTransModal";
 import { IoCheckmarkDoneCircleOutline, IoSearchOutline } from "react-icons/io5";
+import { InfoTip } from "@/components/multiUsedComp/InfoTip";
 import { MdOutlineFindInPage, MdOutlineDriveFileRenameOutline, MdOutlineCalendarMonth, MdOutlineSwapVert, MdOutlineCategory, MdOutlineAccountBalance, MdOutlineCurrencyExchange, MdOutlineSettings, MdOutlineFileDownload } from "react-icons/md";
 import { PiMicrosoftExcelLogoFill } from "react-icons/pi";
 import { VscJson } from "react-icons/vsc";
@@ -59,9 +60,9 @@ import useModal from "@/hooks/useModalBasic";
 import DeletePreviewRow from "@/components/multiUsedComp/DeletePreviewRow";
 import DuplicateComparisonTable from "./DuplicateComparisonTable";
 
-import { InfoTip } from "@/components/multiUsedComp/InfoTip";
-import MovementsGuideModal from "./MovementsGuideModal";
-import { useLocale, useT, useInfo } from "@/i18n/client";
+import { MovementsGuideBody } from "./MovementsGuideBody";
+import TitleWithHelp from "@/components/multiUsedComp/TitleWithHelp";
+import { useLocale, useT } from "@/i18n/client";
 
 const TypedEditMultipleTransModal = EditMultipleTransModal as React.ComponentType<{
   hidden?: React.ReactNode[];
@@ -182,15 +183,16 @@ export interface MovementsProps {
   readOnly?: boolean;
   // Inside the dashboard's card: no violet header and no fixed max height; the list scrolls inside the card's box.
   embedded?: boolean;
+  // The account page: only this account's movements, by its id. Absent, every movement.
+  accountId?: string;
   [key: string]: unknown;
 }
 
 const today = new Date();
 
-function MovementsContent({ timePeriodFromFather, mail, embedded = false, readOnly = false }: MovementsProps): React.JSX.Element {
+function MovementsContent({ timePeriodFromFather, mail, embedded = false, readOnly = false, accountId }: MovementsProps): React.JSX.Element {
   const t = useT();
   const locale = useLocale();
-  const { APP_INFO } = useInfo();
   const tr = useT();
   const defaultPeriod: [Date, Date] | (Date | string | number)[] = timePeriodFromFather || [
     new Date(today.getFullYear(), today.getMonth(), 1),
@@ -231,7 +233,6 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false, readOn
   const [exportFormat, setExportFormat] = useState<"excel" | "json" | null>(null); // 'excel' | 'json'
   const [exportModalOpen, setExportModalOpen] = useState<boolean>(false);
   const [exportLoading, setExportLoading] = useState<boolean>(false);
-  const [guideOpen, setGuideOpen] = useState<boolean>(false);
 
   const { close, handleClose } = useModal();
   const selectCategoryCtx = useContext(SelectCategoryContext);
@@ -242,6 +243,11 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false, readOn
   const reduxDispartcher = useDispatch<AppDispatch>();
   const reduxAllTrans = useSelector((state: RootState) => state.transacctionsReducer);
   const rdxTransactions = reduxAllTrans?.data as MovementItem[] | undefined;
+  // On an account page the list is only that account's movements; everywhere else it is every movement.
+  const scopedTransactions = useMemo(
+    () => (accountId ? rdxTransactions?.filter((tx) => String(tx.account?._id ?? "") === String(accountId)) : rdxTransactions),
+    [rdxTransactions, accountId]
+  );
   const reduxWallet = useSelector((state: RootState) => state.walletReducer);
   const wallet = reduxWallet?.data as WalletData | undefined;
   const reduxCategories = useSelector((state: RootState) => state.categoriesReducer);
@@ -303,11 +309,15 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false, readOn
 
   // Single consolidated filter effect
   useEffect(() => {
-    if (!rdxTransactions || rdxTransactions.length === 0) return;
+    if (!scopedTransactions || scopedTransactions.length === 0) {
+      // An account with no movements must not keep the rows of the account shown before it.
+      if (accountId) setAllMovements([]);
+      return;
+    }
     if (reduxAllTrans.status == "succeeded") setLoadingComponent(false);
 
     const [start, end] = timePeriod;
-    let filtered = getTransactionsFromTimeRange(rdxTransactions, start as Date, end as Date).sort(
+    let filtered = getTransactionsFromTimeRange(scopedTransactions, start as Date, end as Date).sort(
       (a: MovementItem, b: MovementItem) => +new Date((b.date || b.createdAt) as string | number | Date) - +new Date((a.date || a.createdAt) as string | number | Date)
     );
 
@@ -357,7 +367,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false, readOn
       setDupCount(0);
       setAllMovements(filtered);
     }
-  }, [rdxTransactions, timePeriod, trastType, readable, searchQuery, exactAmountFilter, exactAmountMode, exactAmountCurrency, wallet, categoryFilter, subCategoryFilter, dupMode, dupCriteria, dupDateTolerance, dupAmountTolerance]);
+  }, [scopedTransactions, accountId, timePeriod, trastType, readable, searchQuery, exactAmountFilter, exactAmountMode, exactAmountCurrency, wallet, categoryFilter, subCategoryFilter, dupMode, dupCriteria, dupDateTolerance, dupAmountTolerance]);
 
   // Bills/Incomes summary broken down by each transaction's own native
   // currency - "100 MXN + 100 USD" is never blended into a single number,
@@ -705,7 +715,6 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false, readOn
 
   return (
     <div className="w-full h-full pt-5">
-      <MovementsGuideModal open={guideOpen} onClose={() => setGuideOpen(false)} />
       {editingTrans && (
         <EditSingleTransModal
           key={editKey}
@@ -717,7 +726,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false, readOn
       {/* ── Export confirmation modal ── */}
       <Modal
         title={
-          <span className="font-semibold flex items-center gap-2">
+          <span data-tour="mov-export-modal" className="font-semibold flex items-center gap-2">
             <MdOutlineFileDownload size={18} className="text-purple-500" />
             {tr("movements.export.title")} {allMovements.length} {tr("movements.word.transaction")}{allMovements.length !== 1 ? "s" : ""}
           </span>
@@ -728,7 +737,10 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false, readOn
         confirmLoading={exportLoading}
         okText={exportLoading ? "Exporting…" : `${t("web.export.as")} ${exportFormat === "excel" ? t("web.excel") : "JSON"}`}
         cancelText={t("web.cancel")}
+        // The guided tutorial's anchors ride on the buttons' props (antd forwards data-* attributes to the button).
+        cancelButtonProps={{ ...{ "data-tour": "mov-export-cancel" } }}
         okButtonProps={{
+          ...{ "data-tour": "mov-export-ok" },
           className: "!bg-purple-600 !border-purple-600 !text-white hover:!bg-purple-500 hover:!border-purple-500 transition-colors",
         }}
       >
@@ -876,22 +888,19 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false, readOn
         <div className={`table-container w-full h-full relative px-1 ${embedded ? "overflow-y-auto pb-4" : "overflow-y-scroll max-h-[1000px]"}`}>
           <div className={embedded ? "text-gf-text px-1 py-2 mb-1" : "gf-glass-frost text-gf-text sticky z-50 top-0 px-1 py-2 mb-1 rounded-t-2xl"}>
             <div className="movement-content">
-              <div className="flex items-center justify-center gap-2">
-                <h1 className="movement-title text-2xl text-center font-bold">
-                  {tr("movements.details.title")}
-                </h1>
-                <button
-                  type="button"
-                  onClick={() => setGuideOpen(true)}
-                  aria-label={tr("movements.details.howTo")}
-                  className="text-gf-text-muted hover:text-purple-300 transition-colors cursor-pointer"
-                >
-                  <UniversalCategoIcon type="fa/FaRegQuestionCircle" siz={15} />
-                </button>
-              </div>
+              <TitleWithHelp
+                as="h1"
+                title={tr("movements.details.title")}
+                info={{ title: tr("movements.details.title"), text: tr("movements.guide.intro") }}
+                body={<MovementsGuideBody />}
+                tour="movList"
+                titleClassName="movement-title text-2xl text-center font-bold"
+                className="justify-center"
+                dataTour="mov-list-title"
+              />
             </div>
             <div className="header-filters">
-              <span className="text-xs flex justify-center">
+              <span className="text-xs flex justify-center" data-tour="mov-filter-range">
                 {tr("movements.from")}{" "}
                 <b className="mx-1">{timePeriod[0] ? getDateInYearMonthDay(timePeriod[0]) : "—"}</b>
                 {tr("movements.to")}{" "}
@@ -899,20 +908,17 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false, readOn
               </span>
               <div className="filters flex items-center justify-center gap-2 flex-wrap">
                 {!readOnly && <div
+                  data-tour="mov-select-toggle"
                   className={`clear-allbtn text-[10px] font-light flex items-center justify-center sm:font-base sm:font-extralight relative pulse-animation-short cursor-pointer ${
                     isSelectionMode ? "text-purple-500" : ""
                   }`}
                   onClick={handeTransSelection}
                 >
                   <p className="pr-2">{tr("movements.select.label", { p1: isSelectionMode ? "ON" : "" })}</p>
-                  <InfoTip info={APP_INFO.seleccionar_movimientos} />
                   <HiMiniCursorArrowRipple size={15} />
                 </div>}
-                <Tooltip title={tr("movements.filter.dateTip")}>
-                  <div className="text-gf-text w-[10px]">
-                    <UniversalCategoIcon type="fa/FaRegQuestionCircle" siz={15} />
-                  </div>
-                </Tooltip>
+                
+                <div className="flex items-center gap-2" data-tour="mov-filter-period">
                 <SelecterFilter
                   getValue={getValueFromSelecter}
                   periodFromFather={timePeriodsForSelecter[0]}
@@ -920,10 +926,12 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false, readOn
                   styles="gf-glass-card text-gf-text w-fit text-[10px] font-light flex items-center justify-center rounded-2xl px-[4px] sm:font-base sm:font-extralight active:border-0 hover:border-0 outline-none active:outline-none ring-offset-0 relative pulse-animation-short min-[400px]:py-[2px] min-[640px]:py-[4px]"
                 />
                 <TimeRange rpDate={handleRangeDate} />
+                </div>
                 <div className="w-fit text-[10px] font-light flex items-center justify-center sm:font-base sm:font-extralight gf-glass-card rounded-2xl pl-2.5 pr-1 py-0.5 relative pulse-animation-short">
                   <select
                     className="bg-transparent appearance-none w-full pr-4 outline-none"
                     name="TransTypeSelector"
+                    data-tour="mov-filter-type"
                     value={trastType}
                     onChange={handleTransType}
                   >
@@ -939,6 +947,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false, readOn
                   <select
                     className="bg-transparent appearance-none pr-4 max-w-[30px] outline-none"
                     name="ReadableSelector"
+                    data-tour="mov-filter-readable"
                     value={readable}
                     onChange={handleReadable}
                   >
@@ -950,7 +959,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false, readOn
                     <UniversalCategoIcon type={"md/MdOutlineArrowDownward"} siz={12} />
                   </div>
                 </div>
-                <div className="w-fit text-[10px] font-light flex items-center gap-1 justify-center sm:font-base sm:font-extralight relative pulse-animation-short">
+                <div className="w-fit text-[10px] font-light flex items-center gap-1 justify-center sm:font-base sm:font-extralight relative pulse-animation-short" data-tour="mov-filter-amount">
                   <Tooltip title={tr("movements.amount.modeTip")}>
                     <select
                       className="gf-glass-card rounded-2xl px-1 py-0.5 outline-none border-0"
@@ -989,12 +998,8 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false, readOn
                     </button>
                   )}
                 </div>
-                <div className="w-fit text-[10px] font-light flex items-center gap-1 justify-center relative pulse-animation-short">
-                  <Tooltip title={tr("movements.filter.categoryTip")}>
-                    <div className="text-gf-text-muted hover:text-purple-600 transition-colors cursor-help">
-                      <UniversalCategoIcon type="fa/FaRegQuestionCircle" siz={13} />
-                    </div>
-                  </Tooltip>
+                <div className="w-fit text-[10px] font-light flex items-center gap-1 justify-center relative pulse-animation-short" data-tour="mov-filter-category">
+                  
                   <button
                     type="button"
                     onClick={handleClose}
@@ -1020,6 +1025,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false, readOn
                 {!readOnly && <Tooltip title={tr("movements.dup.findTip")}>
                   <div
                     className={`clear-allbtn text-[10px] font-light flex items-center justify-center gap-1 relative pulse-animation-short cursor-pointer gf-glass-card rounded-2xl px-2.5 py-1 hover:brightness-110 transition-[filter] ${dupMode ? "text-orange-500 font-medium" : ""}`}
+                    data-tour="mov-dup-button"
                     onClick={() => setDupFinderOpen(!dupFinderOpen)}
                   >
                     <MdOutlineFindInPage size={15} />
@@ -1029,6 +1035,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false, readOn
                 {!readOnly && <Tooltip title={tr("movements.export.tip")}>
                   <div
                     className={`clear-allbtn text-[10px] font-light flex items-center justify-center gap-1 relative pulse-animation-short cursor-pointer gf-glass-card rounded-2xl px-2.5 py-1 hover:brightness-110 transition-[filter] ${exportOpen ? "text-purple-500 font-medium" : ""}`}
+                    data-tour="mov-export-button"
                     onClick={() => setExportOpen(!exportOpen)}
                   >
                     <MdOutlineFileDownload size={15} />
@@ -1037,6 +1044,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false, readOn
                 </Tooltip>}
                 <div
                   className="clear-allbtn text-[10px] font-light flex items-center justify-center sm:font-base sm:font-extralight relative pulse-animation-short cursor-pointer gf-glass-card rounded-2xl px-2.5 py-1 hover:brightness-110 transition-[filter]"
+                  data-tour="mov-clear-filters"
                   onClick={handleCleanFilter}
                 >
                   <p className="pr-2">{tr("movements.filters.clear")}</p>
@@ -1047,7 +1055,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false, readOn
 
             {/* ── Duplicate finder submenu ── */}
             {dupFinderOpen && (
-              <div className="bg-gf-surface border border-gf-border rounded-2xl px-4 py-3 mx-1 mb-2 flex flex-col gap-2">
+              <div className="bg-gf-surface border border-gf-border rounded-2xl px-4 py-3 mx-1 mb-2 flex flex-col gap-2" data-tour="mov-dup-panel">
                 <div className="flex items-center gap-2">
                   <p className="text-[11px] font-medium text-gf-text-muted">
                     {tr("movements.dup.criteria")}
@@ -1070,7 +1078,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false, readOn
                 </div>
 
                 {/* Checkboxes */}
-                <div className="flex flex-wrap gap-3">
+                <div className="flex flex-wrap gap-3" data-tour="mov-dup-criteria">
                   {[
                     { key: "name",        label: tr("movements.columns.name") },
                     { key: "date",        label: tr("movements.columns.date") },
@@ -1091,7 +1099,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false, readOn
                 </div>
 
                 {/* Tolerance controls */}
-                <div className="flex flex-wrap gap-4 items-center border-t border-gf-border pt-2">
+                <div className="flex flex-wrap gap-4 items-center border-t border-gf-border pt-2" data-tour="mov-dup-tolerance">
                   <div className="flex items-center gap-2">
                     <Tooltip title={tr("movements.dup.dateToleranceTip")}>
                       <label className="text-[11px] text-gf-text-muted select-none cursor-help">{tr("movements.dup.dateTolerance")}</label>
@@ -1127,14 +1135,14 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false, readOn
                 {/* Action buttons — Organized in 2 Justified Rows */}
                 <div className="flex flex-col gap-2 border-t border-gf-border pt-2.5 w-full">
                   {/* ROW 1: Search/Refresh on Left, Exit duplicate view on Right */}
-                  <div className="flex items-center justify-between w-full flex-wrap gap-2">
+                  <div className="flex items-center justify-between w-full flex-wrap gap-2" data-tour="mov-dup-actions">
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => {
                           if (!Object.values(dupCriteria).some(Boolean)) return;
                           setDupMode(true);
                         }}
-                        className="text-[11px] bg-purple-600 text-white px-3 py-1 rounded-full hover:bg-purple-500 shadow-sm transition-colors font-medium"
+                        data-tour="mov-dup-search" className="text-[11px] bg-purple-600 text-white px-3 py-1 rounded-full hover:bg-purple-500 shadow-sm transition-colors font-medium"
                       >
                         {tr("movements.dup.search")}
                       </button>
@@ -1146,7 +1154,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false, readOn
                             setDupAmountTolerance(0);
                             setDupMode(true);
                           }}
-                          className="text-[11px] text-gf-text-muted hover:text-purple-600 border border-gf-border px-2.5 py-1 rounded-full transition-colors flex items-center gap-1"
+                          data-tour="mov-dup-refresh" className="text-[11px] text-gf-text-muted hover:text-purple-600 border border-gf-border px-2.5 py-1 rounded-full transition-colors flex items-center gap-1"
                         >
                           <UniversalCategoIcon type={"md/MdRefresh"} siz={14} />
                           {tr("movements.dup.refresh")}
@@ -1167,7 +1175,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false, readOn
                             if (el) el.classList.remove("edit-animation", "border-[2px]", "border-purple-400");
                           });
                         }}
-                        className="text-[11px] text-orange-400 border border-orange-300 px-3 py-1 rounded-full hover:bg-orange-500/15 transition-colors font-medium"
+                        data-tour="mov-dup-exit" className="text-[11px] text-orange-400 border border-orange-300 px-3 py-1 rounded-full hover:bg-orange-500/15 transition-colors font-medium"
                       >
                         {tr("movements.dup.exit")}
                       </button>
@@ -1176,7 +1184,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false, readOn
 
                   {/* ROW 2: Selection tools on Left, Delete X selected on Right */}
                   {dupMode && dupCount > 0 && (
-                    <div className="flex items-start justify-between w-full pt-2 border-t border-gf-border/80 flex-wrap gap-3">
+                    <div className="flex items-start justify-between w-full pt-2 border-t border-gf-border/80 flex-wrap gap-3" data-tour="mov-dup-results">
                       {/* Left column: Selection actions + Comparison in detail below */}
                       <div className="flex flex-col gap-2">
                         <div className="flex items-center gap-2 flex-wrap">
@@ -1197,7 +1205,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false, readOn
                               });
                               setSelectedTrans(toDelete);
                             }}
-                            className="text-[11px] text-purple-300 bg-gf-accent-soft-bg border border-purple-300 px-3 py-1 rounded-full hover:bg-gf-accent-soft-bg transition-colors flex items-center gap-1 font-medium"
+                            data-tour="mov-dup-select" className="text-[11px] text-purple-300 bg-gf-accent-soft-bg border border-purple-300 px-3 py-1 rounded-full hover:bg-gf-accent-soft-bg transition-colors flex items-center gap-1 font-medium"
                           >
                             <HiMiniCursorArrowRipple size={12} />
                             {tr("movements.dup.selectPossible")}
@@ -1228,7 +1236,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false, readOn
                           >
                             <button
                               onClick={() => setDupDeleteAll((v) => !v)}
-                              className={`text-[11px] px-2.5 py-1 rounded-full border transition-colors flex items-center gap-1 ${
+                              data-tour="mov-dup-mode" className={`text-[11px] px-2.5 py-1 rounded-full border transition-colors flex items-center gap-1 ${
                                 dupDeleteAll
                                   ? "text-red-400 border-red-400 bg-red-500/15 hover:bg-red-500/15"
                                   : "text-gf-text-muted border-gf-border hover:bg-gf-surface-2"
@@ -1245,7 +1253,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false, readOn
                           <div className="flex items-center">
                             <button
                               onClick={() => setDupCompareModalOpen(true)}
-                              className="text-[11px] text-amber-400 bg-amber-500/15 border border-amber-300 px-3 py-1 rounded-full hover:bg-amber-500/15 transition-colors flex items-center gap-1 font-semibold shadow-sm"
+                              data-tour="mov-dup-compare" className="text-[11px] text-amber-400 bg-amber-500/15 border border-amber-300 px-3 py-1 rounded-full hover:bg-amber-500/15 transition-colors flex items-center gap-1 font-semibold shadow-sm"
                             >
                               <UniversalCategoIcon type="md/MdOutlineCompare" siz={13} />
                               {tr("movements.dup.compareDetail")}{selectedTrans.length})
@@ -1259,7 +1267,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false, readOn
                         <div className="flex items-center ml-auto">
                           <button
                             onClick={() => showRemoveModal("many", selectedTrans as unknown as string)}
-                            className="text-[11px] text-white bg-red-600 border border-red-600 px-3.5 py-1 rounded-full hover:bg-red-500 transition-colors flex items-center gap-1.5 font-semibold shadow-sm"
+                            data-tour="mov-dup-delete" className="text-[11px] text-white bg-red-600 border border-red-600 px-3.5 py-1 rounded-full hover:bg-red-500 transition-colors flex items-center gap-1.5 font-semibold shadow-sm"
                           >
                             <UniversalCategoIcon type={"md/MdDelete"} siz={13} />
                             {tr("movements.delete.button")} {selectedTrans.length} {tr("movements.selected")}
@@ -1272,7 +1280,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false, readOn
 
                 {/* Results summary */}
                 {dupMode && (
-                  <p className={`text-[11px] font-medium ${dupCount > 0 ? "text-orange-500" : "text-green-400"}`}>
+                  <p data-tour="mov-dup-summary" className={`text-[11px] font-medium ${dupCount > 0 ? "text-orange-500" : "text-green-400"}`}>
                     {dupCount > 0 ? `${dupCount} possible duplicate transaction(s) found` : t("web.no.duplicates.found.with.the.current.criteria")}
                   </p>
                 )}
@@ -1281,13 +1289,13 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false, readOn
 
             {/* ── Export submenu ── */}
             {exportOpen && (
-              <div className="bg-gf-surface border border-gf-border rounded-2xl px-4 py-3 mx-1 mb-2 flex flex-col gap-3">
-                <p className="text-[11px] font-medium text-gf-text-muted">
+              <div className="bg-gf-surface border border-gf-border rounded-2xl px-4 py-3 mx-1 mb-2 flex flex-col gap-3" data-tour="mov-export-panel">
+                <p data-tour="mov-export-count" className="text-[11px] font-medium text-gf-text-muted">
                   {tr("movements.export.chooseFormat")} <span className="text-gf-text-muted font-normal">{tr("movements.export.countFilters", { p1: allMovements.length, p2: allMovements.length !== 1 ? "s" : "" })}</span>
                 </p>
                 <div className="flex gap-3">
                   <button
-                    onClick={() => { setExportFormat("excel"); setExportModalOpen(true); }}
+                    data-tour="mov-export-excel" onClick={() => { setExportFormat("excel"); setExportModalOpen(true); }}
                     className="flex-1 flex flex-col items-center gap-1 border rounded-xl py-3 text-[11px] text-gf-text-muted hover:border-purple-400 hover:text-purple-600 hover:bg-gf-accent-soft-bg transition-colors"
                   >
                     <PiMicrosoftExcelLogoFill size={22} className="text-green-400" />
@@ -1295,7 +1303,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false, readOn
                     <span className="text-gf-text-muted text-[10px] text-center leading-tight">{tr("movements.export.reimport")}<br/>{tr("movements.export.xlsx")}</span>
                   </button>
                   <button
-                    onClick={() => { setExportFormat("json"); setExportModalOpen(true); }}
+                    data-tour="mov-export-json" onClick={() => { setExportFormat("json"); setExportModalOpen(true); }}
                     className="flex-1 flex flex-col items-center gap-1 border rounded-xl py-3 text-[11px] text-gf-text-muted hover:border-purple-400 hover:text-purple-600 hover:bg-gf-accent-soft-bg transition-colors"
                   >
                     <VscJson size={22} className="text-amber-500" />
@@ -1306,7 +1314,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false, readOn
               </div>
             )}
 
-            <div className="relative w-full mt-2 mb-3 px-2">
+            <div className="relative w-full mt-2 mb-3 px-2" data-tour="mov-search">
               <IoSearchOutline
                 size={15}
                 className="absolute left-5 top-1/2 -translate-y-1/2 text-gf-text-muted pointer-events-none"
@@ -1336,7 +1344,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false, readOn
             </div>
 
             {/* Computed Bills (Red) & Incomes (Green) Summary Bar according to applied filters */}
-            <div className="flex flex-wrap items-center justify-between gap-2 py-1.5 px-3 bg-gf-surface-2/90 border border-gf-border rounded-xl text-xs my-1 shadow-2xs">
+            <div data-tour="mov-totals" className="flex flex-wrap items-center justify-between gap-2 py-1.5 px-3 bg-gf-surface-2/90 border border-gf-border rounded-xl text-xs my-1 shadow-2xs">
               <div className="flex items-center gap-1.5 text-gf-text-muted font-medium">
                 <span>{tr("movements.count", { p1: allMovements.length, p2: allMovements.length !== 1 ? "s" : "" })}</span>
               </div>
@@ -1370,11 +1378,11 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false, readOn
               </div>
             </div>
             {!readOnly && isSelectionMode && (
-              <div className="selectionHeader flex flex-col gap-1 py-1.5 bg-gf-accent-soft-bg text-[13px] rounded-xl px-2">
+              <div className="selectionHeader flex flex-col gap-1 py-1.5 bg-gf-accent-soft-bg text-[13px] rounded-xl px-2" data-tour="mov-select-panel">
                 {/* Row 1: selection controls */}
                 <div className="flex gap-2 justify-between items-center">
                   <div
-                    className="flex gap-1 items-center text-white cursor-pointer"
+                    data-tour="mov-select-off" className="flex gap-1 items-center text-white cursor-pointer"
                     onClick={handeTransSelection}
                   >
                     <HiMiniCursorArrowRipple size={18} />
@@ -1383,7 +1391,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false, readOn
                     </div>
                   </div>
                   <div className="flex gap-2 items-center">
-                    <div className="text-white flex gap-1 items-center cursor-pointer" onClick={handleSelectedAll}>
+                    <div data-tour="mov-select-all" className="text-white flex gap-1 items-center cursor-pointer" onClick={handleSelectedAll}>
                       <p className="text-[11px]">{tr("movements.select.all")}</p>
                       <IoCheckmarkDoneCircleOutline size={15} />
                     </div>
@@ -1402,20 +1410,19 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false, readOn
                         <PiExcludeSquareDuotone size={15} />
                       </div>
                     )}
-                    <p className="text-[11px] text-gf-text-muted">{tr("movements.select.selectedCount", { p1: selectedTrans.length })}</p>
-                    <Tooltip title={tr("movements.select.help")}>
-                      <div className="flex items-center"><UniversalCategoIcon type="fa/FaRegQuestionCircle" siz={13} /></div>
-                    </Tooltip>
+                    <p data-tour="mov-select-count" className="text-[11px] text-gf-text-muted">{tr("movements.select.selectedCount", { p1: selectedTrans.length })}</p>
+                    <span aria-hidden="true" className="mx-2 inline-block h-5 w-px shrink-0 align-middle bg-purple-300/40" />
+                    <InfoTip info={{ title: tr("movements.select.selectedCount", { p1: selectedTrans.length }), text: tr("movements.select.help") }} />
                   </div>
                   {/* Delete */}
-                  <button onClick={() => showRemoveModal("many", selectedTrans as unknown as string)} className="hover:text-red-400 micro-pulse text-gf-text-muted">
+                  <button data-tour="mov-select-delete" onClick={() => showRemoveModal("many", selectedTrans as unknown as string)} className="hover:text-red-400 micro-pulse text-gf-text-muted">
                     <CategoIcon type={"MdDelete"} />
                   </button>
                 </div>
 
                 {/* Row 2: focused edit actions — only when items selected */}
                 {selectedTrans.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5 border-t border-gf-border pt-1.5">
+                  <div className="flex flex-wrap gap-1.5 border-t border-gf-border pt-1.5" data-tour="mov-select-bulk">
                     {[
                       { field: "name",     icon: <MdOutlineDriveFileRenameOutline size={13} />, label: tr("movements.bulk.rename") },
                       { field: "date",     icon: <MdOutlineCalendarMonth size={13} />,           label: tr("movements.columns.date") },
@@ -1473,13 +1480,15 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false, readOn
                 )}
               </div>
             )}
-            {allMovements.map((movement) => {
+            {allMovements.map((movement, rowIndex) => {
               const isTransferLeg = movement.kind === "transfer" || movement.kind === "exchange";
               const native = movement.displayMoney?.native;
               const primary = movement.displayMoney?.primary;
               const merchant = movement.displayMoney?.merchant;
               const showEquivalent = Boolean(native && primary && native.currency !== primary.currency);
               const hasFxDetail = Boolean(merchant) || showEquivalent;
+              // The rate's date can be missing (the demo's sample movements have none): then the line shows no date instead of failing.
+              const rateDateLabel = shortDateOrEmpty(primary?.effectiveDate, locale);
               const amountLabel = native
                 ? formatMoneyMinor(native.amountMinor, native.currency)
                 : formatMoneyMajor(movement.amount, wallet?.primaryCurrency || "MXN");
@@ -1491,7 +1500,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false, readOn
                     <>
                       <div>{tr("movements.row.reported", { p1: primary.currency, p2: formatMoneyMinor(primary.amountMinor, primary.currency) })}</div>
                       <div>{tr("movements.row.rate", { p1: primary.rate, p2: primary.source })}</div>
-                      <div>{shortDate(new Date(primary.effectiveDate), locale)} — {primary.estimated ? t("web.estimated") : t("web.exact")}{primary.stale ? t("web.stale") : ""}</div>
+                      <div>{rateDateLabel ? `${rateDateLabel} — ` : ""}{primary.estimated ? t("web.estimated") : t("web.exact")}{primary.stale ? t("web.stale") : ""}</div>
                     </>
                   ) : (
                     <div>{tr("movements.row.rateUnavailable")}</div>
@@ -1502,6 +1511,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false, readOn
               <div
                 key={movement._id}
                 id={`trans-${movement._id}`}
+                data-tour={rowIndex === 0 ? "mov-row" : undefined}
                 className="flex flex-row justify-between items-center gf-glass-row rounded-2xl py-1 px-2 relative"
               >
                 <div className="flex gap-2 items-center">
@@ -1511,7 +1521,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false, readOn
                       onClick={() => handleSelectedItem(movement._id)}
                     ></div>
                   </div>
-                  <div className="tra-cat-cont">
+                  <div className="tra-cat-cont" data-tour={rowIndex === 0 ? "mov-row-category" : undefined}>
                     <div
                       style={{ backgroundColor: movement.category?.color || "#DADADA" }}
                       className="circle-ico w-[50px] h-[50px] rounded-full flex items-center justify-center hover:brightness-90 transition-[filter]"
@@ -1556,7 +1566,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false, readOn
                 </div>
 
                 <div>
-                  <div className="tra-amount flex flex-col gap-[1px] w-fit items-end justify-end">
+                  <div className="tra-amount flex flex-col gap-[1px] w-fit items-end justify-end" data-tour={rowIndex === 0 ? "mov-row-amount" : undefined}>
                       <div className="flex flex-col items-end">
                         <div className={`tra-amount-cont ${isTransferLeg ? "text-blue-500" : movement.isBill ? "text-red-500" : "text-green-500"} flex gap-1 items-center font-medium`}>
                           <Tooltip title={isTransferLeg ? `${movement.kind === "exchange" ? t("web.currency.exchange") : t("web.transfer")} — ${t("web.not.counted.as.income.or.spending")}` : ""}>
@@ -1582,7 +1592,7 @@ function MovementsContent({ timePeriodFromFather, mail, embedded = false, readOn
                           {dayjs(movement.date || movement.createdAt).format("DD/MM/YYYY")}
                         </div>
                       </div>
-                    {!readOnly && <div className="btns flex justify-between gap-2">
+                    {!readOnly && <div className="btns flex justify-between gap-2" data-tour={rowIndex === 0 ? "mov-row-actions" : undefined}>
                       <button
                         onClick={() => showRemoveModal("", movement._id)}
                         className="hover:text-gf-text-muted micro-pulse"

@@ -3,7 +3,9 @@ import { useMemo, useState } from 'react';
 import { Pressable, Text, View, useColorScheme } from 'react-native';
 import { useSelector } from 'react-redux';
 
+import { CategoryAnalyzer } from '@/components/categories/category-analyzer';
 import { CategoryBadge } from '@/components/category-badge';
+import { Segmented } from '@/components/segmented';
 import { Screen } from '@/components/screen';
 import { Card } from '@/components/ui/card';
 import { TextField } from '@/components/ui/text-field';
@@ -14,11 +16,16 @@ import { idOf, subCategoriesOf } from '@gastify/core/categories/categoryForm';
 import type { CategoryData } from '@gastify/core/features/categoriesSlice';
 import type { SubCategoryData } from '@gastify/core/features/subCategorySlice';
 import { normalizeText } from '@gastify/core/search/normalizeText';
-import { useT } from "@/i18n/client";
+import { useT, useInfo } from "@/i18n/client";
 
+import { TourPressable, TourTarget } from '@/components/tour/tour-target';
 // The person's own categories (tap to edit them and their sub-categories) and the defaults that come with
 // every account, which can be read but not changed. The search box looks at category and sub-category names.
+// The tab last used, kept while the app is open.
+let lastTab: 'analyzer' | 'list' = 'analyzer';
+
 export default function CategoriesScreen() {
+  const { APP_INFO } = useInfo();
   const t = useT();
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
@@ -26,6 +33,8 @@ export default function CategoriesScreen() {
   const subCategories = useSelector((state: RootState) => state.subCategoryReducer.data);
   const { refresh, refreshing } = useRefreshAppData();
   const [query, setQuery] = useState('');
+  const [tab, setTabState] = useState<'analyzer' | 'list'>(lastTab);
+  const setTab = (next: 'analyzer' | 'list') => { lastTab = next; setTabState(next); };
 
   const ownSubs = useMemo(() => subCategories.subCat ?? [], [subCategories.subCat]);
   const defaultSubs = useMemo(() => subCategories.default ?? [], [subCategories.default]);
@@ -55,13 +64,30 @@ export default function CategoriesScreen() {
   };
 
   return (
-    <Screen title={t("mobile.categorias")} backLabel={t("mobile.mas")} onBack={() => router.back()} refreshing={refreshing} onRefresh={refresh}>
-      <TextField label="" value={query} onChangeText={setQuery} placeholder={t("mobile.buscar.categoria.o.subcategoria")} autoCorrect={false} />
-      <Pressable accessibilityRole="button" onPress={() => router.push('/more/categories/new')} className="items-center rounded-3xl bg-gf-surface p-4">
-        <Text className="font-inter-semibold text-base" style={{ color: colors.accent }}>
-          {t("mobile.nueva.categoria")}
-        </Text>
-      </Pressable>
+    <Screen titleInfo={APP_INFO.categor_as_y_subcategor_as} title={t("mobile.categorias")} backLabel={t("mobile.mas")} onBack={() => router.back()} refreshing={refreshing} onRefresh={refresh}>
+      <TourTarget id="m-cat-tabs">
+        <Segmented
+          options={[{ value: 'analyzer', label: t('categories.tab.analyzer') }, { value: 'list', label: t('categories.tab.list') }]}
+          value={tab}
+          onChange={setTab}
+          tourIds={{ analyzer: 'm-cat-tab-analyzer', list: 'm-cat-tab-list' }}
+        />
+      </TourTarget>
+      {tab === 'analyzer' ? <CategoryAnalyzer /> : (
+      <>
+      <TourTarget id="m-cat-search"><TextField label="" value={query} onChangeText={setQuery} placeholder={t("mobile.buscar.categoria.o.subcategoria")} autoCorrect={false} /></TourTarget>
+      <View className="flex-row gap-3">
+        <TourPressable id="m-cat-new" accessibilityRole="button" onPress={() => router.push('/more/categories/new')} className="flex-1 items-center rounded-3xl bg-gf-surface p-4">
+          <Text className="font-inter-semibold text-base" style={{ color: colors.accent }}>
+            {t("mobile.nueva.categoria")}
+          </Text>
+        </TourPressable>
+        <TourPressable id="m-cat-newsub" accessibilityRole="button" onPress={() => router.push('/more/categories/new-sub')} className="flex-1 items-center rounded-3xl bg-gf-surface p-4">
+          <Text className="font-inter-semibold text-base" style={{ color: colors.accent }}>
+            {t("mobile.subform.newSubButton")}
+          </Text>
+        </TourPressable>
+      </View>
 
       {searching && (
         <>
@@ -101,7 +127,7 @@ export default function CategoriesScreen() {
 
       {!searching && (
       <>
-      <Card title={t("mobile.tus.categorias")}>
+      <Card tour="m-cat-yours" title={t("mobile.tus.categorias")}>
         {own.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">{query ? t("mobile.ninguna.coincide") : t("mobile.todavia.no.creaste.ninguna")}</Text>}
         {own.map((category) => {
           const id = idOf(category);
@@ -122,7 +148,7 @@ export default function CategoriesScreen() {
         })}
       </Card>
 
-      <Card title={t("mobile.predeterminadas")}>
+      <Card tour="m-cat-defaults" title={t("mobile.predeterminadas")} info={APP_INFO.categor_as_predeterminadas}>
         {defaults.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.ninguna.coincide")}</Text>}
         {defaults.map((category) => (
           <View key={idOf(category)} className="flex-row items-center gap-3 py-1.5">
@@ -134,6 +160,8 @@ export default function CategoriesScreen() {
           </View>
         ))}
       </Card>
+      </>
+      )}
       </>
       )}
     </Screen>

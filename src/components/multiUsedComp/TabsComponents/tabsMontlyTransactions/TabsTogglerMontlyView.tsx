@@ -5,6 +5,7 @@ import TabsToggler, { TabsTogglerComponentItem } from "../TabsToggler";
 import PeriodFiltersWithCompare from "../../periodFiltersWithCompare/PeriodFiltersWithCompare";
 
 import { useT, useInfo } from "@/i18n/client";
+import type { ComponentTourId } from "@gastify/core/tour/tourSteps";
 
 // Typed bridge for unmigrated child JSX component
 interface PeriodFiltersWithCompareProps {
@@ -21,6 +22,8 @@ interface PeriodFiltersWithCompareProps {
   getCompareValueFromSelecter?: (v: string) => void;
   handleCompareRangeDate?: (dateStart: Date | null, dateEnd: Date | null) => void;
   timePeriodsForCompareSelecter?: Array<{ value: string; name: string }>;
+  tour?: string;
+  tutorial?: ComponentTourId;
 }
 
 const TypedPeriodFiltersWithCompare = PeriodFiltersWithCompare as unknown as React.ComponentType<PeriodFiltersWithCompareProps>;
@@ -65,6 +68,8 @@ function TabsTogglerMontlyView({
   return (
     <div className="w-full h-full">
       <TypedPeriodFiltersWithCompare
+        tour="his-periods"
+        tutorial="hisPeriods"
         timePeriod={timePeriod}
         getValueFromSelecter={getValueSelecterFilter}
         timePeriodsForSelecter={timePeriodsForSelecter}
@@ -81,9 +86,9 @@ function TabsTogglerMontlyView({
         <Skeleton active className="py-3" />
       ) : (
         <TabsToggler
+          tour="his-periods"
           tabs={tabs || [t("web.comparative"), t("web.bills"), t("web.incomes")]}
           compontentsArray={components}
-          tooltip={t("movements.top.tabHelp")}
           tabInfo={{ comparative: APP_INFO.detalle_del_mes(Boolean(compareEnabled)) }}
         />
       )}

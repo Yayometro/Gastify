@@ -7,6 +7,7 @@ import { useDispatch } from "react-redux";
 import BasicModal from "@/components/modals/basicModal/BasicModal";
 import CategoIcon from "@/components/multiUsedComp/CategoIcon";
 import UniversalCategoIcon from "@/components/multiUsedComp/UniversalCategoIcon";
+import TutorialTip from "@/components/tour/TutorialTip";
 import EditSingleTransModal, { EditSingleTransItem } from "@/components/multiUsedComp/EditSingleTransModal";
 import { usdFormatChanger } from "@/helpers/transformers/transactionsChange";
 import { removeOneTransacction } from "@/lib/features/transacctionsSlice";
@@ -215,28 +216,32 @@ export function UnbudgetedSpendingModal({
         close={onClose}
         renderContent={
           <div className="content absolute gf-glass-violet flex flex-col w-[94vw] max-w-[680px] max-h-[90vh] overflow-hidden rounded-3xl z-[1001] shadow-2xl">
-            <div className="relative px-6 pt-6 pb-5 text-white shrink-0">
+            <div className="relative px-6 pt-6 pb-5 text-gf-text shrink-0">
               <button
                 type="button"
                 onClick={onClose}
-                className="absolute top-4 right-4 rounded-full gf-glass-card p-1.5 text-purple-100 hover:text-white transition-colors"
+                className="absolute top-4 right-4 rounded-full gf-glass-card p-1.5 text-purple-100 hover:text-gf-text transition-colors"
                 title={t("budgets.close")}
               >
                 <CategoIcon type="MdClose" siz={18} />
               </button>
-              <p className="text-2xl font-bold">{t("budgets.unbudgeted.title")}</p>
-              <p className="text-xs text-purple-100 mt-1">{rangeLabel}</p>
+              {/* The title, a vertical separator, then the tutorial button beside it (the modal's header pattern). */}
+              <div data-tour="bud-unb-header" className="flex items-center pr-8">
+                <p className="text-2xl font-bold">{t("budgets.unbudgeted.title")}</p>
+                <span aria-hidden="true" className="mx-2 inline-block h-5 w-px shrink-0 align-middle bg-purple-300/40" /><TutorialTip tour="budUnbudgeted" label={t("budgets.unbudgeted.title")} />
+              </div>
+              <p data-tour="bud-unb-range" className="text-xs text-purple-100 mt-1">{rangeLabel}</p>
             </div>
 
             <div className="rounded-t-[38px] px-5 sm:px-7 py-6 overflow-y-auto flex-1">
               <div className="grid grid-cols-2 gap-3 mb-5">
-                <div className="gf-glass-warning rounded-2xl p-3">
+                <div data-tour="bud-unb-outside" className="gf-glass-warning rounded-2xl p-3">
                   <p className="text-[10px] uppercase tracking-wide text-amber-300">{t("budgets.unbudgeted.outside")}</p>
                   <p className="text-xl font-bold text-amber-300">
                     {usdFormatChanger(coverage.unbudgetedSpent)}
                   </p>
                 </div>
-                <div className="gf-glass-row rounded-2xl p-3">
+                <div data-tour="bud-unb-share" className="gf-glass-row rounded-2xl p-3">
                   <p className="text-[10px] uppercase tracking-wide gf-text-muted-glass">{t("budgets.unbudgeted.share")}</p>
                   <p className="text-xl font-bold text-purple-200">
                     {Math.round(coverage.unbudgetedPercentage)}%
@@ -244,18 +249,18 @@ export function UnbudgetedSpendingModal({
                 </div>
               </div>
 
-              <p className="text-xs gf-text-muted-glass mb-4">
+              <p data-tour="bud-unb-help" className="text-xs gf-text-muted-glass mb-4">
                 {t("budgets.unbudgeted.help")}
               </p>
 
               {coverage.groups.length === 0 ? (
-                <div className="gf-glass-success rounded-2xl p-5 text-center text-emerald-300">
+                <div data-tour="bud-unb-covered" className="gf-glass-success rounded-2xl p-5 text-center text-emerald-300">
                   <p className="font-bold">{t("budgets.unbudgeted.covered")}</p>
                   <p className="text-xs mt-1">{t("budgets.unbudgeted.none")}</p>
                 </div>
               ) : (
-                <div className="flex flex-col gap-3">
-                  {coverage.groups.map((group) => {
+                <div data-tour="bud-unb-groups" className="flex flex-col gap-3">
+                  {coverage.groups.map((group, index) => {
                     const isExpanded = expandedKey === group.key;
                     const selectedBudgetId = selectedBudgets[group.key] || "";
                     const selectedProjectId = selectedProjects[group.key] || "";
@@ -263,6 +268,7 @@ export function UnbudgetedSpendingModal({
                       <div key={group.key} className="gf-glass-warning rounded-2xl overflow-hidden">
                         <button
                           type="button"
+                          data-tour={index === 0 ? "bud-unb-group" : undefined}
                           onClick={() => setExpandedKey(isExpanded ? null : group.key)}
                           className="w-full p-3 flex items-center justify-between gap-3 hover:bg-amber-500/15 text-left"
                         >
@@ -290,8 +296,8 @@ export function UnbudgetedSpendingModal({
                         </button>
 
                         {isExpanded && (
-                          <div className="border-t border-amber-100/30 p-3">
-                            <div className="flex flex-col gap-2 mb-3">
+                          <div data-tour={index === 0 ? "bud-unb-body" : undefined} className="border-t border-amber-100/30 p-3">
+                            <div data-tour={index === 0 ? "bud-unb-movements" : undefined} className="flex flex-col gap-2 mb-3">
                               {group.movements.map((movement) => (
                                 <MovementRow
                                   key={movement._id as string}
@@ -303,7 +309,7 @@ export function UnbudgetedSpendingModal({
                               ))}
                             </div>
 
-                            {!readOnly && <div className="bg-gf-accent-soft-bg border border-gf-border rounded-2xl p-3 mb-3">
+                            {!readOnly && <div data-tour={index === 0 ? "bud-unb-project" : undefined} className="bg-gf-accent-soft-bg border border-gf-border rounded-2xl p-3 mb-3">
                               <p className="text-xs font-bold text-purple-300 mb-1">{t("budgets.project.treatTitle")}</p>
                               <p className="text-[10px] text-gf-text-muted mb-2">{t("budgets.project.groupHelp")}</p>
                               <div className="flex flex-col sm:flex-row gap-2">
@@ -316,20 +322,21 @@ export function UnbudgetedSpendingModal({
                             </div>}
 
                             {group.type === "uncategorized" ? (
-                              <div className="bg-amber-500/15 text-amber-400 rounded-xl p-3 text-xs">
+                              <div data-tour={index === 0 ? "bud-unb-assign-first" : undefined} className="bg-amber-500/15 text-amber-400 rounded-xl p-3 text-xs">
                                 {t("budgets.unbudgeted.assignFirst")}
                               </div>
                             ) : !readOnly ? (
                               <div className="flex flex-col sm:flex-row gap-2">
                                 <button
                                   type="button"
+                                  data-tour={index === 0 ? "bud-unb-create" : undefined}
                                   onClick={() => onCreateBudget(group)}
                                   className="rounded-full gf-glass-button text-white text-xs font-bold px-4 py-2 shrink-0"
                                 >
                                   {t("budgets.create")}
                                 </button>
                                 {spendingBudgets.length > 0 && (
-                                  <div className="flex flex-1 gap-2 min-w-0">
+                                  <div data-tour={index === 0 ? "bud-unb-assign" : undefined} className="flex flex-1 gap-2 min-w-0">
                                     <select
                                       value={selectedBudgetId}
                                       onChange={(event) =>
@@ -377,6 +384,7 @@ export function UnbudgetedSpendingModal({
                 <div className="mt-5 pt-4 border-t border-gf-border">
                   <button
                     type="button"
+                    data-tour="bud-unb-catalog"
                     onClick={() => setShowCatalog((current) => !current)}
                     className="w-full flex items-center justify-between text-xs font-bold text-purple-300"
                   >
@@ -384,7 +392,7 @@ export function UnbudgetedSpendingModal({
                     <UniversalCategoIcon type={showCatalog ? "md/MdExpandLess" : "md/MdExpandMore"} siz={18} />
                   </button>
                   {showCatalog && (
-                    <div className="flex flex-wrap gap-2 mt-3">
+                    <div data-tour="bud-unb-catalog-list" className="flex flex-wrap gap-2 mt-3">
                       {uncoveredCatalogCategories.map((category) => (
                         readOnly ? <span key={category._id as string} className="bg-gf-surface border border-gf-border text-gf-text-muted rounded-full px-3 py-1.5 text-xs">{category.name}</span> : <button
                           type="button"

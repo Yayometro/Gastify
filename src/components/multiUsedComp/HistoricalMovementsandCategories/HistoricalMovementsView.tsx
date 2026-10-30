@@ -1,5 +1,6 @@
 "use client";
 
+import TutorialTip from "@/components/tour/TutorialTip";
 import React from "react";
 import { Skeleton } from "antd";
 import SelecterItemsToDisplay from "@/components/Filters/selecterItemsToDisplay/SelecterItemsToDisplay";
@@ -50,19 +51,24 @@ function HistoricalMovementsView({
   const t = useT();
   return (
     <div className="w-full h-full">
-      <h1>{t("movements.top.byMonth", { p1: elementsToDisplay })}</h1>
+      <div className="flex items-center justify-center gap-2">
+        <h1>{t("movements.top.byMonth", { p1: elementsToDisplay })}</h1>
+        <span aria-hidden="true" className="mx-2 inline-block h-5 w-px shrink-0 align-middle bg-purple-300/40" />
+        <TutorialTip tour="hisMovements" label={t("tour.hisMovements.name")} />
+      </div>
       <PeriodFiltersWithCompare
+        tour="his-mov"
         timePeriod={timePeriod}
         getValueFromSelecter={getValueFromSelecter}
         periodFromFather={periodFromFather}
         timePeriodsForSelecter={timePeriodsForSelecter}
         handleRangeDate={handleRangeDate}
         extraControls={
-          <SelecterItemsToDisplay
+          <span data-tour="his-mov-items"><SelecterItemsToDisplay
             getValue={getValueFromItems}
             itemFromFather={elementsToDisplay}
             styles="gf-glass-card text-gf-text w-fit text-[10px] font-light flex items-center justify-center rounded-2xl px-[4px] sm:font-base sm:font-extralight active:border-0 hover:border-0 outline-none active:outline-none ring-offset-0 relative pulse-animation-short min-[400px]:py-[2px] min-[640px]:py-[4px]"
-          />
+          /></span>
         }
         compareEnabled={compareEnabled}
         setCompareEnabled={setCompareEnabled}
@@ -75,9 +81,9 @@ function HistoricalMovementsView({
         <Skeleton active className="py-3" />
       ) : (
         <TabsToggler
+          tour="his-mov"
           tabs={tabs || [t("web.bills"), t("web.incomes")]}
           compontentsArray={components}
-          tooltip={t("movements.top.tabHelp")}
           contentStyle={"flex flex-col justify-center items-center"}
         />
       )}

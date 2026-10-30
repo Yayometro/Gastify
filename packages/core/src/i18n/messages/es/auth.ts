@@ -62,6 +62,8 @@ const auth = {
   "auth.done.taking.you.to.your.wallet": "¡Listo! Llevándote a tu Wallet…",
   "auth.verifying.your.identity": "Verificando tu identidad…",
   "auth.incorrect.code.you.have.p1.attempt.s.left": "Código incorrecto. Te quedan {p1} intento(s).",
+  "auth.stepUp.signOut": "Cerrar sesión y usar otra cuenta",
+  "auth.stepUp.signedAs": "Sesión iniciada como {p1}",
 } as const;
 
 export default auth;

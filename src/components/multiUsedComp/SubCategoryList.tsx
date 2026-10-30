@@ -17,9 +17,11 @@ export interface SubCategoryListProps {
   sclCategories?: CategoryData[] | null;
   readOnly?: boolean;
   onSelectSubcategory?: (category: SubCategoryData) => void;
+  // The guided tutorial's anchor (data-tour) for the first tile of the list.
+  tileTour?: string;
 }
 
-function SubCategoryList({ sclSubCategory, clUser, sclCategories, readOnly = false, onSelectSubcategory }: SubCategoryListProps): React.JSX.Element {
+function SubCategoryList({ sclSubCategory, clUser, sclCategories, readOnly = false, onSelectSubcategory, tileTour }: SubCategoryListProps): React.JSX.Element {
   const t = useT();
   const [onEdition, setOnEdition] = useState<string | boolean>(false);
   const [selectedCategory, setSelectedCategory] = useState<SubCategoryData>({});
@@ -47,13 +49,14 @@ function SubCategoryList({ sclSubCategory, clUser, sclCategories, readOnly = fal
             <p className="">{t("categories.loading")}</p>
           </div>
         ) : (
-          sclSubCategory.map((subCategory) => (
+          sclSubCategory.map((subCategory, position) => (
             <Tooltip
               title={`${subCategory?.name || "No name..."}`}
               key={`cc-clist-key-sub${subCategory._id}`}
             >
               <button
                 type="button"
+                data-tour={position === 0 ? tileTour : undefined}
                 style={{
                   backgroundColor: subCategory.color || "#ABABAB",
                   border: `10px solid ${(subCategory.fatherCategory as CategoryData | undefined)?.color || "#ABABAB"}`,

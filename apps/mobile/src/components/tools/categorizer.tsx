@@ -1,10 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Pressable, Text, View, useColorScheme } from 'react-native';
+import { ActivityIndicator, Text, View, useColorScheme } from 'react-native';
 import { useDispatch } from 'react-redux';
 
 import { CategoryBadge } from '@/components/category-badge';
 import { useToast } from '@/components/toast';
+import { TourPressable, TourTarget } from '@/components/tour/tour-target';
 import { GradientButton } from '@/components/ui/gradient-button';
 import { Colors } from '@/constants/theme';
 import { reloadAfterWrite } from '@/hooks/use-load-app-data';
@@ -88,15 +89,21 @@ export function Categorizer({ onApplied }: { onApplied?: () => void }) {
   }
   if (error) return <Text className="font-inter text-sm text-red-500">{error}</Text>;
   if (entries.length === 0) {
-    return <Text className="py-10 text-center font-inter text-base text-gf-text-muted">{t("mobile.sin.sugerencias.por.ahora.estas")}</Text>;
+    return (
+      <TourTarget id="m-categorizer-empty">
+        <Text className="py-10 text-center font-inter text-base text-gf-text-muted">{t("mobile.sin.sugerencias.por.ahora.estas")}</Text>
+      </TourTarget>
+    );
   }
 
   return (
     <View className="gap-3">
-      <Text className="text-center font-inter text-sm text-gf-text-muted">
-        {t("mobile.p1.p2.con.una.regla", { p1: entries.length, p2: tNow("mobile.movimientos.sin.categoria.coinciden", { count: entries.length }) })}
-      </Text>
-      {entries.map((entry) => {
+      <TourTarget id="m-categorizer-count">
+        <Text className="text-center font-inter text-sm text-gf-text-muted">
+          {t("mobile.p1.p2.con.una.regla", { p1: entries.length, p2: tNow("mobile.movimientos.sin.categoria.coinciden", { count: entries.length }) })}
+        </Text>
+      </TourTarget>
+      {entries.map((entry, index) => {
         const id = String(entry.transaction._id);
         const skip = Boolean(skipped[id]);
         const low = entry.suggestion.confidence === 'low';
@@ -104,8 +111,9 @@ export function Categorizer({ onApplied }: { onApplied?: () => void }) {
         const icon = entry.suggestion.subCategory?.icon || entry.suggestion.category?.icon;
         const color = entry.suggestion.subCategory?.color || entry.suggestion.category?.color;
         return (
-          <Pressable
+          <TourPressable
             key={id}
+            id={index === 0 ? 'm-categorizer-row' : undefined}
             accessibilityRole="checkbox"
             accessibilityState={{ checked: !skip }}
             onPress={() => setSkipped((current) => ({ ...current, [id]: !skip }))}
@@ -116,17 +124,19 @@ export function Categorizer({ onApplied }: { onApplied?: () => void }) {
               <Text className="flex-1 font-inter-medium text-base text-gf-text" numberOfLines={1}>{entry.transaction.name || t("errors.api.movement")}</Text>
               <Text className="font-inter-semibold text-sm text-gf-text">{formatMoneyMajor(Math.abs(Number(entry.transaction.amount) || 0), currency)}</Text>
             </View>
-            <View className="flex-row items-center gap-2 pl-8">
+            <TourTarget id={index === 0 ? 'm-categorizer-chip' : undefined} className="flex-row items-center gap-2 pl-8">
               <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.sin.categoria")}</Text>
               <Ionicons name="arrow-forward" size={14} color={colors.textSecondary} />
               <CategoryBadge icon={icon ?? undefined} color={color ?? undefined} size={24} />
               <Text className="flex-1 font-inter-semibold text-sm text-gf-text" numberOfLines={1}>{target}</Text>
               {low && <Text className="font-inter-medium text-xs" style={{ color: '#d97706' }}>{t("mobile.revisar")}</Text>}
-            </View>
-          </Pressable>
+            </TourTarget>
+          </TourPressable>
         );
       })}
-      <GradientButton label={chosen.length === 0 ? t("mobile.nada.seleccionado") : tNow("mobile.aplicar.p1", { p1: chosen.length })} onPress={apply} loading={applying} disabled={applying || chosen.length === 0} />
+      <TourTarget id="m-categorizer-apply">
+        <GradientButton label={chosen.length === 0 ? t("mobile.nada.seleccionado") : tNow("mobile.aplicar.p1", { p1: chosen.length })} onPress={apply} loading={applying} disabled={applying || chosen.length === 0} />
+      </TourTarget>
     </View>
   );
 }

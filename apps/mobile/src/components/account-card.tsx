@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Platform, Pressable, Text, View } from 'react-native';
 
 import { BankBadge } from '@/components/bank-badge';
+import { TourTarget } from '@/components/tour/tour-target';
 import { CardPattern } from '@/components/account-card-pattern';
 import { cardPalette } from '@/lib/account-card-style';
 import { bankById, formatCardNumber } from '@gastify/core/banks/banks';
@@ -31,6 +32,7 @@ export function AccountCard({
   rate,
   onPress,
   width,
+  tourPrefix,
 }: {
   account: AccountData;
   primary: string;
@@ -38,6 +40,8 @@ export function AccountCard({
   rate?: number;
   onPress?: () => void;
   width?: number | undefined;
+  // When the card is the account's detail, each part of it is a tutorial control named `<prefix>-<part>`.
+  tourPrefix?: string;
 }) {
   const t = useT();
   const [reveal, setReveal] = useState(false);
@@ -51,6 +55,7 @@ export function AccountCard({
   const equivalent = code !== primary && rate ? balance * rate : null;
   const type = account.accountType ?? 'debit';
   const money = (value: number) => formatMoneyMajor(value, code, { showCode: false });
+  const part = (name: string) => (tourPrefix ? `${tourPrefix}-${name}` : undefined);
 
   return (
     <Pressable accessibilityRole="button" accessibilityLabel={t("mobile.accounts.accountLabel", { p1: account.name ?? "" })} onPress={onPress} disabled={!onPress} style={{ width: width ?? '100%' }}>
@@ -65,26 +70,36 @@ export function AccountCard({
         ]}>
         <CardPattern pattern={account.cardPattern ?? DEFAULT_CARD_PATTERN} tint={tint} />
         <View className="flex-row items-center justify-between gap-3">
-          {account.bankId ? <BankBadge bankId={account.bankId} size={44} /> : null}
-          <Text className="flex-1 font-inter-semibold text-lg" numberOfLines={1} style={{ color: ink }}>{account.name || t("dashboard.bulk.account")}</Text>
-          <View style={{ backgroundColor: tint(0.22), borderRadius: 10, paddingHorizontal: 8, paddingVertical: 3 }}>
-            <Text className="font-inter-medium text-[11px]" style={{ color: ink }}>{TYPE_KEY[type] ? t(TYPE_KEY[type]) : type}</Text>
-          </View>
+          {account.bankId ? <TourTarget id={part('bank')}><BankBadge bankId={account.bankId} size={44} /></TourTarget> : null}
+          <TourTarget id={part('name')} className="flex-1">
+            <Text className="font-inter-semibold text-lg" numberOfLines={1} style={{ color: ink }}>{account.name || t("dashboard.bulk.account")}</Text>
+          </TourTarget>
+          <TourTarget id={part('type')}>
+            <View style={{ backgroundColor: tint(0.22), borderRadius: 10, paddingHorizontal: 8, paddingVertical: 3 }}>
+              <Text className="font-inter-medium text-[11px]" style={{ color: ink }}>{TYPE_KEY[type] ? t(TYPE_KEY[type]) : type}</Text>
+            </View>
+          </TourTarget>
         </View>
         <View>
-          <Text className="font-inter-medium text-xs" style={{ color: tint(0.8) }}>{code}{bank ? ` · ${bank.name}` : account.institution ? ` · ${account.institution}` : ''}</Text>
-          <Text className="font-inter-bold text-3xl" numberOfLines={1} adjustsFontSizeToFit style={{ color: ink }}>{money(balance)}</Text>
+          <TourTarget id={part('currency')}>
+            <Text className="font-inter-medium text-xs" style={{ color: tint(0.8) }}>{code}{bank ? ` · ${bank.name}` : account.institution ? ` · ${account.institution}` : ''}</Text>
+          </TourTarget>
+          <TourTarget id={part('balance')}>
+            <Text className="font-inter-bold text-3xl" numberOfLines={1} adjustsFontSizeToFit style={{ color: ink }}>{money(balance)}</Text>
+          </TourTarget>
           {equivalent !== null && (
             <Text className="font-inter text-xs" style={{ color: tint(0.85) }}>≈ {formatMoneyMajor(equivalent, primary, { showCode: false })} {primary}</Text>
           )}
         </View>
         {account.cardNumber ? (
-          <Pressable accessibilityRole="button" accessibilityLabel={reveal ? t("mobile.ocultar.el.numero") : t("mobile.mostrar.el.numero")} onPress={() => setReveal((value) => !value)} hitSlop={8} className="flex-row items-center gap-2 self-start">
-            <Text className="font-inter-medium text-sm" style={{ color: tint(0.92), letterSpacing: 1 }}>{formatCardNumber(account.cardNumber, reveal)}</Text>
-            <Ionicons name={reveal ? 'eye-off-outline' : 'eye-outline'} size={18} color={tint(0.9)} />
-          </Pressable>
+          <TourTarget id={part('number')} className="self-start">
+            <Pressable accessibilityRole="button" accessibilityLabel={reveal ? t("mobile.ocultar.el.numero") : t("mobile.mostrar.el.numero")} onPress={() => setReveal((value) => !value)} hitSlop={8} className="flex-row items-center gap-2 self-start">
+              <Text className="font-inter-medium text-sm" style={{ color: tint(0.92), letterSpacing: 1 }}>{formatCardNumber(account.cardNumber, reveal)}</Text>
+              <Ionicons name={reveal ? 'eye-off-outline' : 'eye-outline'} size={18} color={tint(0.9)} />
+            </Pressable>
+          </TourTarget>
         ) : null}
-        <View className="flex-row items-center justify-between gap-3">
+        <TourTarget id={part('activity')} className="flex-row items-center justify-between gap-3">
           <View className="flex-row items-center gap-1">
             <Ionicons name="arrow-up-circle" size={18} color={up} />
             <Text className="font-inter-semibold text-sm" numberOfLines={1} style={{ color: ink }}>{money(activity?.incomes ?? 0)}</Text>
@@ -93,7 +108,7 @@ export function AccountCard({
             <Ionicons name="arrow-down-circle" size={18} color={down} />
             <Text className="font-inter-semibold text-sm" numberOfLines={1} style={{ color: ink }}>{money(activity?.spending ?? 0)}</Text>
           </View>
-        </View>
+        </TourTarget>
       </LinearGradient>
     </Pressable>
   );

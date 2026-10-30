@@ -1,18 +1,22 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, type ReactNode } from 'react';
 import { usePathname } from 'expo-router';
 import { Animated, Pressable, RefreshControl, Text, View, useColorScheme, type ScrollViewInstance } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { InfoTip, type InfoText } from '@/components/info-tip';
+import { useTourScroller } from '@/components/tour/tour-target';
+import { TutorialTip } from '@/components/tour/tutorial-tip';
 import { BottomTabInset, Colors, MaxContentWidth, TabletContentWidth } from '@/constants/theme';
 import { useIsTablet } from '@/hooks/use-device-class';
 import { useRefreshAppData } from '@/hooks/use-load-app-data';
 import { ambientScrollY } from '@/lib/ambient-scroll';
 import { onTabReselect } from '@/lib/tab-reselect';
 import { useT } from '@/i18n/client';
+import { mobileScreenForPath, type MobileComponentTourId } from '@gastify/core/tour/mobileSteps';
 import { tNow } from '@/i18n/now';
 
+import { HelpSep } from '@/components/ui/help-sep';
 // Layout shared by the phase 4 screens: a title, a line under it, and a scroll area that leaves room
 // for the floating bar. Pulling down refreshes the data when onRefresh is given.
 export function Screen({
@@ -25,6 +29,8 @@ export function Screen({
   hero,
   titleInfo,
   headerAction,
+  pageTutorial = true,
+  tutorial,
   children,
 }: {
   title: string;
@@ -40,6 +46,9 @@ export function Screen({
   titleInfo?: InfoText;
   // An action at the right of the title (the bell of Inicio).
   headerAction?: ReactNode;
+  // The compass that starts this screen's own tour, next to the title (on by default).
+  pageTutorial?: boolean;
+  tutorial?: MobileComponentTourId;
   children?: ReactNode;
 }) {
   const t = useT();
@@ -49,6 +58,16 @@ export function Screen({
   // A second tap on this page's tab (or extra section) scrolls it to the top and refreshes it.
   const pathname = usePathname();
   const scroller = useRef<ScrollViewInstance>(null);
+  // How far the page is scrolled, so the guided tutorial can bring a control into view.
+  const offset = useRef(0);
+  const tourScroller = useMemo(
+    () => ({
+      scrollBy: (delta: number) => scroller.current?.scrollTo({ y: Math.max(0, offset.current + delta), animated: true }),
+      scrollToTop: () => scroller.current?.scrollTo({ y: 0, animated: false }),
+    }),
+    []
+  );
+  useTourScroller(tourScroller);
   const refreshNow = onRefresh ?? appRefresh.refresh;
   useEffect(() => onTabReselect((path) => {
     if (path !== pathname) return;
@@ -66,7 +85,7 @@ export function Screen({
       <SafeAreaView style={{ flex: 1 }} edges={['top']}>
         <Animated.ScrollView
           ref={scroller}
-          onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: ambientScrollY } } }], { useNativeDriver: true })}
+          onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: ambientScrollY } } }], { useNativeDriver: true, listener: (event) => { offset.current = (event as { nativeEvent: { contentOffset: { y: number } } }).nativeEvent.contentOffset.y; } })}
           scrollEventThrottle={16}
           contentContainerClassName="w-full gap-4 self-center p-6"
           contentContainerStyle={{ paddingBottom: BottomTabInset + 84, maxWidth: tablet ? TabletContentWidth : MaxContentWidth }}
@@ -85,8 +104,17 @@ export function Screen({
           {tablet && hero ? hero : (
             <View className="gap-1">
               <View className="flex-row items-center gap-3">
-                <Text className="font-inter-bold text-4xl text-gf-text">{title}</Text>
-                {titleInfo ? <InfoTip info={titleInfo} /> : null}
+                {/* The title takes the room it needs and wraps; the help buttons never shrink, so a long name cannot push them off the row. */}
+                <Text className="font-inter-bold text-4xl text-gf-text" style={{ flexShrink: 1 }}>{title}</Text>
+                {titleInfo || tutorial || (pageTutorial && mobileScreenForPath(pathname)) ? (
+                  <View className="flex-row items-center gap-3" style={{ flexShrink: 0 }}>
+                    <HelpSep />
+                    <View className="flex-row items-center gap-0.5">
+                      {titleInfo ? <InfoTip info={titleInfo} /> : null}
+                      {tutorial ? <TutorialTip tour={tutorial} label={title} /> : pageTutorial && mobileScreenForPath(pathname) ? <TutorialTip label={title} /> : null}
+                    </View>
+                  </View>
+                ) : null}
                 {headerAction ? <View className="ml-auto">{headerAction}</View> : null}
               </View>
               {subtitle ? <Text className="font-inter text-base text-gf-text-muted">{subtitle}</Text> : null}

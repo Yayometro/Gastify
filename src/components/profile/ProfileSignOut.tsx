@@ -26,6 +26,7 @@ export default function ProfileSignOut(): React.JSX.Element {
   return (
     <button
       type="button"
+      data-tour="prof-signout"
       onClick={signOut}
       disabled={signingOut}
       className="gf-glass-card flex w-full items-center justify-center gap-2 rounded-3xl px-5 py-4 text-base font-semibold text-red-400 transition-all hover:brightness-110 disabled:opacity-60"

@@ -1,7 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import UniversalCategoIcon from "../UniversalCategoIcon";
-import { Tooltip } from "antd";
 import EmptyModule from "../EmptyModule";
 import { InfoTip } from "../InfoTip";
 import type { InfoText } from "@gastify/core/info/createInfo";
@@ -18,18 +17,19 @@ export interface TabsTogglerProps {
   // Dynamic component container passes heterogeneous props to child components
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   compontentsArray?: TabsTogglerComponentItem<any>[] | null;
-  tooltip?: React.ReactNode;
   contentStyle?: string;
   // An explanation for a tab, by the tab's name in lowercase: a "?" next to that tab's label.
   tabInfo?: Record<string, InfoText>;
+  // The guided tutorial's anchors: "<tour>-tabs" on the row of tabs and "<tour>-content" on what the active tab shows.
+  tour?: string;
 }
 
 function TabsToggler({
   tabs,
   compontentsArray,
-  tooltip,
   contentStyle,
   tabInfo,
+  tour,
 }: TabsTogglerProps): React.JSX.Element {
   const t = useT();
   const [active, setActive] = useState(tabs?.[0]?.toLowerCase() || "");
@@ -67,7 +67,7 @@ function TabsToggler({
 
   return (
     <div className="rtt-cont w-full h-full mt-1">
-      <div className="tabs-toggler mx-auto mb-3 flex w-fit max-w-full items-center justify-center gap-1 overflow-x-auto rounded-full gf-glass-inset p-1">
+      <div className="tabs-toggler mx-auto mb-3 flex w-fit max-w-full items-center justify-center gap-1 overflow-x-auto rounded-full gf-glass-inset p-1" data-tour={tour ? `${tour}-tabs` : undefined}>
         {!tabs || tabs.length <= 0
           ? "No tabs in array, set at least one... "
           : tabs.map((tab) => (
@@ -88,16 +88,9 @@ function TabsToggler({
                 </span>
               </div>
             ))}
-        <Tooltip title={tooltip}>
-          <div className="">
-            <UniversalCategoIcon
-              type={`${"fa/FaRegQuestionCircle"}`}
-              siz={15}
-            />
-          </div>
-        </Tooltip>
+
       </div>
-      <div className={contentStyle || "tabs-toggler-content-cont"}>
+      <div className={contentStyle || "tabs-toggler-content-cont"} data-tour={tour ? `${tour}-content` : undefined}>
         {activeComponent || (
           <EmptyModule emMessage={t("shared.tabs.missing")} />
         )}

@@ -1,8 +1,9 @@
 "use client";
 
+import TutorialTip from "@/components/tour/TutorialTip";
 import React, { useMemo, useState } from "react";
 
-import { InfoTip } from "@/components/multiUsedComp/InfoTip";
+import TitleWithHelp from "@/components/multiUsedComp/TitleWithHelp";
 import BasicModal from "@/components/modals/basicModal/BasicModal";
 import UniversalCategoIcon from "@/components/multiUsedComp/UniversalCategoIcon";
 import { usdFormatChanger, getPrimaryAmount } from "@/helpers/transformers/transactionsChange";
@@ -145,6 +146,8 @@ function BudgetDetailModal({
   const budgetCurrency = budget?.currency || walletPrimaryCurrency;
   const [editingTrans, setEditingTrans] = useState<BudgetDetailTransactionItem | null>(null);
   const [editKey, setEditKey] = useState<number>(0);
+  // Modal.useModal instead of the static Modal.confirm: the static one does not read the app's theme (it came out white in dark mode).
+  const [modal, modalContextHolder] = Modal.useModal();
 
   const { matchingTransactions, totalSpent, categoryBreakdown, expenseCurrencyBreakdown } = useMemo(() => {
     if (!budget) return { matchingTransactions: [], totalSpent: 0, categoryBreakdown: [], expenseCurrencyBreakdown: null };
@@ -263,9 +266,9 @@ function BudgetDetailModal({
 
   const handleRemoveTrans = (id?: string) => {
     if (!id) return;
-    Modal.confirm({
+    modal.confirm({
       // This detail modal is a BasicModal portal (z-index 5000); antd's confirm
-      // defaults to 2000 and used to open BEHIND it, invisible and unclickable,
+      // defaults to 2000 and would open BEHIND it, invisible and unclickable,
       // so deleting from here could never be confirmed.
       zIndex: 10000,
       title: tr("budgets.movement.confirmQuestion"),
@@ -311,11 +314,15 @@ function BudgetDetailModal({
               </button>
 
               {/* Header section */}
-              <div className="flex items-start justify-between gap-3 pr-12">
+              <div data-tour="bud-detail-header" className="flex items-start justify-between gap-3 pr-12">
                 <div>
-                  <h2 className="text-2xl font-bold text-purple-300">
-                    {budget.name || tr("web.unnamed.budget")}
-                  </h2>
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-2xl font-bold text-purple-300">
+                      {budget.name || tr("web.unnamed.budget")}
+                    </h2>
+                    <span aria-hidden="true" className="mx-2 inline-block h-5 w-px shrink-0 align-middle bg-purple-300/40" />
+                    <TutorialTip tour="budDetail" label={budget.name || tr("web.unnamed.budget")} />
+                  </div>
                   <p className="text-xs text-gf-text-muted mt-0.5">
                     {tr("budgets.budgetSubtitle", { p1: isSaving ? "Savings goal" : "Spending budget", p2: budget.period || "monthly", p3: budgetCurrency })}
                   </p>
@@ -328,7 +335,7 @@ function BudgetDetailModal({
               </div>
 
               {/* Progress Bar Summary with Circle Percentage Badge at Head */}
-              <div className="bg-gf-surface rounded-2xl p-4 border border-gf-border shadow-sm">
+              <div data-tour="bud-detail-progress" className="bg-gf-surface rounded-2xl p-4 border border-gf-border shadow-sm">
                 <div className="flex justify-between items-baseline mb-2">
                   <span className="text-sm font-semibold text-gf-text-muted">
                     {isSaving ? "Saved:" : "Spent:"}{" "}
@@ -348,7 +355,7 @@ function BudgetDetailModal({
                 />
                 <div className="w-full h-5 bg-gf-surface-2 rounded-full relative my-3">
                   <div
-                    className="h-full rounded-full transition-all"
+                    className={`h-full rounded-full transition-all ${ratio >= 0.03 ? "gf-bar-energy" : ""} ${ratio > 1 ? "gf-bar-energy-fast" : ""}`}
                     style={{ width: `${Math.min(Math.max(ratio * 100, 0), 100)}%`, background: gradient }}
                   />
                   <div
@@ -378,11 +385,14 @@ function BudgetDetailModal({
 
               {/* Spending by Category (Horizontal Stacked Bar Chart) */}
               {categoryBreakdown.length > 0 && (
-                <div className="bg-gf-surface rounded-2xl p-4 border border-gf-border shadow-sm">
-                  <h3 className="text-xs font-bold text-gf-text-muted uppercase tracking-wider mb-3">
-                    {tr("budgets.chart.spendingByCategory")}
-                    <InfoTip info={APP_INFO.distribuci_n_del_gasto} />
-                  </h3>
+                <div data-tour="bud-detail-dist" className="bg-gf-surface rounded-2xl p-4 border border-gf-border shadow-sm">
+                  <TitleWithHelp
+                    as="h3"
+                    title={tr("budgets.chart.spendingByCategory")}
+                    info={APP_INFO.distribuci_n_del_gasto}
+                    titleClassName="text-xs font-bold text-gf-text-muted uppercase tracking-wider"
+                    className="mb-3"
+                  />
                   {/* Stacked bar */}
                   <div className="w-full h-3.5 bg-gf-surface-2 rounded-full overflow-hidden flex mb-3">
                     {categoryBreakdown.map((cat, idx) => {
@@ -429,14 +439,14 @@ function BudgetDetailModal({
               )}
 
               {/* Detailed Movements List (Movements.jsx transaction component style) */}
-              <div>
+              <div data-tour="bud-detail-movs">
                 <h3 className="text-xs font-bold text-gf-text-muted uppercase tracking-wider mb-2">
                   {tr("budgets.movement.detailed", { p1: matchingTransactions.length })}
                 </h3>
 
                 {/* Linked accounts banner for savings */}
                 {isSaving && budget.linkedAccounts && budget.linkedAccounts.length > 0 && (
-                  <div className="gf-glass-info rounded-2xl p-3 mb-3 flex items-center justify-between text-xs text-blue-100">
+                  <div data-tour="bud-detail-saving" className="gf-glass-info rounded-2xl p-3 mb-3 flex items-center justify-between text-xs text-blue-100">
                     <div className="flex items-center gap-2">
                       <span className="text-base">🔗</span>
                       <span>
@@ -454,7 +464,7 @@ function BudgetDetailModal({
 
                 {/* Manual saving progress banner for savings */}
                 {isSaving && (!budget.linkedAccounts || budget.linkedAccounts.length === 0) && (Number(budget.savingAmount) || 0) > 0 && (
-                  <div className="gf-glass-info rounded-2xl p-3 mb-3 flex items-center justify-between text-xs text-blue-100">
+                  <div data-tour="bud-detail-saving" className="gf-glass-info rounded-2xl p-3 mb-3 flex items-center justify-between text-xs text-blue-100">
                     <div className="flex items-center gap-2">
                       <span className="text-base">📌</span>
                       <span>
@@ -467,10 +477,11 @@ function BudgetDetailModal({
 
                 {matchingTransactions.length > 0 ? (
                   <div className="flex flex-col gap-2 max-h-[300px] overflow-y-auto pr-1">
-                    {matchingTransactions.map((movement) => (
+                    {matchingTransactions.map((movement, index) => (
                       <div
                         key={movement._id}
                         id={`trans-${movement._id}`}
+                        data-tour={index === 0 ? "bud-detail-row" : undefined}
                         className="flex flex-row justify-between items-center bg-gf-surface rounded-2xl py-2 px-3 border border-gf-border hover:bg-gf-surface-2 relative shadow-xs transition-colors"
                       >
                         <div className="flex gap-3 items-center truncate pr-2">
@@ -547,6 +558,7 @@ function BudgetDetailModal({
                           {!readOnly && <div className="btns flex justify-end gap-2 mt-1.5">
                             <button
                               type="button"
+                              data-tour={index === 0 ? "bud-detail-row-delete" : undefined}
                               onClick={() => handleRemoveTrans(movement._id)}
                               className="text-gf-text-muted hover:text-red-400 transition-colors p-1 cursor-pointer"
                               title={tr("budgets.transaction.delete")}
@@ -555,6 +567,7 @@ function BudgetDetailModal({
                             </button>
                             <button
                               type="button"
+                              data-tour={index === 0 ? "bud-detail-row-edit" : undefined}
                               onClick={() => setEditingTrans(movement)}
                               className="text-gf-text-muted hover:text-purple-600 transition-colors p-1 cursor-pointer"
                               title={tr("budgets.transaction.edit")}
@@ -581,6 +594,7 @@ function BudgetDetailModal({
                     onClose();
                     if (onEdit) onEdit(budget);
                   }}
+                  data-tour="bud-detail-edit"
                   className="w-full py-3 px-4 gf-glass-button text-white font-bold rounded-2xl transition-all flex items-center justify-center gap-2 cursor-pointer text-sm"
                 >
                   <UniversalCategoIcon type="md/MdEdit" siz={18} />
@@ -591,6 +605,7 @@ function BudgetDetailModal({
           </div>
         }
       />
+      {modalContextHolder}
       {!readOnly && editingTrans && (
         <TypedEditSingleTransModal
           key={editKey}

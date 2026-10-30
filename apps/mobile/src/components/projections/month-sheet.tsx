@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
-import { Pressable, Text, View, useColorScheme } from 'react-native';
+import { Text, View, useColorScheme } from 'react-native';
 
 import { DetailSheet } from '@/components/analyzer/detail-sheet';
 import { InfoTip } from '@/components/info-tip';
@@ -18,9 +18,11 @@ import { isSpendingBudget } from '@gastify/core/transformers/budgetTypes';
 import { getExpectedOccurrencesInMonth, getMonthBucketBreakdown, type YearProjectionRow } from '@gastify/core/transformers/projectionsChange';
 import { filterBillsOrIncomes, getTransactionsFromTimeRange } from '@gastify/core/transformers/transactionsChange';
 
+import { MonthPrecision } from '@/components/projections/precision';
 import { useT, useInfo } from "@/i18n/client";
 import { tNow } from '@/i18n/now';
 
+import { TourPressable, TourTarget } from '@/components/tour/tour-target';
 type AnyRecord = Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
 
 const revisionTime = (value: unknown) => {
@@ -142,12 +144,13 @@ export function ProjectionMonthSheet({
       visible={row !== null}
       onClose={onClose}
       title={row ? `${localMonthLabel(row.monthName)} ${year}` : ''}
+      tour="m-proj-month"
       subtitle={row ? (row.type === 'actual' ? t("mobile.mes.cerrado.con.tus.movimientos.reales") : row.type === 'estimate' ? t("mobile.mes.futuro.estimado.con.tus.presupuestos.y.fuentes.de.ingres") : t("mobile.mes.en.curso.arranca.como.estimado.y.se.llena.con.lo.real.co")) : undefined}
       info={APP_INFO.c_mo_leer_este_mes}>
       {range && (
-        <Pressable accessibilityRole="button" accessibilityState={{ expanded: showMovements }} onPress={() => setShowMovements((open) => !open)} className="items-center rounded-full border border-gf-border py-2.5">
+        <TourPressable id="m-proj-month-movements" accessibilityRole="button" accessibilityState={{ expanded: showMovements }} onPress={() => setShowMovements((open) => !open)} className="items-center rounded-full border border-gf-border py-2.5">
           <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{showMovements ? t("mobile.ocultar.movimientos") : tNow("mobile.ver.movimientos.del.mes.p1", { p1: monthTransactions.length })}</Text>
-        </Pressable>
+        </TourPressable>
       )}
       {showMovements && (
         <View>
@@ -177,16 +180,22 @@ export function ProjectionMonthSheet({
           {tile(t("projections.realExpense"), row.expense ?? 0, colors.expense, row.historicalExpense !== undefined ? tNow("mobile.presupuestado.entonces.p1", { p1: money(row.historicalExpense) }) : undefined)}
         </View>
       )}
+      {row?.type === 'actual' && row.historicalIncome !== undefined && row.historicalExpense !== undefined && (
+        <TourTarget id="m-proj-month-precision" className="gap-1.5">
+          <Text className="font-inter-semibold text-base text-gf-text">{t("projections.precision.title")}</Text>
+          <MonthPrecision withSentence month={{ projectedIncome: row.historicalIncome, actualIncome: row.income ?? 0, projectedExpense: row.historicalExpense, actualExpense: row.expense ?? 0 }} />
+        </TourTarget>
+      )}
 
       {chart.length > 0 && (
         <View className="gap-2">
-          <View className="flex-row items-center justify-between">
+          <TourTarget id="m-proj-month-chart" className="flex-row items-center justify-between">
             <Text className="font-inter-semibold text-base text-gf-text">{t("mobile.presupuestado.contra.real")}</Text>
             <View className="flex-row gap-3">
               <Text className="font-inter text-xs" style={{ color: '#a78bfa' }}>{t("mobile.presupuestado")}</Text>
               <Text className="font-inter text-xs" style={{ color: '#f87171' }}>{t("mobile.real")}</Text>
             </View>
-          </View>
+          </TourTarget>
           {chart.map((item) => (
             <View key={item.label} className="gap-1 border-t border-gf-border pt-2">
               <View className="flex-row justify-between gap-3">
@@ -201,7 +210,7 @@ export function ProjectionMonthSheet({
       )}
 
       {expected.length > 0 && (
-        <View className="gap-1">
+        <TourTarget id="m-proj-month-income" className="gap-1">
           <Text className="font-inter-semibold text-base text-gf-text">{t("mobile.ingreso.esperado.este.mes")}</Text>
           {expected.map((item, index) => (
             <View key={index} className="flex-row justify-between gap-3 border-t border-gf-border py-2">
@@ -209,36 +218,35 @@ export function ProjectionMonthSheet({
               <Text className="font-inter-semibold text-sm text-gf-text">{item.occurrences} × {money(item.amount)} = {money(item.occurrences * item.amount)}</Text>
             </View>
           ))}
-        </View>
+        </TourTarget>
       )}
 
       {row?.type === 'actual' && (
-        <View className="gap-2 border-t border-gf-border pt-4">
+        <TourTarget id="m-proj-month-balance" className="gap-2 border-t border-gf-border pt-4">
           <View className="flex-row items-center gap-2">
             <Text className="flex-1 font-inter-semibold text-base text-gf-text">{t("mobile.saldo.real.de.este.mes")}</Text>
             <InfoTip info={APP_INFO.saldo_real_del_mes} />
           </View>
           <TextField label={t("mobile.saldo.al.cierre.del.mes")} value={balance} onChangeText={setBalance} keyboardType="decimal-pad" placeholder={t("mobile.por.ejemplo.45000")} />
           <GradientButton label={t("mobile.guardar.saldo")} onPress={() => save('balance')} loading={busy === 'balance'} disabled={busy !== null} />
-        </View>
+        </TourTarget>
       )}
 
       <View className="gap-3 border-t border-gf-border pt-4">
-        <Text className="font-inter-semibold text-base text-gf-text">{t("mobile.topes.inesperados")}</Text>
-        <View className="gap-1">
+        <TourTarget id="m-proj-month-buffers" className="gap-3">
           <View className="flex-row items-center gap-2">
-            <Text className="flex-1 font-inter-medium text-sm text-gf-text-muted">{t("mobile.tope.de.gasto.inesperado")}</Text>
-            <InfoTip info={APP_INFO.tope_de_gasto_inesperado} />
+            <Text className="flex-1 font-inter-semibold text-base text-gf-text">{t("mobile.buffers.title")}</Text>
+            <InfoTip info={APP_INFO.buffers} />
           </View>
-          <TextField label={t("mobile.monto")} value={expenseBuffer} onChangeText={setExpenseBuffer} keyboardType="decimal-pad" placeholder="0" />
-        </View>
-        <View className="gap-1">
-          <View className="flex-row items-center gap-2">
-            <Text className="flex-1 font-inter-medium text-sm text-gf-text-muted">{t("mobile.tope.de.ingreso.inesperado")}</Text>
-            <InfoTip info={APP_INFO.tope_de_ingreso_inesperado} />
+          <View className="gap-1">
+            <Text className="font-inter-medium text-sm text-gf-text-muted">{t("mobile.buffers.expense")}</Text>
+            <TextField label={t("mobile.monto")} value={expenseBuffer} onChangeText={setExpenseBuffer} keyboardType="decimal-pad" placeholder="0" />
           </View>
-          <TextField label={t("mobile.monto")} value={incomeBuffer} onChangeText={setIncomeBuffer} keyboardType="decimal-pad" placeholder="0" />
-        </View>
+          <View className="gap-1">
+            <Text className="font-inter-medium text-sm text-gf-text-muted">{t("mobile.buffers.income")}</Text>
+            <TextField label={t("mobile.monto")} value={incomeBuffer} onChangeText={setIncomeBuffer} keyboardType="decimal-pad" placeholder="0" />
+          </View>
+        </TourTarget>
         <GradientButton label={t("mobile.guardar.topes")} onPress={() => save('buffers')} loading={busy === 'buffers'} disabled={busy !== null} />
         {message && <Text className="font-inter text-sm" style={{ color: message.error ? colors.expense : colors.income }}>{message.text}</Text>}
         {revisions.length > 0 && (

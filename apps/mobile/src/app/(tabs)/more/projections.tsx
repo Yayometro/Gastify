@@ -35,6 +35,7 @@ import type { RootState } from '@/store';
 
 import { useT, useInfo, useLocale } from "@/i18n/client";
 
+import { TourPressable, TourTarget } from '@/components/tour/tour-target';
 type AnyRecord = Record<string, unknown>;
 type Answer = { ok?: boolean; data?: unknown };
 
@@ -151,20 +152,20 @@ export default function ProjectionsScreen() {
 
   return (
     <Screen title={t("mobile.proyecciones")} subtitle={t("mobile.projections.subtitle", { p1: currency, p2: year })} backLabel={t("mobile.mas")} onBack={() => router.back()} refreshing={appRefresh.refreshing} onRefresh={() => { appRefresh.refresh(); reload(); }}>
-      <View className="flex-row justify-between">
+      <TourTarget id="m-proj-year" style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
         <Pressable accessibilityRole="button" onPress={() => setYear((y) => y - 1)} hitSlop={8}>
           <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{t("mobile.ano.anterior")}</Text>
         </Pressable>
         <Pressable accessibilityRole="button" onPress={() => setYear((y) => y + 1)} hitSlop={8}>
           <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{t("mobile.ano.siguiente")}</Text>
         </Pressable>
-      </View>
+      </TourTarget>
 
       {error && <Text className="font-inter text-sm text-red-500">{error}</Text>}
       {!error && sources === null && <ActivityIndicator color={colors.accent} />}
 
       {sources !== null && (
-        <Card style={{ backgroundColor: dark ? 'rgba(192,38,211,0.14)' : 'rgba(192,38,211,0.07)', borderWidth: 1, borderColor: 'rgba(232,121,249,0.28)' }} title={t("mobile.mes.a.mes")} info={APP_INFO.mes_a_mes}>
+        <Card tour="m-proj-table" style={{ backgroundColor: dark ? 'rgba(192,38,211,0.14)' : 'rgba(192,38,211,0.07)', borderWidth: 1, borderColor: 'rgba(232,121,249,0.28)' }} title={t("mobile.mes.a.mes")} info={APP_INFO.mes_a_mes}>
           {inputs.missing.length > 0 && (
             <Text className="font-inter text-sm text-gf-text-muted">
               {t("mobile.projections.noRate", { p1: inputs.missing.join(', ') })}
@@ -179,7 +180,7 @@ export default function ProjectionsScreen() {
             const balanceText = (entry: { balance?: number | null; estimatedBalance?: number | null } | undefined) =>
               typeof entry?.balance === 'number' ? money(entry.balance) : typeof entry?.estimatedBalance === 'number' ? `≈ ${money(entry.estimatedBalance)}` : '—';
             return (
-              <Pressable key={`${row.monthName}-${index}`} accessibilityRole="button" accessibilityLabel={t("mobile.openLabel", { p1: row.monthName })} onPress={() => setOpenMonth(index)} className="gap-1 rounded-xl px-3 py-3" style={zebra(index, dark)}>
+              <TourPressable id={index === 0 ? "m-proj-row" : undefined} key={`${row.monthName}-${index}`} accessibilityRole="button" accessibilityLabel={t("mobile.openLabel", { p1: row.monthName })} onPress={() => setOpenMonth(index)} className="gap-1 rounded-xl px-3 py-3" style={zebra(index, dark)}>
                 <View className="flex-row items-center justify-between">
                   <Text className={`font-inter-semibold ${T('text-base', 'text-3xl')} capitalize text-gf-text`}>{monthName(index, locale) ?? row.monthName}</Text>
                   <Text className={`font-inter-medium ${T('text-xs', 'text-lg')}`} style={{ color: row.type === 'estimate' ? colors.accent : colors.textSecondary }}>{TYPE_LABEL[row.type]}</Text>
@@ -204,20 +205,24 @@ export default function ProjectionsScreen() {
                     </Text>
                   </View>
                 </View>
-              </Pressable>
+              </TourPressable>
             );
           })}
           <Text className="font-inter text-xs text-gf-text-muted">{t("mobile.los.meses.reales.muestran.lo")}</Text>
         </Card>
       )}
 
-      {sources !== null && <AccuracyCard rows={accuracyRows as never} currency={currency} onMonthPress={(name) => { const found = rows.findIndex((r) => r.monthName === name); if (found >= 0) setOpenMonth(found); }} />}
+      {sources !== null && (
+        <TourTarget id="m-proj-accuracy">
+          <AccuracyCard rows={accuracyRows as never} currency={currency} onMonthPress={(name) => { const found = rows.findIndex((r) => r.monthName === name); if (found >= 0) setOpenMonth(found); }} />
+        </TourTarget>
+      )}
 
       {sources !== null && (
-        <IncomeSourcesCard sources={sources} currency={currency} onChanged={reload} />
+        <TourTarget id="m-proj-sources"><IncomeSourcesCard sources={sources} currency={currency} onChanged={reload} /></TourTarget>
       )}
       {sources !== null && (
-        <HistoricalReferencesCard baseline={baseline} currency={currency} onChanged={reload} />
+        <TourTarget id="m-proj-baseline"><HistoricalReferencesCard baseline={baseline} currency={currency} onChanged={reload} /></TourTarget>
       )}
       <ProjectionMonthSheet
         row={openMonth !== null ? rows[openMonth] ?? null : null}

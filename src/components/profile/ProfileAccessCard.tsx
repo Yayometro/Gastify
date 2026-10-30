@@ -9,6 +9,7 @@ import { updateUser } from "@/lib/features/userSlice";
 import type { AppDispatch } from "@/lib/store";
 import { useT } from "@/i18n/client";
 import { validateEmailAddress, validateNewPassword } from "@gastify/core/profile/accessRules";
+import TutorialTip from "@/components/tour/TutorialTip";
 import { ProfileCard, ProfileField, PrimaryButton, errorMessage, saveAccount } from "./ProfileParts";
 
 type OpenForm = "email" | "password" | null;
@@ -80,10 +81,11 @@ export default function ProfileAccessCard({ email }: { email: string }) {
   };
 
   return (
-    <ProfileCard title={t("profile.access.title")}>
+    <ProfileCard title={t("profile.access.title")} tour="prof-access" help={<><span aria-hidden="true" className="mx-2 inline-block h-5 w-px shrink-0 align-middle bg-purple-300/40" /><TutorialTip tour="profAccess" label={t("profile.access.title")} /></>}>
       <div className="flex flex-col gap-3">
         <button
           type="button"
+          data-tour="prof-access-mail"
           aria-expanded={open === "email"}
           onClick={() => toggle("email")}
           className="flex items-center justify-between gap-3 text-left"
@@ -119,6 +121,7 @@ export default function ProfileAccessCard({ email }: { email: string }) {
       <div className="flex flex-col gap-3">
         <button
           id="gf-change-password-toggle"
+          data-tour="prof-access-password"
           type="button"
           aria-expanded={open === "password"}
           onClick={() => toggle("password")}

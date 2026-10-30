@@ -1,4 +1,5 @@
 "use client";
+import TitleWithHelp from "@/components/multiUsedComp/TitleWithHelp";
 import type { TranslateFn } from "@gastify/core/i18n/translate";
 
 import React, { useState } from "react";
@@ -105,10 +106,12 @@ interface UploadApiResponse {
 
 
 export interface ReadFileCompProps {
-  [key: string]: never;
+  // The copy inside a window (the "+" window or the Excel window). Its tutorial has its own anchors, so a tour started from its
+  // compass never points at the copy on the page, which can be right behind the window.
+  inWindow?: boolean;
 }
 
-function ReadFileComp({}: ReadFileCompProps = {}): React.JSX.Element {
+function ReadFileComp({ inWindow = false }: ReadFileCompProps = {}): React.JSX.Element {
   const t = useT();
   const { APP_INFO } = useInfo();
   const tr = useT();
@@ -331,13 +334,18 @@ function ReadFileComp({}: ReadFileCompProps = {}): React.JSX.Element {
   };
 
   const isUploading = uploadStatus === "uploading" || uploadStatus === "processing";
+  // The tutorial's anchors: the copy on the page and the copy in a window each have their own (see inWindow).
+  const anchor = inWindow ? "add-import" : "mov-import";
 
   return (
-    <div className="gf-glass-card py-8 my-2 px-[30px] rounded-[60px] w-full h-full max-w-[900px] flex flex-col gap-4">
+    <div className="gf-glass-card py-8 my-2 px-[30px] rounded-[60px] w-full h-full max-w-[900px] flex flex-col gap-4" data-tour={anchor}>
 
       {/* ── Description ── */}
-      <div className="text-center">
-        <h1 className="text-2xl font-light">{tr("movements.import.title")}</h1>
+      <div className="text-center" data-tour={`${anchor}-intro`}>
+        {/* In a window the window's own header carries the title, the "?" and the compass (see inWindow). */}
+        {!inWindow && (
+          <TitleWithHelp as="h1" title={tr("movements.import.title")} info={APP_INFO.importar_desde_excel} tour="movImport" titleClassName="text-2xl font-light" className="justify-center" />
+        )}
         <p className="text-xs text-gf-text-muted mt-1 max-w-[300px] mx-auto leading-relaxed">
           {tr("movements.import.intro")}
         </p>
@@ -346,6 +354,7 @@ function ReadFileComp({}: ReadFileCompProps = {}): React.JSX.Element {
       {/* ── Upload section ── */}
       <div className="flex flex-col items-center gap-2">
         <div
+          data-tour={`${anchor}-type`}
           className="flex items-center gap-2 text-purple-500 hover:text-purple-400 w-fit cursor-pointer text-sm"
           onClick={() => setIsExcel(!isExcel)}
         >
@@ -353,7 +362,7 @@ function ReadFileComp({}: ReadFileCompProps = {}): React.JSX.Element {
           {isExcel ? <PiMicrosoftExcelLogoFill size={18} /> : <BsFiletypeXml size={18} />}
         </div>
 
-        <div onClick={(e) => e.stopPropagation()}>
+        <div data-tour={`${anchor}-upload`} onClick={(e) => e.stopPropagation()}>
           <Upload {...uploadProps} disabled={isUploading}>
             <Button
               icon={<UploadOutlined />}
@@ -389,11 +398,12 @@ function ReadFileComp({}: ReadFileCompProps = {}): React.JSX.Element {
         )}
 
         <div
+          data-tour={`${anchor}-template`}
           className="flex items-center gap-1 cursor-pointer text-purple-400 hover:text-purple-300 hover:underline text-xs"
           onClick={handleDownloadTemplate}
         >
           <MdFormatAlignLeft size={16} />
-          <span className="inline-flex items-center gap-1.5"><span>{isDownloading ? t("web.generating.template") : t("web.download.format")}</span><InfoTip info={APP_INFO.plantilla} /></span>
+          <span className="inline-flex items-center gap-1.5"><span>{isDownloading ? t("web.generating.template") : t("web.download.format")}</span><span aria-hidden="true" className="mx-2 inline-block h-5 w-px shrink-0 align-middle bg-purple-300/40" /><InfoTip info={APP_INFO.plantilla} /></span>
         </div>
       </div>
 
@@ -403,6 +413,7 @@ function ReadFileComp({}: ReadFileCompProps = {}): React.JSX.Element {
       {/* ── Remove Duplicates section ── */}
       <div className="flex flex-col items-center gap-2">
         <button
+          data-tour={`${anchor}-dedupe`}
           onClick={() => { setShowDedup(!showDedup); setDedupResult(null); setDedupPreview(null); }}
           className="flex items-center gap-2 text-sm text-gf-text-muted hover:text-purple-500 transition-colors cursor-pointer"
         >
@@ -412,12 +423,12 @@ function ReadFileComp({}: ReadFileCompProps = {}): React.JSX.Element {
 
         {showDedup && (
           <div className="flex flex-col items-center gap-3 w-full">
-            <p className="text-xs text-gf-text-muted text-center max-w-[280px] leading-relaxed">
+            <p data-tour={`${anchor}-dedupe-intro`} className="text-xs text-gf-text-muted text-center max-w-[280px] leading-relaxed">
               {tr("movements.dup.intro1")} <b>{tr("movements.dup.word.date")}</b>, <b>{tr("movements.dup.word.name")}</b>, <b>{tr("movements.dup.word.amount")}</b> {tr("movements.dup.word.and")} <b>{tr("movements.dup.word.currency")}</b> {tr("movements.dup.intro2")}
             </p>
 
             {/* Toggle delete mode */}
-            <div className="flex items-center gap-2 bg-gf-surface-2 rounded-full p-1 text-xs select-none">
+            <div data-tour={`${anchor}-dedupe-mode`} className="flex items-center gap-2 bg-gf-surface-2 rounded-full p-1 text-xs select-none">
               <button
                 onClick={() => setDedupDeleteAll(false)}
                 className={`px-3 py-1 rounded-full transition-colors ${
@@ -445,7 +456,7 @@ function ReadFileComp({}: ReadFileCompProps = {}): React.JSX.Element {
                 : t("web.one.record.is.always.kept.per.group.only.the.extra.copie")}
             </p>
 
-            <div onClick={(e) => e.stopPropagation()}>
+            <div data-tour={`${anchor}-dedupe-upload`} onClick={(e) => e.stopPropagation()}>
               <Upload {...dedupProps}>
                 <Button
                   icon={<MdOutlineCleaningServices size={14} />}

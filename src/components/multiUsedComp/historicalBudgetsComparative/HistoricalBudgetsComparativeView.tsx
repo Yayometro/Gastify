@@ -3,16 +3,16 @@
 import React from "react";
 
 import { InfoTip } from "@/components/multiUsedComp/InfoTip";
-import { Skeleton, Tooltip } from "antd";
+import { Skeleton } from "antd";
 import SelecterFilter, { type SelecterPeriod } from "@/components/Filters/selecterFilter/SelecterFilter";
 import TimeRange from "@/components/Filters/timeRange/TimeRange";
-import UniversalCategoIcon from "../UniversalCategoIcon";
 import EmptyModule from "../EmptyModule";
 import { getDateInYearMonthDay } from "@gastify/core/time/timeFunctions";
 import BudgetHistoricalComparativeRow from "./BudgetHistoricalComparativeRow";
 import type { BudgetHistoricalComparativeRowData } from "@/helpers/transformers/budgetHistoricalComparative";
 import type { TimePeriodOption } from "@/hooks/usePeriodComparison";
 import { useT, useInfo } from "@/i18n/client";
+import TutorialTip from "@/components/tour/TutorialTip";
 
 export interface HistoricalBudgetsComparativeViewProps {
   rows: BudgetHistoricalComparativeRowData[];
@@ -40,8 +40,8 @@ function HistoricalBudgetsComparativeView({
   const t = useT();
   return (
     <div className="w-full h-full">
-      <div className="flex items-center gap-2"><h1 className="text-3xl text-purple-300">{t("budgets.comparative.title")}</h1><InfoTip info={APP_INFO.presupuestos_del_periodo} /></div>
-      <div className="filters flex flex-col justify-center items-center">
+      <div className="flex items-center justify-center gap-2"><h1 className="text-3xl text-center text-purple-300">{t("budgets.comparative.title")}</h1><span aria-hidden="true" className="mx-2 inline-block h-5 w-px shrink-0 align-middle bg-purple-300/40" /><InfoTip info={APP_INFO.presupuestos_del_periodo} /><TutorialTip tour="hisBudgets" label={t("tour.hisBudgets.name")} /></div>
+      <div className="filters flex flex-col justify-center items-center" data-tour="his-bud-filters">
         <span className="text-xs">
           {tr("budgets.from")}{" "}
           <b>
@@ -51,11 +51,6 @@ function HistoricalBudgetsComparativeView({
           <b>{!timePeriod[1] ? tr("web.no.time.selected") : getDateInYearMonthDay(timePeriod[1])}</b>
         </span>
         <div className="filters w-full h-full flex items-center justify-center flex-wrap gap-2">
-          <Tooltip title={t("budgets.comparative.help")}>
-            <div className="text-gf-text w-[10px]">
-              <UniversalCategoIcon type="fa/FaRegQuestionCircle" siz={15} />
-            </div>
-          </Tooltip>
           <SelecterFilter
             getValue={getValueFromSelecter}
             periodOverride={timePeriodsForSelecter as SelecterPeriod[]}
@@ -71,7 +66,7 @@ function HistoricalBudgetsComparativeView({
       ) : rows.length === 0 ? (
         <EmptyModule emMessage={t("budgets.comparative.none")} />
       ) : (
-        <div className="flex flex-col gap-2 mt-3">
+        <div className="flex flex-col gap-2 mt-3" data-tour="his-bud-list">
           {rows.map((row) => (
             <BudgetHistoricalComparativeRow
               key={row.budget._id as React.Key}

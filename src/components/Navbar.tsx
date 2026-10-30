@@ -12,7 +12,7 @@ import { IoIosArrowUp } from "react-icons/io";
 import { FaMoneyBillTransfer } from "react-icons/fa6";
 import { FaMagnifyingGlassChart, FaWallet } from "react-icons/fa6";
 import { MdAutoGraph } from "react-icons/md";
-import { MdSavings } from "react-icons/md";
+import { MdFavorite, MdSavings } from "react-icons/md";
 import { IoAdd } from "react-icons/io5";
 import { MdAccountBalance } from "react-icons/md";
 import { BiSolidCategory } from "react-icons/bi";
@@ -23,6 +23,7 @@ import { useSelector } from "react-redux";
 import type { RootState } from "@/lib/store";
 import type { UserData } from "@/lib/features/userSlice";
 import AddTransactionModal from "./multiUsedComp/AddTransactionModal";
+import { isNavCurrent } from "./navCurrent";
 import NotificationsBell from "./multiUsedComp/NotificationsBell";
 import { FaHistory } from "react-icons/fa";
 import { useThemeMode } from "@/app/ThemeProvider";
@@ -65,10 +66,10 @@ function Navbar({ demoMode = false, demoThemeMode = "dark", onDemoCreate, onDemo
     if (!demoMode) return href;
     return href === "/dashboard" ? "/demo" : `/demo${href.slice("/dashboard".length)}`;
   };
-  const isActive = (href: string): boolean => {
-    const target = destination(href);
-    return target === "/demo" ? pathname === target : pathname === target || pathname.startsWith(`${target}/`);
-  };
+  // A tab is current on its own page and on the pages under it (/dashboard/budgets/x is Budgets). The wallet is the home of the
+  // section: it is current on that page only, never on the pages below it (a prefix match made it current everywhere).
+  const sectionHome = destination("/dashboard");
+  const isActive = (href: string): boolean => isNavCurrent(pathname, destination(href), sectionHome);
   const navItemClass = (href: string): string => `gf-nav-item ${isActive(href) ? "gf-nav-active" : ""}`;
   // "You are here" for the page the person is on, nothing for the rest.
   const here = (href: string): string | null => (isActive(href) ? t("navbar.youAreHere") : null);
@@ -92,14 +93,15 @@ function Navbar({ demoMode = false, demoThemeMode = "dark", onDemoCreate, onDemo
   const themeMode = demoMode ? demoThemeMode : mode;
 
   return (
-    <nav className={`navbar w-full fixed flex flex-col items-center justify-center bottom-0 md:w-fit md:fixed md:top-0 z-[1000] ${demoMode ? "demo-navbar" : ""}`}>
+    <nav data-tour="nav-bar" className={`navbar w-full fixed flex flex-col items-center justify-center bottom-0 md:w-fit md:fixed md:top-0 z-[1000] ${demoMode ? "demo-navbar" : ""}`}>
       <ul
         className={`nav-full pt-8 pb-12 -mb-6 w-[93%] flex flex-col items-center justify-center gap-4 gf-nav-surface z-[1001] rounded-t-[50px] text-center text-gf-text md:w-fit md:flex md:h-[95vh] md:inset-0  md:mb-0 md:rounded-3xl md:ml-2 md:justify-between shadow-xl ${
           toggleNav ? "is-open" : "hidden"
         }`}
       >
         <li className="flex flex-row items-center justify-center micro-pulse sm:px-2">
-          <Link href={destination("/dashboard")} aria-current={isActive("/dashboard") ? "page" : undefined}>
+          {/* The brand links to the wallet but is not a tab: it carries no current-page mark. */}
+          <Link href={destination("/dashboard")}>
             <Image
               className="m-auto h-[56px] w-[56px] sm:h-[44px] sm:w-[44px]"
               src={themeMode === "dark" ? "/brand/gastify-icon-g-dolar-white.svg" : "/brand/gastify-icon-g-dolar-black.svg"}
@@ -139,9 +141,9 @@ function Navbar({ demoMode = false, demoThemeMode = "dark", onDemoCreate, onDemo
             <NavTooltip label={t("navbar.analyzer")} hint={t("navbar.hint.analyzer")} here={here("/dashboard/analyzer")} />
           </Link>
         </li>
-        <li >
+        <li data-tour="nav-add">
           <div className="add-more sm:flex micro-pulse">
-              <button type="button" onClick={toogleAddTrans} aria-label={t("navbar.addTransaction")} className="gf-glass-fab w-[50px] h-[50px]">
+              <button type="button" data-tour="nav-add-button" onClick={toogleAddTrans} aria-label={t("navbar.addTransaction")} className="gf-glass-fab w-[50px] h-[50px]">
                 <IoAdd size={30} />
               </button>
               <NavTooltip hidden label={t("navbar.addTransaction")} hint={t("navbar.hint.addTransaction")} />
@@ -169,17 +171,26 @@ function Navbar({ demoMode = false, demoThemeMode = "dark", onDemoCreate, onDemo
             <NavTooltip label={t("navbar.categories")} hint={t("navbar.hint.categories")} here={here("/dashboard/categories")} />
           </Link>
         </li>
-        <li className="gf-nav-item">
-          <button onClick={demoMode ? onDemoThemeToggle : toggleMode} type="button" aria-label={t("navbar.toggleTheme")}>
-            {themeMode === "dark" ? (
-              <MdLightMode size={26} className="hidden sm:inline" />
-            ) : (
-              <MdDarkMode size={26} className="hidden sm:inline" />
-            )}
-            <NavTooltip label={themeMode === "dark" ? t("web.light.mode") : t("web.dark.mode")} hint={t("navbar.hint.theme")} />
-          </button>
+        <li className={navItemClass("/dashboard/people")}>
+          <Link href={destination("/dashboard/people")} aria-current={isActive("/dashboard/people") ? "page" : undefined}>
+            <MdFavorite size={28} className="hidden sm:inline" />
+            <NavTooltip label={t("navbar.people")} hint={t("navbar.hint.people")} here={here("/dashboard/people")} />
+          </Link>
         </li>
-        <li className="gf-nav-item">
+        {/* The theme switch and the tutorial live in the profile (the bar ran out of room). The public demo has no profile, so it keeps the switch here. */}
+        {demoMode && (
+          <li className="gf-nav-item" data-tour="nav-theme">
+            <button onClick={onDemoThemeToggle} type="button" aria-label={t("navbar.toggleTheme")}>
+              {themeMode === "dark" ? (
+                <MdLightMode size={26} className="hidden sm:inline" />
+              ) : (
+                <MdDarkMode size={26} className="hidden sm:inline" />
+              )}
+              <NavTooltip label={themeMode === "dark" ? t("web.light.mode") : t("web.dark.mode")} hint={t("navbar.hint.theme")} />
+            </button>
+          </li>
+        )}
+        <li className="gf-nav-item" data-tour="nav-notifications">
           {demoMode ? (
             <button type="button" aria-label={demoNotificationCount > 0 ? t("shared.demo.unreadNotifications", { p1: demoNotificationCount }) : t("navbar.notifications")} onClick={onDemoNotifications} className="demo-navbar-notification-button relative inline-flex items-center">
               <IoNotificationsOutline size={28} className="hidden sm:inline" />
@@ -188,7 +199,7 @@ function Navbar({ demoMode = false, demoThemeMode = "dark", onDemoCreate, onDemo
             </button>
           ) : <NotificationsBell />}
         </li>
-        <li className="flex flex-row items-center justify-center micro-pulse sm:px-2">
+        <li className="flex flex-row items-center justify-center micro-pulse sm:px-2" data-tour="nav-profile">
           <Link href={destination("/dashboard/profile")} aria-current={isActive("/dashboard/profile") ? "page" : undefined}>
             <Image
               className="rounded-full border-[1px] border-purple-500 m-auto w-[60px]  sm:w-[40px]"
@@ -203,42 +214,39 @@ function Navbar({ demoMode = false, demoThemeMode = "dark", onDemoCreate, onDemo
         </li>
       </ul>
       <ul className="gf-nav-surface text-gf-text mb-3 n-mobile w-[93%] flex flex-row justify-between py-2 px-3 items-center rounded-full shadow-xl z-[1002] fadeInUp md:hidden">
-        <li className="nb-li-btn">
+        <li className="nb-li-btn" data-tour="nav-menu">
           <button onClick={handleToggleNav} aria-label={toggleNav ? t("shared.demo.closeMenu") : t("shared.demo.openMenu")} aria-expanded={toggleNav}>
             <IoIosArrowUp size={20} />
           </button>
         </li>
         <li className={isActive("/dashboard/movements") ? "gf-nav-active" : ""}>
-          <Link href={destination("/dashboard/movements")} className={isActive("/dashboard/movements") ? "gf-nav-active" : ""}>
+          <Link href={destination("/dashboard/movements")} aria-current={isActive("/dashboard/movements") ? "page" : undefined} className={isActive("/dashboard/movements") ? "gf-nav-active" : ""}>
             <FaMoneyBillTransfer size={30} />
           </Link>
         </li>
         <li className={isActive("/dashboard/categories") ? "gf-nav-active" : ""}>
-          <Link href={destination("/dashboard/categories")} className={isActive("/dashboard/categories") ? "gf-nav-active" : ""}>
+          <Link href={destination("/dashboard/categories")} aria-current={isActive("/dashboard/categories") ? "page" : undefined} className={isActive("/dashboard/categories") ? "gf-nav-active" : ""}>
             <BiSolidCategory size={30} />
           </Link>
         </li>
-        <li className="demo-nav-mobile-create">
-              <button type="button" onClick={toogleAddTrans} aria-label={t("navbar.addTransaction")} className="gf-glass-fab w-[50px] h-[50px]">
+        <li className="demo-nav-mobile-create" data-tour="nav-add">
+              <button type="button" data-tour="nav-add-button" onClick={toogleAddTrans} aria-label={t("navbar.addTransaction")} className="gf-glass-fab w-[50px] h-[50px]">
                 <IoAdd size={30} />
               </button>
               <NavTooltip hidden label={t("navbar.addTransaction")} hint={t("navbar.hint.addTransaction")} />
-            {
-              (isAddTrans && !demoMode && <AddTransactionModal close={toogleAddTrans}/>)
-            }
         </li>
-        <li className={isActive("/dashboard/history") ? "gf-nav-active" : ""}>
-          <Link href={destination("/dashboard/history")} className={isActive("/dashboard/history") ? "gf-nav-active" : ""}>
+<li className={isActive("/dashboard/history") ? "gf-nav-active" : ""}>
+          <Link href={destination("/dashboard/history")} aria-current={isActive("/dashboard/history") ? "page" : undefined} className={isActive("/dashboard/history") ? "gf-nav-active" : ""}>
             <FaHistory size={25} />
           </Link>
         </li>
         <li className={isActive("/dashboard") ? "gf-nav-active" : ""}>
-          <Link href={destination("/dashboard")} className={isActive("/dashboard") ? "gf-nav-active" : ""}>
+          <Link href={destination("/dashboard")} aria-current={isActive("/dashboard") ? "page" : undefined} className={isActive("/dashboard") ? "gf-nav-active" : ""}>
             <FaWallet size={25} />
           </Link>
         </li>
-        <li className={isActive("/dashboard/profile") ? "gf-nav-active" : ""}>
-          <Link href={destination("/dashboard/profile")} className={isActive("/dashboard/profile") ? "gf-nav-active" : ""}>
+        <li className={isActive("/dashboard/profile") ? "gf-nav-active" : ""} data-tour="nav-profile">
+          <Link href={destination("/dashboard/profile")} aria-current={isActive("/dashboard/profile") ? "page" : undefined} className={isActive("/dashboard/profile") ? "gf-nav-active" : ""}>
             <Image
               className="rounded-full border-[1px] border-purple-500 m-auto w-[30px]  sm:w-[40px]"
               src={ccUser?.image || '/img/profile/user-non-profile.jpg'}

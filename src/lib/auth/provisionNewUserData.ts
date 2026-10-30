@@ -7,6 +7,7 @@ import Category from "@/model/Category";
 import SubCategory from "@/model/SubCategory";
 import Tag from "@/model/Tag";
 import Budget from "@/model/Budget";
+import { freshOnboarding } from "@gastify/core/tour/onboarding";
 
 export interface ProvisionUserParam {
   _id?: string | Types.ObjectId;
@@ -131,8 +132,9 @@ export async function provisionNewUserData(user: ProvisionUserParam): Promise<Pr
   // before the user's own first save) - so the wallet link is a follow-up
   // update instead.
   // User model (src/model/User.js) is unmigrated JS; cast to any resolves the union type callable signature mismatch from mongoose.models.User || mongoose.model(...)
+  // The new account also starts its tutorial record (accounts from before the tutorial have none, which is how they are told apart).
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  await (User as any).findByIdAndUpdate(userId, { wallet: savedWallet._id });
+  await (User as any).findByIdAndUpdate(userId, { wallet: savedWallet._id, onboarding: freshOnboarding() });
 
   return { wallet: savedWallet };
 }

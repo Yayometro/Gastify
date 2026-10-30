@@ -7,12 +7,13 @@ import fetcher from "@/helpers/fetcher";
 import { useDispatch } from "react-redux";
 import { addNewAccount, removeAccount, updateAccount } from "@/lib/features/accountsSlice";
 import { SUPPORTED_CURRENCIES, CURRENCY_META, currencyName } from "@gastify/core/money/currencies";
-import { BANKS, bankById } from "@gastify/core/banks/banks";
-import { MdVisibility, MdVisibilityOff } from "react-icons/md";
+import { bankCountryForCurrency } from "@gastify/core/banks/banks";
+import BankPicker from "./BankPicker";
 
-import { InfoTip } from "@/components/multiUsedComp/InfoTip";
+import TitleWithHelp from "@/components/multiUsedComp/TitleWithHelp";
 import { useT, useInfo, useLocale } from "@/i18n/client";
 
+import TutorialTip from "@/components/tour/TutorialTip";
 export type EditAccountModalMode = "edition" | "creation" | boolean | string | null | undefined;
 
 export interface EditAccountModalAccount {
@@ -70,8 +71,6 @@ function EditAccountModal({ eamMode, eamAccount, eamWallet, eamClose, eamInline 
     bankId: null,
     cardNumber: "",
   });
-  const [bankQuery, setBankQuery] = useState<string>("");
-  const [showNumber, setShowNumber] = useState<boolean>(false);
   const toFetch = fetcher();
   //REDUX
   const dispatch = useDispatch();
@@ -90,7 +89,7 @@ function EditAccountModal({ eamMode, eamAccount, eamWallet, eamClose, eamInline 
           accountType: eamAccount.accountType || "debit",
           currency: eamAccount.currency || "MXN",
           bankId: (eamAccount.bankId as string) || null,
-          cardNumber: (eamAccount.cardNumber as string) || "",
+          cardNumber: ((eamAccount.cardNumber as string) || "").slice(-4),
         });
       } else if (eamMode === "creation") {
         console.log(eamMode);
@@ -204,7 +203,7 @@ function EditAccountModal({ eamMode, eamAccount, eamWallet, eamClose, eamInline 
             } items-center justify-center`
       }
     >
-      <div className={eamInline ? "relative flex w-full max-w-[460px] flex-col" : "content gf-glass-violet flex flex-col w-[350px] h-[820px] max-h-[95vh] overflow-y-auto relative rounded-2xl items-center justify-center pt-[40px] overflow-hidden"}>
+      <div className={eamInline ? "relative flex w-full max-w-[800px] flex-col" : "content gf-glass-violet flex flex-col w-[min(92vw,640px)] h-[820px] max-h-[95vh] overflow-y-auto relative rounded-2xl items-center justify-center pt-[40px] overflow-hidden"}>
         <div
           className={`${
             isLoading ? "absolute" : "hidden"
@@ -213,22 +212,25 @@ function EditAccountModal({ eamMode, eamAccount, eamWallet, eamClose, eamInline 
           <Spin size="large" />
         </div>
         {!eamInline && (
-          <h1 className="text-center py-[20px] text-2xl text-white">
+          <h1 className="text-center py-[20px] text-2xl text-gf-text">
             {t("accounts.titlePrefix", { p1: eamMode === "edition" ? t("web.edit") : t("web.create") })}
+            <span aria-hidden="true" className="mx-2 inline-block h-5 w-px shrink-0 align-middle bg-purple-300/40" /><TutorialTip className="ml-0.5" tour="accForm" label={t("tour.accForm.name")} />
           </h1>
         )}
         <form
           onSubmit={handleSubmit}
+          data-tour="acc-form"
           className={eamInline ? "form-trans-edit flex w-full flex-col gap-2 items-start justify-start pb-2" : "form-trans-edit w-[100%] h-full flex flex-col gap-2 items-start justify-start px-10 rounded-t-[60px] pt-[30px] pb-20"}
         >
           {!eamInline && (
             <div
-              className="close-con absolute top-[0%] right-[0%] rounded-full gf-glass-card p-1.5 text-purple-100 hover:text-white transition-colors m-2 pulse-animation-short cursor-pointer"
+              className="close-con absolute top-[0%] right-[0%] rounded-full gf-glass-card p-1.5 text-purple-100 hover:text-gf-text transition-colors m-2 pulse-animation-short cursor-pointer"
               onClick={handleClose}
             >
               <CategoIcon type={"MdClose"} siz={20} />
             </div>
           )}
+          <div className="flex w-full flex-col items-start gap-2" data-tour="acc-form-name">
           <p className="label-tfp ">{t("accounts.form.name")}</p>
           <input
             type="text"
@@ -237,6 +239,8 @@ function EditAccountModal({ eamMode, eamAccount, eamWallet, eamClose, eamInline 
             onChange={handleChange}
             placeholder={t("accounts.form.accountName")}
           />
+          </div>
+          <div className="flex w-full flex-col items-start gap-2" data-tour="acc-form-balance">
           <p className="label-tfp ">{t("accounts.form.balance")}</p>
           <input
             type="number"
@@ -245,6 +249,8 @@ function EditAccountModal({ eamMode, eamAccount, eamWallet, eamClose, eamInline 
             onChange={handleChange}
             placeholder="0.00"
           />
+          </div>
+          <div className="flex w-full flex-col items-start gap-2" data-tour="acc-form-currency">
           <p className="label-tfp ">{t("accounts.form.currency")}</p>
           <Tooltip
             title={
@@ -253,82 +259,75 @@ function EditAccountModal({ eamMode, eamAccount, eamWallet, eamClose, eamInline 
                 : t("web.each.account.has.exactly.one.native.currency")
             }
           >
-            <div className="etm-selector bg-gf-surface text-gf-text w-full flex items-center justify-center px-[4px] py-[2px] text-center">
-              <select
-                className="bg-transparent appearance-none w-full pr-4"
-                name="currency"
-                value={formAccount.currency}
-                onChange={handleChange}
-                disabled={eamMode === "edition" && hasLinkedTransactions}
-              >
-                {SUPPORTED_CURRENCIES.map((code) => (
-                  <option key={code} value={code}>
-                    {code} ({CURRENCY_META[code].symbol}) - {currencyName(code, locale)}
-                  </option>
-                ))}
-              </select>
+            <div className="flex w-full flex-wrap gap-2" role="radiogroup" aria-label={t("accounts.form.currency")}>
+              {SUPPORTED_CURRENCIES.map((code) => {
+                const selected = formAccount.currency === code;
+                const locked = eamMode === "edition" && hasLinkedTransactions;
+                return (
+                  <button
+                    key={code}
+                    type="button"
+                    role="radio"
+                    aria-checked={selected}
+                    disabled={locked && !selected}
+                    title={currencyName(code, locale)}
+                    onClick={() => setFormAccount({ ...formAccount, currency: code })}
+                    className={`rounded-full border px-3 py-1.5 text-sm font-semibold transition-colors ${
+                      selected ? "border-purple-400 bg-purple-500/30 text-gf-text" : "border-white/15 bg-white/5 text-gf-text-muted hover:bg-white/10"
+                    } ${locked && !selected ? "cursor-not-allowed opacity-40" : ""}`}
+                  >
+                    {code} <span className="font-normal opacity-80">{CURRENCY_META[code].symbol}</span>
+                  </button>
+                );
+              })}
             </div>
           </Tooltip>
-          <p className="label-tfp ">{t("accounts.form.bank")}<InfoTip info={APP_INFO.banco_y_n_mero} /></p>
+          </div>
+          <div className="flex w-full flex-col items-start gap-2" data-tour="acc-form-bank">
+          <TitleWithHelp as="p" title={t("accounts.form.bank")} info={APP_INFO.banco_y_n_mero} titleClassName="label-tfp" />
+          <BankPicker country={bankCountryForCurrency(formAccount.currency)} value={formAccount.bankId || null} onChange={(id) => setFormAccount({ ...formAccount, bankId: id })} />
+          </div>
+          <div className="flex w-full flex-col items-start gap-2" data-tour="acc-form-number">
+          <p className="label-tfp ">{t("accounts.form.number")}</p>
           <input
             type="text"
-            value={bankQuery}
-            onChange={(e) => setBankQuery(e.target.value)}
-            placeholder={t("accounts.form.searchBank")}
+            inputMode="numeric"
+            name="cardNumber"
+            value={formAccount.cardNumber || ""}
+            onChange={(e) => setFormAccount({ ...formAccount, cardNumber: e.target.value.replace(/\D/g, "").slice(0, 4) })}
+            placeholder="1234"
+            maxLength={4}
+            autoComplete="off"
+            className="w-[140px]"
           />
-          <div className="etm-selector bg-gf-surface text-gf-text w-full flex items-center justify-center px-[4px] py-[2px] text-center">
-            <select
-              className="bg-transparent appearance-none w-full pr-4"
-              name="bankId"
-              value={formAccount.bankId || ""}
-              onChange={(e) => setFormAccount({ ...formAccount, bankId: e.target.value || null })}
-            >
-              <option value="">{t("accounts.form.noBank")}</option>
-              {BANKS.filter((b) => b.id === formAccount.bankId || !bankQuery.trim() || b.name.toLowerCase().includes(bankQuery.trim().toLowerCase())).map((b) => (
-                <option key={b.id} value={b.id}>
-                  {b.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          {bankById(formAccount.bankId) ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={`/banks/${formAccount.bankId}.webp`} alt="" className="bg-white rounded-xl p-1 w-10 h-10 object-contain" onError={(e) => ((e.target as HTMLImageElement).style.display = "none")} />
-          ) : null}
-          <p className="label-tfp ">{t("accounts.form.number")}</p>
-          <div className="flex items-center gap-2 w-full">
-            <input
-              type={showNumber ? "text" : "password"}
-              inputMode="numeric"
-              name="cardNumber"
-              value={formAccount.cardNumber || ""}
-              onChange={(e) => setFormAccount({ ...formAccount, cardNumber: e.target.value.replace(/[^\d\s-]/g, "") })}
-              placeholder={t("accounts.form.numberHelp")}
-              maxLength={23}
-              autoComplete="off"
-            />
-            <button type="button" className="text-white text-xl" onClick={() => setShowNumber((v) => !v)} aria-label={showNumber ? t("web.hide.number") : t("web.show.number")}>
-              {showNumber ? <MdVisibilityOff /> : <MdVisibility />}
-            </button>
-          </div>
           <p className="text-[10px] text-white/70">{t("accounts.form.numberSafety")}</p>
+          </div>
+          <div className="flex w-full flex-col items-start gap-2" data-tour="acc-form-type">
           <p className="label-tfp ">{t("accounts.form.type")}</p>
-          <div className="etm-selector bg-gf-surface text-gf-text w-full flex items-center justify-center px-[4px] py-[2px] text-center">
-            <select
-              className="bg-transparent appearance-none w-full pr-4"
-              name="accountType"
-              value={formAccount.accountType}
-              onChange={handleChange}
-            >
-              <option value="debit">{t("accounts.type.debit")}</option>
-              <option value="credit">{t("accounts.type.credit")}</option>
-              <option value="cash">{t("accounts.type.cash")}</option>
-              <option value="savings">{t("accounts.type.savings")}</option>
-            </select>
+          <div className="flex w-full flex-wrap gap-2" role="radiogroup" aria-label={t("accounts.form.type")}>
+            {(["debit", "credit", "cash", "savings"] as const).map((type) => {
+              const selected = formAccount.accountType === type;
+              return (
+                <button
+                  key={type}
+                  type="button"
+                  role="radio"
+                  aria-checked={selected}
+                  onClick={() => setFormAccount({ ...formAccount, accountType: type })}
+                  className={`rounded-full border px-4 py-1.5 text-sm font-semibold transition-colors ${
+                    selected ? "border-purple-400 bg-purple-500/30 text-gf-text" : "border-white/15 bg-white/5 text-gf-text-muted hover:bg-white/10"
+                  }`}
+                >
+                  {t(`accounts.type.${type}`)}
+                </button>
+              );
+            })}
+          </div>
           </div>
           {eamMode === "edition" ? (
             <button
               type="button"
+              data-tour="acc-form-delete"
               className="w-full p-2 gf-glass-button-danger text-white text-center rounded-full mt-2"
               onClick={() => handleDeletation()}
             >
@@ -341,6 +340,7 @@ function EditAccountModal({ eamMode, eamAccount, eamWallet, eamClose, eamInline 
           <button
             className="w-full p-2 gf-glass-button text-white text-center rounded-full mt-3"
             type="submit"
+            data-tour="acc-form-submit"
           >
             {isLoading ? <Spin /> : t("web.submit")}
           </button>

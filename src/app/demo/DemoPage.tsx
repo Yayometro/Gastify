@@ -2,6 +2,7 @@ import { I18nProvider } from "@/i18n/client";
 import { currentLocale, messagesFor } from "@/i18n/server";
 import { NAMESPACES } from "@gastify/core/i18n/catalogs";
 import DemoNavigation from "@/components/demo/DemoNavigation";
+import { TourProvider } from "@/components/tour/TourProvider";
 import DemoNoticeBar from "@/components/demo/DemoNoticeBar";
 import DemoWorkspace, { type DemoSection } from "./DemoWorkspace";
 import "./demo.css";
@@ -21,13 +22,15 @@ export default async function DemoPage({ section }: { section: DemoSection }): P
 
   return (
     <I18nProvider locale={locale} messages={messages}>
-      <div className="demo-app demo-actual-shell">
-        <DemoNavigation />
-        <div className="demo-main-column">
-          <DemoNoticeBar />
-          <DemoWorkspace section={section} />
+      <TourProvider>
+        <div className="demo-app demo-actual-shell">
+          <DemoNavigation />
+          <div className="demo-main-column">
+            <DemoNoticeBar />
+            <DemoWorkspace section={section} />
+          </div>
         </div>
-      </div>
+      </TourProvider>
     </I18nProvider>
   );
 }

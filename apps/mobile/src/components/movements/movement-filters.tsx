@@ -21,6 +21,7 @@ import { useT, useInfo } from "@/i18n/client";
 import type { TranslateFn } from "@gastify/core/i18n/translate";
 import { tNow } from '@/i18n/now';
 
+import { TourPressable, TourTarget } from '@/components/tour/tour-target';
 const READABLE = (t: TranslateFn): { id: ReadableFilter; label: string }[] => ([
   { id: 'all', label: t("mobile.todos") },
   { id: 'readable', label: t("mobile.legibles") },
@@ -74,20 +75,20 @@ export function MovementFiltersPanel({
   const accountItems: ChipItem[] = [{ id: '', label: t("mobile.todas") }, ...accounts.map((a) => ({ id: idOf(a), label: `${a.name} · ${a.currency}` }))];
 
   return (
-    <Card title={t("mobile.filtros")} info={APP_INFO.filtros}>
-      <TextField label={t("mobile.buscar")} value={filters.query} onChangeText={(text) => set('query', text)} onClear={() => set('query', '')} placeholder={t("mobile.nombre.categoria.etiqueta")} autoCorrect={false} />
+    <Card tour="m-mov-filters-panel" tutorial="m-mov-filters" title={t("mobile.filtros")} info={APP_INFO.filtros}>
+      <TourTarget id="m-mov-filters-search"><TextField label={t("mobile.buscar")} value={filters.query} onChangeText={(text) => set('query', text)} onClear={() => set('query', '')} placeholder={t("mobile.nombre.categoria.etiqueta")} autoCorrect={false} /></TourTarget>
 
-      <View className="gap-2">
+      <TourTarget id="m-mov-filters-type" className="gap-2">
         <Text className="font-inter-medium text-sm text-gf-text-muted">{t("mobile.tipo")}</Text>
         <ChipPicker items={TYPES(t)} value={filters.type} onChange={(id) => set('type', id as TypeFilter)} moreAfter={99} />
-      </View>
+      </TourTarget>
 
-      <View className="gap-2">
+      <TourTarget id="m-mov-filters-readable" className="gap-2">
         <Text className="font-inter-medium text-sm text-gf-text-muted">{t("mobile.legibilidad")}</Text>
         <ChipPicker items={READABLE(t)} value={filters.readable} onChange={(id) => set('readable', id as ReadableFilter)} moreAfter={99} />
-      </View>
+      </TourTarget>
 
-      <View className="gap-2">
+      <TourTarget id="m-mov-filters-category" className="gap-2">
         <Text className="font-inter-medium text-sm text-gf-text-muted">{t("mobile.categoria.y.subcategoria")}</Text>
         <CategoryPicker
           categories={categories}
@@ -95,14 +96,14 @@ export function MovementFiltersPanel({
           value={{ categoryId: filters.categoryId, subCategoryId: filters.subCategoryId }}
           onChange={(next) => onChange({ ...filters, categoryId: next.categoryId, subCategoryId: next.subCategoryId })}
         />
-      </View>
+      </TourTarget>
 
-      <View className="gap-2">
+      <TourTarget id="m-mov-filters-account" className="gap-2">
         <Text className="font-inter-medium text-sm text-gf-text-muted">{t("mobile.cuenta")}</Text>
         <ChipPicker items={accountItems} value={filters.accountId} onChange={(id) => set('accountId', id)} title={t("mobile.cuentas")} />
-      </View>
+      </TourTarget>
 
-      <View className="gap-2">
+      <TourTarget id="m-mov-filters-amount" className="gap-2">
         <TextField label={t("mobile.monto.exacto")} value={filters.exactAmount} onChangeText={(text) => set('exactAmount', text.replace(/[^0-9.,]/g, ''))} placeholder={t("mobile.por.ejemplo.250.00")} keyboardType="decimal-pad" />
         {filters.exactAmount.trim() !== '' && (
           <>
@@ -120,13 +121,13 @@ export function MovementFiltersPanel({
             )}
           </>
         )}
-      </View>
+      </TourTarget>
 
       <View className="gap-3 border-t border-gf-border pt-3">
-        <View className="flex-row items-center justify-between gap-3">
+        <TourTarget id="m-mov-filters-duplicates" className="flex-row items-center justify-between gap-3">
           <Text className="flex-1 font-inter-medium text-base text-gf-text">{t("mobile.buscar.posibles.duplicados")}</Text>
           <GfSwitch value={duplicatesOn} onValueChange={onDuplicatesChange} accessibilityLabel={t("mobile.buscar.duplicados")} />
-        </View>
+        </TourTarget>
         {duplicatesOn && (
           <DuplicateSubfilters
             draft={dupDraft}
@@ -140,9 +141,9 @@ export function MovementFiltersPanel({
         )}
       </View>
 
-      <Pressable accessibilityRole="button" onPress={() => onChange({ ...EMPTY_FILTERS, exactCurrency: filters.exactCurrency })} className="items-center py-1">
+      <TourPressable id="m-mov-filters-clear" accessibilityRole="button" onPress={() => onChange({ ...EMPTY_FILTERS, exactCurrency: filters.exactCurrency })} className="items-center py-1">
         <Text className="font-inter-semibold text-sm text-gf-text-muted">{t("mobile.limpiar.filtros")}</Text>
-      </Pressable>
+      </TourPressable>
     </Card>
   );
 }

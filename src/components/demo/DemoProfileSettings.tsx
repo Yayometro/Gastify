@@ -20,7 +20,7 @@ export default function DemoProfileSettings(): React.JSX.Element {
 
   return (
     <div className="mx-auto mt-5 grid w-full max-w-5xl gap-4 text-left">
-      <section className="rounded-3xl border border-purple-300/15 bg-black/10 p-4 sm:p-5" aria-labelledby="demo-preferences-title">
+      <section className="rounded-3xl border border-purple-300/15 bg-black/10 p-4 sm:p-5" aria-labelledby="demo-preferences-title" data-tour="prof-language">
         <div className="mb-4 flex items-start gap-3">
           <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-purple-200/15 bg-purple-300/10 text-purple-200"><IoSparklesOutline size={19} aria-hidden="true" /></span>
           <div><h2 id="demo-preferences-title" className="text-sm font-semibold text-white">{t("shared.demo.profileSettings.preferences")}</h2><p className="mt-1 text-xs leading-relaxed text-gf-text-muted">{t("shared.demo.profileSettings.preferencesHelp")}</p></div>
@@ -40,7 +40,7 @@ export default function DemoProfileSettings(): React.JSX.Element {
         <p className="mt-3 text-[10px] leading-relaxed text-gf-text-muted">{t("shared.demo.profileSettings.preferencePreview", { p1: t(countries.find((item) => item.code === country)?.key || countries[0].key), p2: currency })}</p>
       </section>
 
-      <section className="rounded-3xl border border-purple-300/15 bg-black/10 p-4 sm:p-5" aria-labelledby="demo-passkeys-title">
+      <section className="rounded-3xl border border-purple-300/15 bg-black/10 p-4 sm:p-5" aria-labelledby="demo-passkeys-title" data-tour="prof-passkeys">
         <div className="flex items-start gap-3">
           <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-emerald-200/15 bg-emerald-300/10 text-emerald-200"><IoKeyOutline size={19} aria-hidden="true" /></span>
           <div className="min-w-0 flex-1">
@@ -55,7 +55,7 @@ export default function DemoProfileSettings(): React.JSX.Element {
         <p className="mt-3 text-[10px] leading-relaxed text-gf-text-muted">{t("shared.demo.profileSettings.passkeysNote")}</p>
       </section>
 
-      <section className="rounded-3xl border border-purple-300/15 bg-black/10 p-4 sm:p-5" aria-labelledby="demo-tokens-title">
+      <section className="rounded-3xl border border-purple-300/15 bg-black/10 p-4 sm:p-5" aria-labelledby="demo-tokens-title" data-tour="prof-ai">
         <div className="flex items-start gap-3">
           <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-amber-200/15 bg-amber-300/10 text-amber-100"><IoKeyOutline size={19} aria-hidden="true" /></span>
           <div className="min-w-0 flex-1">

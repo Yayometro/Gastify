@@ -169,7 +169,7 @@ function BudgetBarRow({ budget, actual, onClick }: BudgetBarRowProps): React.JSX
       </div>
       <div className="w-full h-5 bg-gf-surface-2 rounded-full relative my-3">
         <div
-          className="h-full rounded-full transition-all"
+          className={`h-full rounded-full transition-all ${ratio >= 0.03 ? "gf-bar-energy" : ""} ${ratio > 1 ? "gf-bar-energy-fast" : ""}`}
           style={{ width: `${Math.min(Math.max(ratio * 100, 0), 100)}%`, background: gradient }}
         />
         <div

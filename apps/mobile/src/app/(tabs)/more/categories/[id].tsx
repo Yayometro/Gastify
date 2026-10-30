@@ -126,7 +126,7 @@ export default function EditCategoryScreen() {
   };
 
   return (
-    <Screen title={category.name || t("dashboard.bulk.category")} backLabel={t("mobile.categorias")} onBack={back}>
+    <Screen tutorial="m-catform" title={category.name || t("dashboard.bulk.category")} backLabel={t("mobile.categorias")} onBack={back}>
       <CategoryForm
         key={id}
         initial={{ name: category.name ?? '', icon: category.icon ?? 'fluent/label', color: category.color ?? '#F57C00' }}

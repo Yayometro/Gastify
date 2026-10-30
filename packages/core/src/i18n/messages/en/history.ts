@@ -28,6 +28,7 @@ const en: Record<keyof typeof history, string> = {
   "history.nothingMonth": "Nothing this month",
   "history.noCompare": "No items to compare for this period.",
   "history.title": "Transactions history",
+  "history.projections.seeAll": "See all projections →",
   "history.loadingOld": "Loading your oldest transactions… the numbers for this period will fill in on their own."
 };
 

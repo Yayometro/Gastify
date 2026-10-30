@@ -135,18 +135,21 @@ function CategoryTransitionChip({ transaction, suggestion }: CategoryTransitionC
 interface SuggestionEntryProps {
   entry: CategorySuggestionEntry;
   selected: boolean;
+  // The first row carries the guided tutorial's anchors (the other rows look the same).
+  first: boolean;
   onToggle: (id: string) => void;
   onEdit: (transaction: SuggestionTransaction) => void;
   onDelete: (transactionId?: string) => void;
 }
 
-function SuggestionEntry({ entry, selected, onToggle, onEdit, onDelete }: SuggestionEntryProps): React.JSX.Element {
+function SuggestionEntry({ entry, selected, first, onToggle, onEdit, onDelete }: SuggestionEntryProps): React.JSX.Element {
   const t = useT();
   const id = String(entry.transaction._id);
   return (
     <div className={`flex items-center gap-2 transition-opacity ${selected ? "" : "opacity-40"}`}>
       <input
         type="checkbox"
+        data-tour={first ? "tools-check" : undefined}
         checked={selected}
         onChange={() => onToggle(id)}
         className="gf-checkbox-round"
@@ -154,17 +157,18 @@ function SuggestionEntry({ entry, selected, onToggle, onEdit, onDelete }: Sugges
       />
 
       <div className="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 sm:border sm:border-gf-border sm:rounded-2xl sm:p-2">
-        <div className="w-full sm:w-1/2 min-w-0">
+        <div data-tour={first ? "tools-movement" : undefined} className="w-full sm:w-1/2 min-w-0">
           <TypedTransactionItemList
             movement={entry.transaction}
             handleEdit={() => onEdit(entry.transaction)}
             handleDelete={() => onDelete(entry.transaction._id)}
+            actionsTour={first ? "tools-actions" : undefined}
           />
         </div>
 
         <div className="hidden sm:block w-px self-stretch bg-gf-surface-2 shrink-0" />
 
-        <div className="w-full sm:w-1/2 min-w-0">
+        <div data-tour={first ? "tools-chip" : undefined} className="w-full sm:w-1/2 min-w-0">
           <CategoryTransitionChip transaction={entry.transaction} suggestion={entry.suggestion} />
         </div>
       </div>
@@ -196,6 +200,8 @@ function SuggestionsList({ suggestions: initialSuggestions, onConfirm, onCancel,
   const [deselected, setDeselected] = useState<Set<string>>(new Set());
   const [editingTrans, setEditingTrans] = useState<EditSingleTransItem | null>(null);
   const [editKey, setEditKey] = useState<number>(0);
+  // Modal.useModal reads the app's theme; the static Modal.confirm does not (it came out white in dark mode).
+  const [modal, modalContextHolder] = Modal.useModal();
   const dispatch = useDispatch<AppDispatch>();
   const toFetch = fetcher();
 
@@ -225,7 +231,7 @@ function SuggestionsList({ suggestions: initialSuggestions, onConfirm, onCancel,
   };
 
   const handleDelete = (transactionId?: string) => {
-    Modal.confirm({
+    modal.confirm({
       title: t("movements.delete.confirm"),
       content: t("web.are.you.sure.you.want.to.remove.this.transaction"),
       okText: t("web.yes.delete"),
@@ -275,10 +281,11 @@ function SuggestionsList({ suggestions: initialSuggestions, onConfirm, onCancel,
   return (
     <div className="flex flex-col gap-5">
       <div className="flex flex-col gap-4">
-        {items.map((entry) => (
+        {items.map((entry, index) => (
           <SuggestionEntry
             key={String(entry.transaction._id)}
             entry={entry}
+            first={index === 0}
             selected={!deselected.has(String(entry.transaction._id))}
             onToggle={toggle}
             onEdit={handleEdit}
@@ -287,7 +294,7 @@ function SuggestionsList({ suggestions: initialSuggestions, onConfirm, onCancel,
         ))}
       </div>
 
-      <p className="text-xs text-center text-gf-text-muted bg-gf-surface-2 rounded-xl py-2 px-3">
+      <p data-tour="tools-footer" className="text-xs text-center text-gf-text-muted bg-gf-surface-2 rounded-xl py-2 px-3">
         {effective.length > 0
           ? `${effective.length} transaction${effective.length !== 1 ? "s" : ""} will be categorized.`
           : t("web.all.items.unchecked.nothing.will.change")}
@@ -304,6 +311,7 @@ function SuggestionsList({ suggestions: initialSuggestions, onConfirm, onCancel,
           </button>
         )}
         <button
+          data-tour="tools-apply"
           onClick={handleConfirm}
           disabled={confirming || effective.length === 0}
           className="flex items-center gap-2 px-5 py-2 rounded-full text-sm font-medium gf-glass-button text-white"
@@ -318,6 +326,7 @@ function SuggestionsList({ suggestions: initialSuggestions, onConfirm, onCancel,
         </button>
       </div>
 
+      {modalContextHolder}
       {editingTrans && (
         <EditSingleTransModal key={editKey} trans={editingTrans} onClose={handleEditClose} />
       )}

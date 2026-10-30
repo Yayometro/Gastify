@@ -10,8 +10,9 @@ import InsightDetailModal from "./InsightDetailModal";
 import type { TransactionData } from "@/lib/features/transacctionsSlice";
 import type { WalletAnalyzerInsightItem } from "./WalletAnalyzerView";
 
-import { InfoTip } from "@/components/multiUsedComp/InfoTip";
-import { useT, useInfo, useWalletText } from "@/i18n/client";
+import TutorialTip from "@/components/tour/TutorialTip";
+import type { ComponentTourId } from "@gastify/core/tour/tourSteps";
+import { useT, useWalletText } from "@/i18n/client";
 
 // Typed bridge for unmigrated ModalContentTopMonthItem
 
@@ -110,6 +111,10 @@ export interface WalletAnalyzerInsightsStripProps {
   transactions?: TransactionData[];
   currentRange?: { start: Date | string; end: Date | string } | null;
   title?: string;
+  // The tutorial of this card, when the screen that shows it has one (the compass button next to the title).
+  tutorial?: ComponentTourId;
+  // The explanation next to the title (the strip's own by default), and an action at the right end of that title row.
+  action?: React.ReactNode;
 }
 
 // Card one-liners are rendered here (not baked into the transformer)
@@ -167,9 +172,10 @@ function WalletAnalyzerInsightsStrip({
   transactions,
   currentRange,
   title: titleProp,
+  tutorial,
+  action,
 }: WalletAnalyzerInsightsStripProps): React.JSX.Element {
   const text = useWalletText();
-  const { APP_INFO } = useInfo();
   const t = useT();
   const title = titleProp ?? t("web.highlights.of.the.month");
   const { close, handleClose, renderModal, modalContent } = useModal();
@@ -196,15 +202,16 @@ function WalletAnalyzerInsightsStrip({
 
   return (
     <div className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5">
-      <div className="mb-0.5 flex items-center gap-1.5"><p className="text-[15px] font-extrabold text-gf-text">{title}</p><InfoTip info={APP_INFO.lo_m_s_destacado} /></div>
+      <div className="mb-0.5 flex flex-wrap items-center gap-x-2 gap-y-1"><p className="text-[15px] font-extrabold text-gf-text">{title}</p>{tutorial && (<><span aria-hidden="true" className="mx-2 inline-block h-5 w-px shrink-0 align-middle bg-purple-300/40" /><TutorialTip tour={tutorial} label={t(`tour.${tutorial}.name`)} /></>)}{action ? <div className="ml-auto">{action}</div> : null}</div>
       <p className="text-xs text-gf-text-muted mb-4">{t("analyzer.projections.method")}</p>
       {insights.length === 0 ? (
         <p className="text-xs text-gf-text-muted">{t("analyzer.unusualNone")}</p>
       ) : (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3" data-tour="ana-insight-cards">
           {insights.map((insight, i) => (
             <div
               key={i}
+              data-tour={i === 0 ? "ana-insight-first" : undefined}
               onClick={() => openInsight(insight)}
               role="button"
               tabIndex={0}

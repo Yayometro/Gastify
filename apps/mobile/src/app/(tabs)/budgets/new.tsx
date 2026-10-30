@@ -12,7 +12,7 @@ import { sendWrite } from '@/lib/write';
 import type { AppDispatch } from '@/store';
 import { emptyBudgetValues, type BudgetKind } from '@gastify/core/budgets/budgetForm';
 import { idOf } from '@gastify/core/categories/categoryForm';
-import { useT } from '@/i18n/client';
+import { useT, useInfo } from '@/i18n/client';
 import { tNow } from '@/i18n/now';
 
 // The title of each kind of new budget: a catalog key, read when the screen is shown.
@@ -20,6 +20,7 @@ const TITLE_KEYS: Record<BudgetKind, string> = { spending: "budgets.new", saving
 
 export default function NewBudgetScreen() {
   const t = useT();
+  const { APP_INFO } = useInfo();
   const { kind: rawKind, categoryId } = useLocalSearchParams<{ kind?: string; categoryId?: string }>();
   const kind: BudgetKind = rawKind === 'saving' || rawKind === 'project' ? rawKind : 'spending';
   const dispatch = useDispatch<AppDispatch>();
@@ -33,7 +34,7 @@ export default function NewBudgetScreen() {
     initial.categoryIds = [idOf(category)];
   }
   return (
-    <Screen title={tNow(TITLE_KEYS[kind])} backLabel={t("budgets.title")} onBack={() => router.back()}>
+    <Screen tutorial="m-budform" titleInfo={APP_INFO.formulario_presupuesto} title={tNow(TITLE_KEYS[kind])} backLabel={t("budgets.title")} onBack={() => router.back()}>
       <BudgetForm
         initial={initial}
         submitLabel={t("mobile.crear")}

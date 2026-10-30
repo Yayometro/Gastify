@@ -15,6 +15,7 @@ import {
   type TreemapNode,
   type TreemapNodeKind,
 } from "./CategoryTreemap";
+import { ROOT_ID, ownerKeys, rootNode, type RingNode } from "./breakdownRingNodes";
 
 // The three charts of the card's "Resumen de transacciones", driven the way the phone's are. Each one draws only the level the
 // card's path has opened (`slices`, as drillView gives them). A tap reports the key of the slice tapped through `onSelect`; a
@@ -34,20 +35,6 @@ export interface BreakdownChartProps {
   onBack: () => void;
 }
 
-// The root the rings and the bubbles hang from. It is the centre, not a slice: tapping it goes back up.
-const ROOT_ID = "__breakdown_root__";
-const ROOT_COLOR = "#6b21a8";
-
-interface RingNode {
-  id: string;
-  name: string;
-  color: string;
-  // A movement (the deepest level): the bubbles draw it in a darker shade of its category's colour.
-  movement: boolean;
-  value?: number;
-  children?: RingNode[];
-}
-
 // A darker shade of a #rrggbb colour, so a movement reads apart from the subcategory it sits in (both can share a colour).
 function darkerShade(color: string, amount = 0.3): string {
   const match = /^#([0-9a-f]{6})$/i.exec(color);
@@ -55,35 +42,6 @@ function darkerShade(color: string, amount = 0.3): string {
   const value = parseInt(match[1], 16);
   const channel = (shift: number) => Math.round(((value >> shift) & 0xff) * (1 - amount));
   return `#${[16, 8, 0].map((shift) => channel(shift).toString(16).padStart(2, "0")).join("")}`;
-}
-
-// Parents take the sum of their children, so only the leaves carry a value of their own. `level` is the level the slice sits at.
-function toRingNode(slice: BreakdownSlice, level: number): RingNode {
-  const isLeaf = slice.children.length === 0;
-  return {
-    id: slice.key,
-    name: slice.name,
-    color: slice.color,
-    movement: level === 2,
-    value: isLeaf ? slice.value : undefined,
-    children: slice.children.map((child) => toRingNode(child, level + 1)),
-  };
-}
-
-function rootNode(title: string, slices: BreakdownSlice[], level: number): RingNode {
-  return { id: ROOT_ID, name: title, color: ROOT_COLOR, movement: false, children: slices.map((slice) => toRingNode(slice, level)) };
-}
-
-// Every slice of this level, and every slice inside it, points at the slice of this level it belongs to: a tap anywhere in a
-// category's rings opens that category, the same as on the phone.
-function ownerKeys(slices: BreakdownSlice[]): Map<string, string> {
-  const owner = new Map<string, string>();
-  const visit = (slice: BreakdownSlice, top: string) => {
-    owner.set(slice.key, top);
-    slice.children.forEach((child) => visit(child, top));
-  };
-  slices.forEach((slice) => visit(slice, slice.key));
-  return owner;
 }
 
 function tapHandler(owner: Map<string, string>, zoomed: boolean, onSelect: (key: string) => void, onBack: () => void) {

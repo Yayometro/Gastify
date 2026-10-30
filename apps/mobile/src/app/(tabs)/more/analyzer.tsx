@@ -7,6 +7,7 @@ import { DetailSheet } from '@/components/analyzer/detail-sheet';
 import { localMonthLabel } from '@/lib/month-label';
 import { CategoryDetailSheet } from '@/components/category-detail-sheet';
 import { Explain, Indicator } from '@/components/analyzer/sheets';
+import { AnalyzerAccounts } from '@/components/analyzer/accounts-analysis';
 import { AnalyzerBiggest, AnalyzerBudgets, AnalyzerFxExposure, AnalyzerHighlights, AnalyzerProjection, AnalyzerWeekday } from '@/components/analyzer/supplement';
 import { CategoryBadge } from '@/components/category-badge';
 import { RankedRow } from '@/components/ui/ranked-row';
@@ -29,6 +30,7 @@ import { tNow } from '@/i18n/now';
 import { shortDate } from '@gastify/core/i18n/dates';
 import { currentLocale } from '@/i18n/now';
 
+import { TourPressable, TourTarget } from '@/components/tour/tour-target';
 type Detail =
   | { kind: 'month'; label: string; income: number; expense: number; count: number; previous: { label: string; income: number; expense: number; count: number } | null }
   | { kind: 'category'; name: string; icon?: string; color?: string; current: number; previous: number; changePct: number | null; period?: 'current' | 'previous' }
@@ -94,7 +96,9 @@ export default function AnalyzerScreen() {
 
   return (
     <Screen title={t("mobile.analizador.de.cartera")} subtitle={t("mobile.tus.numeros.del.mes.a")} backLabel={monthParam ? t("shared.start") : t("mobile.mas")} onBack={() => router.back()}>
-      <MonthSwitcher value={month} onChange={setMonth} latest={now} />
+      <TourTarget id="m-ana-month">
+        <MonthSwitcher value={month} onChange={setMonth} latest={now} />
+      </TourTarget>
       <AnalyzerHighlights snapshot={snapshot} currency={currency} />
       <AnalyzerProjection comparison={projection.comparison} loading={projection.loading} error={projection.error} missing={projection.missing} currency={currency} />
 
@@ -102,7 +106,7 @@ export default function AnalyzerScreen() {
         <>
           <View className="flex-row items-stretch gap-4">
             <PairedColumn>
-      <Card title={t("mobile.vs.el.mes.anterior")} info={APP_INFO.vs_el_mes_anterior}>
+      <Card tour="m-ana-compare" title={t("mobile.vs.el.mes.anterior")} info={APP_INFO.vs_el_mes_anterior}>
         <View className="flex-row items-center gap-2 pb-1">
           <Text className="flex-1 font-inter-semibold text-xs uppercase text-gf-text-muted"> </Text>
           <Text className="w-24 text-right font-inter-semibold text-xs uppercase text-gf-text-muted">{t("mobile.antes")}</Text>
@@ -125,7 +129,7 @@ export default function AnalyzerScreen() {
             </PairedColumn>
             <PairedColumn>
       <Pressable style={{ flexGrow: 1 }} accessibilityRole="button" onPress={() => setDetail({ kind: 'averages' })}>
-        <Card title={t("mobile.promedio.mensual")} info={APP_INFO.promedio_mensual(monthlyAverages.monthsCount)}>
+        <Card tour="m-ana-averages" title={t("mobile.promedio.mensual")} info={APP_INFO.promedio_mensual(monthlyAverages.monthsCount)}>
           <View className="flex-row justify-between gap-3">
             <View className="flex-1">
               <Text className="font-inter text-xs text-gf-text-muted">{t("mobile.ingresos")}</Text>
@@ -141,7 +145,7 @@ export default function AnalyzerScreen() {
             </View>
           </View>
           {wide && (
-            <View>
+            <TourTarget id="m-ana-trend-chart">
               <Text className="pb-1 font-inter-semibold text-xs uppercase text-gf-text-muted">{t("mobile.mes.por.mes")}</Text>
               {trend.map((item) => (
                 <View key={item.label} className="flex-row items-center gap-2 border-t border-gf-border py-2.5">
@@ -151,14 +155,14 @@ export default function AnalyzerScreen() {
                   <Text className="w-14 text-right font-inter text-sm text-gf-text-muted">{item.transactionCount}</Text>
                 </View>
               ))}
-            </View>
+            </TourTarget>
           )}
         </Card>
       </Pressable>
             </PairedColumn>
           </View>
-      <Card title={t("mobile.tendencia.de.6.meses")} info={APP_INFO.tendencia}>
-        <View className="flex-row items-end justify-between gap-2" style={{ height: barArea + 70 }}>
+      <Card tour="m-ana-trend" title={t("mobile.tendencia.de.6.meses")} info={APP_INFO.tendencia}>
+        <TourTarget id="m-ana-trend-chart" className="flex-row items-end justify-between gap-2" style={{ height: barArea + 70 }}>
           {trend.map((item) => (
             <Pressable
               key={item.label}
@@ -181,12 +185,12 @@ export default function AnalyzerScreen() {
               <Text className="font-inter text-[11px] text-gf-text-muted">{localMonthLabel(item.shortLabel ?? item.label.slice(0, 3))}</Text>
             </Pressable>
           ))}
-        </View>
+        </TourTarget>
       </Card>
         </>
       ) : (
         <>
-      <Card title={t("mobile.vs.el.mes.anterior")} info={APP_INFO.vs_el_mes_anterior_2}>
+      <Card tour="m-ana-compare" title={t("mobile.vs.el.mes.anterior")} info={APP_INFO.vs_el_mes_anterior_2}>
         <View className="flex-row items-center gap-2 pb-1">
           <Text className="flex-1 font-inter-semibold text-xs uppercase text-gf-text-muted"> </Text>
           <Text className="w-24 text-right font-inter-semibold text-xs uppercase text-gf-text-muted">{t("mobile.antes")}</Text>
@@ -206,8 +210,8 @@ export default function AnalyzerScreen() {
         ))}
         <Explain>{t("mobile.compara.el.mes.elegido.con")}</Explain>
       </Card>
-      <Card title={t("mobile.tendencia.de.6.meses")} info={APP_INFO.tendencia_2}>
-        <View className="flex-row items-end justify-between gap-2" style={{ height: barArea + 70 }}>
+      <Card tour="m-ana-trend" title={t("mobile.tendencia.de.6.meses")} info={APP_INFO.tendencia_2}>
+        <TourTarget id="m-ana-trend-chart" className="flex-row items-end justify-between gap-2" style={{ height: barArea + 70 }}>
           {trend.map((item) => (
             <Pressable
               key={item.label}
@@ -230,10 +234,10 @@ export default function AnalyzerScreen() {
               <Text className="font-inter text-[11px] text-gf-text-muted">{localMonthLabel(item.shortLabel ?? item.label.slice(0, 3))}</Text>
             </Pressable>
           ))}
-        </View>
+        </TourTarget>
       </Card>
       <Pressable style={{ flexGrow: 1 }} accessibilityRole="button" onPress={() => setDetail({ kind: 'averages' })}>
-        <Card title={t("mobile.promedio.mensual")} info={APP_INFO.promedio_mensual_2(monthlyAverages.monthsCount)}>
+        <Card tour="m-ana-averages" title={t("mobile.promedio.mensual")} info={APP_INFO.promedio_mensual_2(monthlyAverages.monthsCount)}>
           <View className="flex-row justify-between gap-3">
             <View className="flex-1">
               <Text className="font-inter text-xs text-gf-text-muted">{t("mobile.ingresos")}</Text>
@@ -255,11 +259,11 @@ export default function AnalyzerScreen() {
 
 
 
-      <Card title={t("mobile.topLabel", { p1: topN })} info={APP_INFO.analyzer(topN)}>
-        <ChipPicker items={TOP_SIZES.map((n) => ({ id: n, label: t("mobile.topLabel", { p1: n }) }))} value={topN} onChange={(id) => setTopN(id as (typeof TOP_SIZES)[number])} moreAfter={99} />
+      <Card tour="m-ana-top" title={t("mobile.topLabel", { p1: topN })} info={APP_INFO.analyzer(topN)}>
+        <TourTarget id="m-ana-top-size"><ChipPicker items={TOP_SIZES.map((n) => ({ id: n, label: t("mobile.topLabel", { p1: n }) }))} value={topN} onChange={(id) => setTopN(id as (typeof TOP_SIZES)[number])} moreAfter={99} /></TourTarget>
         {wide ? (
           <>
-            <View className="flex-row items-start gap-6">
+            <TourTarget id="m-ana-top-cats" className="flex-row items-start gap-6">
               <View className="flex-1 gap-3">
         <Text className="font-inter-semibold text-sm text-gf-text-muted">{t("mobile.categorias.mes.anterior")}</Text>
         {topCategoriesBillsPrevious.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.sin.gastos.el.mes.anterior")}</Text>}
@@ -278,7 +282,8 @@ export default function AnalyzerScreen() {
         {topCategoriesBills.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.sin.gastos.en.este.mes")}</Text>}
         {topCategoriesBills.map((category, index, list) => (
           <RankedRow key={`${index}-${String(category.name ?? '')}`} rank={index + 1} last={index === list.length - 1}>
-          <Pressable
+          <TourPressable
+            id={index === 0 ? "m-ana-top-row" : undefined}
             key={category.name}
             accessibilityRole="button"
             onPress={() => setDetail({ kind: 'category', name: category.name, icon: category.icon, color: category.color, current: category.current, previous: category.previous, changePct: category.changePct })}
@@ -291,12 +296,12 @@ export default function AnalyzerScreen() {
                 {category.isNew ? t("analyzer.badge.new") : pct(category.changePct)}
               </Text>
             </View>
-          </Pressable>
+          </TourPressable>
           </RankedRow>
         ))}
               </View>
-            </View>
-            <View className="flex-row items-start gap-6">
+            </TourTarget>
+            <TourTarget id="m-ana-top-txs" className="flex-row items-start gap-6">
               <View className="flex-1 gap-3">
         <Text className="font-inter-semibold text-sm text-gf-text-muted">{t("mobile.movimientos.mes.anterior")}</Text>
         {topTransactionsBills.previous.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.sin.gastos.el.mes.anterior")}</Text>}
@@ -326,10 +331,11 @@ export default function AnalyzerScreen() {
           </RankedRow>
         ))}
               </View>
-            </View>
+            </TourTarget>
           </>
         ) : (
           <>
+          <TourTarget id="m-ana-top-cats" className="gap-3">
         <Text className="font-inter-semibold text-sm text-gf-text-muted">{t("mobile.categorias.mes.anterior")}</Text>
         {topCategoriesBillsPrevious.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.sin.gastos.el.mes.anterior")}</Text>}
         {topCategoriesBillsPrevious.map((category, index, list) => (
@@ -345,7 +351,8 @@ export default function AnalyzerScreen() {
         {topCategoriesBills.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.sin.gastos.en.este.mes")}</Text>}
         {topCategoriesBills.map((category, index, list) => (
           <RankedRow key={`${index}-${String(category.name ?? '')}`} rank={index + 1} last={index === list.length - 1}>
-          <Pressable
+          <TourPressable
+            id={index === 0 ? "m-ana-top-row" : undefined}
             key={category.name}
             accessibilityRole="button"
             onPress={() => setDetail({ kind: 'category', name: category.name, icon: category.icon, color: category.color, current: category.current, previous: category.previous, changePct: category.changePct })}
@@ -358,9 +365,11 @@ export default function AnalyzerScreen() {
                 {category.isNew ? t("analyzer.badge.new") : pct(category.changePct)}
               </Text>
             </View>
-          </Pressable>
+          </TourPressable>
           </RankedRow>
         ))}
+          </TourTarget>
+          <TourTarget id="m-ana-top-txs" className="gap-3">
         <Text className="pt-2 font-inter-semibold text-sm text-gf-text-muted">{t("mobile.movimientos.mes.anterior")}</Text>
         {topTransactionsBills.previous.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.sin.gastos.el.mes.anterior")}</Text>}
         {topTransactionsBills.previous.map((tx, index, list) => (
@@ -386,6 +395,7 @@ export default function AnalyzerScreen() {
           </Pressable>
           </RankedRow>
         ))}
+          </TourTarget>
           </>
         )}
       </Card>
@@ -395,7 +405,7 @@ export default function AnalyzerScreen() {
 
       {subscriptions.length > 0 && (
         <Pressable accessibilityRole="button" onPress={() => setDetail({ kind: 'subscriptions' })}>
-          <Card title={t("mobile.pagos.recurrentes")} info={APP_INFO.pagos_recurrentes}>
+          <Card tour="m-ana-subs" title={t("mobile.pagos.recurrentes")} info={APP_INFO.pagos_recurrentes}>
             {subscriptions.slice(0, 4).map((sub) => (
               <View key={sub.name} className="flex-row items-center gap-3">
                 <CategoryBadge icon={sub.icon} color={sub.color} size={30} />
@@ -415,7 +425,7 @@ export default function AnalyzerScreen() {
           </PairedColumn>
           <PairedColumn>
       <Pressable style={{ flexGrow: 1 }} accessibilityRole="button" onPress={() => setDetail({ kind: 'pace' })}>
-        <Card title={t("mobile.ritmo.de.gasto")} action={<Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{t("mobile.ver.mas")}</Text>} info={APP_INFO.ritmo_de_gasto}>
+        <Card tour="m-ana-pace" title={t("mobile.ritmo.de.gasto")} action={<Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{t("mobile.ver.mas")}</Text>} info={APP_INFO.ritmo_de_gasto}>
           <Text className="font-inter-bold text-2xl text-gf-text">{money(pace.spentSoFar)}</Text>
           <Text className="font-inter text-sm text-gf-text-muted">
             {t("mobile.al.dia.p1.lo.normal", { p1: pace.dayOfMonth, p2: money(pace.avgPaceForSameDay), p3: pace.deltaPct !== null ? ` (${pct(pace.deltaPct)})` : '' })}
@@ -428,7 +438,7 @@ export default function AnalyzerScreen() {
         <>
       <AnalyzerFxExposure rows={fxExposure.rows} loading={fxExposure.loading} missing={fxExposure.missing} currency={currency} />
       <Pressable style={{ flexGrow: 1 }} accessibilityRole="button" onPress={() => setDetail({ kind: 'pace' })}>
-        <Card title={t("mobile.ritmo.de.gasto")} action={<Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{t("mobile.ver.mas")}</Text>} info={APP_INFO.ritmo_de_gasto_2}>
+        <Card tour="m-ana-pace" title={t("mobile.ritmo.de.gasto")} action={<Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{t("mobile.ver.mas")}</Text>} info={APP_INFO.ritmo_de_gasto_2}>
           <Text className="font-inter-bold text-2xl text-gf-text">{money(pace.spentSoFar)}</Text>
           <Text className="font-inter text-sm text-gf-text-muted">
             {t("mobile.al.dia.p1.lo.normal", { p1: pace.dayOfMonth, p2: money(pace.avgPaceForSameDay), p3: pace.deltaPct !== null ? ` (${pct(pace.deltaPct)})` : '' })}
@@ -438,6 +448,7 @@ export default function AnalyzerScreen() {
         </>
       )}
       <AnalyzerWeekday snapshot={snapshot} currency={currency} />
+      <AnalyzerAccounts snapshot={snapshot} currency={currency} />
 
       <CategoryDetailSheet
         visible={detail?.kind === 'category'}
@@ -503,7 +514,7 @@ export default function AnalyzerScreen() {
               <Text className="font-inter text-base text-gf-text">{t("mobile.movimientos.p1.al.mes", { p1: Math.round(monthlyAverages.avgTransactionCount) })}</Text>
             </View>
             <Explain>{t("mobile.promedio.de.p1.meses.los", { p1: monthlyAverages.monthsCount, p2: monthlyAverages.monthsCount })}</Explain>
-            <View>
+            <TourTarget id="m-ana-trend-chart">
               {trend.map((item) => (
                 <View key={item.label} className="flex-row items-center gap-2 border-t border-gf-border py-2.5">
                   <Text className="w-24 font-inter-medium text-sm text-gf-text">{localMonthLabel(item.label)}</Text>
@@ -512,7 +523,7 @@ export default function AnalyzerScreen() {
                   <Text className="w-10 text-right font-inter text-xs text-gf-text-muted">{item.transactionCount}</Text>
                 </View>
               ))}
-            </View>
+            </TourTarget>
           </>
         )}
         {detail?.kind === 'pace' && (

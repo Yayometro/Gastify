@@ -6,6 +6,7 @@ import { CategoryPicker } from '@/components/category-picker';
 import { ChipPicker, type ChipItem } from '@/components/chip-picker';
 import { DateField } from '@/components/date-field';
 import { Segmented } from '@/components/segmented';
+import { TourTarget } from '@/components/tour/tour-target';
 import { FormError } from '@/components/auth/auth-layout';
 import { GradientButton } from '@/components/ui/gradient-button';
 import { TextField } from '@/components/ui/text-field';
@@ -28,6 +29,7 @@ import {
   type MovementType,
   type MovementValues,
 } from '@gastify/core/transactions/movementForm';
+import { RecurringFields, NO_RECURRING, type RecurringChoice } from '@/components/recurring/recurring-fields';
 import { useT } from "@/i18n/client";
 import type { TranslateFn } from "@gastify/core/i18n/translate";
 import { tNow } from '@/i18n/now';
@@ -45,7 +47,9 @@ export type MovementFormProps = {
   // The add screen picks the type with its own control; the edit screen shows it here.
   hideType?: boolean;
   type?: MovementType;
-  onSubmit: (body: Record<string, unknown>) => Promise<void>;
+  // Only the add screen offers "recurring expense": the second argument says how it repeats when the person turned it on.
+  allowRecurring?: boolean;
+  onSubmit: (body: Record<string, unknown>, recurring?: RecurringChoice) => Promise<void>;
   onDelete?: () => void;
 };
 
@@ -53,7 +57,7 @@ export type MovementFormProps = {
 // live here: the body comes from core's buildMovementBody. Same fields as the web: name, amount in the
 // account's currency (optionally also what the merchant charged in another currency, with the rate
 // suggested), account, category, sub-category, budget, date and tags.
-export function MovementForm({ initial, submitLabel, hideType = false, type: fixedType, onSubmit, onDelete }: MovementFormProps) {
+export function MovementForm({ initial, submitLabel, hideType = false, type: fixedType, allowRecurring = false, onSubmit, onDelete }: MovementFormProps) {
   const t = useT();
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
@@ -74,6 +78,7 @@ export function MovementForm({ initial, submitLabel, hideType = false, type: fix
     merchantCurrency: initial?.merchantCurrency ?? 'USD',
     tags: initial?.tags ?? '',
   }));
+  const [recurring, setRecurring] = useState<RecurringChoice>(NO_RECURRING);
   const [errors, setErrors] = useState<MovementErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -149,7 +154,7 @@ export function MovementForm({ initial, submitLabel, hideType = false, type: fix
     const fallbackName = sub?.name || category?.name || t("errors.api.movement");
     setSubmitting(true);
     try {
-      await onSubmit(buildMovementBody({ ...values, type }, fallbackName));
+      await onSubmit(buildMovementBody({ ...values, type }, fallbackName), allowRecurring && type === 'expense' && recurring.on ? recurring : undefined);
     } catch (error) {
       setFormError(messageOf(error));
     } finally {
@@ -161,21 +166,23 @@ export function MovementForm({ initial, submitLabel, hideType = false, type: fix
 
   return (
     <View className="gap-4">
-      {!hideType && <Segmented options={TYPE_OPTIONS(t)} value={type} onChange={(next) => set('type', next)} />}
+      <TourTarget id="m-movform-type">{!hideType && <Segmented options={TYPE_OPTIONS(t)} value={type} onChange={(next) => set('type', next)} />}</TourTarget>
 
-      <TextField label={t("mobile.nombre.opcional")} value={values.name} onChangeText={(text) => set('name', text)} placeholder={t("mobile.si.lo.dejas.vacio.usamos")} maxLength={80} autoCapitalize="sentences" />
+      <TourTarget id="m-movform-name"><TextField label={t("mobile.nombre.opcional")} value={values.name} onChangeText={(text) => set('name', text)} placeholder={t("mobile.si.lo.dejas.vacio.usamos")} maxLength={80} autoCapitalize="sentences" /></TourTarget>
 
       <View className="gap-2">
-        <TextField
-          label={t("mobile.forms.amountLabel", { p1: accountCurrency })}
-          value={values.amount}
-          onChangeText={(text) => {
-            setAmountTouched(true);
-            set('amount', text.replace(/[^0-9.,]/g, ''));
-          }}
-          placeholder="0.00"
-          keyboardType="decimal-pad"
-        />
+        <TourTarget id="m-movform-amount">
+          <TextField
+            label={t("mobile.forms.amountLabel", { p1: accountCurrency })}
+            value={values.amount}
+            onChangeText={(text) => {
+              setAmountTouched(true);
+              set('amount', text.replace(/[^0-9.,]/g, ''));
+            }}
+            placeholder="0.00"
+            keyboardType="decimal-pad"
+          />
+        </TourTarget>
         {equivalent && <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.p1.en.tu.moneda.principal", { p1: equivalent })}</Text>}
         {errorText(errors.amount)}
       </View>
@@ -193,7 +200,7 @@ export function MovementForm({ initial, submitLabel, hideType = false, type: fix
           />
         </View>
         {values.chargedElsewhere && (
-          <View className="gap-3 rounded-2xl border border-gf-border p-3">
+          <TourTarget id="m-movform-currency" className="gap-3 rounded-2xl border border-gf-border p-3">
             <Text className="font-inter-medium text-sm text-gf-text-muted">{t("mobile.moneda.del.cobro")}</Text>
             <ChipPicker items={currencyItems} value={values.merchantCurrency} onChange={(code) => set('merchantCurrency', code)} moreAfter={99} />
             <TextField
@@ -207,17 +214,17 @@ export function MovementForm({ initial, submitLabel, hideType = false, type: fix
             <Text className="font-inter text-sm text-gf-text-muted">
               {quoting ? t("mobile.calculando.el.monto.de.la.cuenta") : quoteNote ?? tNow("mobile.el.monto.de.arriba.p1.es.lo.que.salio.de.la.cuenta.puedes.co", { p1: accountCurrency })}
             </Text>
-          </View>
+          </TourTarget>
         )}
       </View>
 
-      <View className="gap-2">
+      <TourTarget id="m-movform-account" className="gap-2">
         <Text className="font-inter-medium text-sm text-gf-text-muted">{t("mobile.cuenta")}</Text>
         <ChipPicker items={accountItems} value={values.accountId} onChange={(id) => set('accountId', id)} title={t("mobile.cuentas")} emptyText={t("mobile.primero.crea.una.cuenta.en.mas.cuentas")} />
         {errorText(errors.accountId)}
-      </View>
+      </TourTarget>
 
-      <View className="gap-2">
+      <TourTarget id="m-movform-category" className="gap-2">
         <Text className="font-inter-medium text-sm text-gf-text-muted">{t("mobile.categoria.y.subcategoria")}</Text>
         <CategoryPicker
           categories={categories}
@@ -227,15 +234,15 @@ export function MovementForm({ initial, submitLabel, hideType = false, type: fix
           onChange={(next) => setValues((current) => ({ ...current, categoryId: next.categoryId, subCategoryId: next.subCategoryId }))}
         />
         {errorText(errors.categoryId)}
-      </View>
+      </TourTarget>
 
       <View className="gap-2">
         <Text className="font-inter-medium text-sm text-gf-text-muted">{t("mobile.presupuesto.opcional")}</Text>
-        <ChipPicker items={budgetItems} value={values.budgetId} onChange={(id) => set('budgetId', id)} title={t("mobile.presupuestos")} />
+        <TourTarget id="m-movform-budget"><ChipPicker items={budgetItems} value={values.budgetId} onChange={(id) => set('budgetId', id)} title={t("mobile.presupuestos")} /></TourTarget>
       </View>
 
       <View className="gap-2">
-        <DateField label={t("mobile.fecha")} value={values.date} onChange={(day) => set('date', day)} />
+        <TourTarget id="m-movform-date"><DateField label={t("mobile.fecha")} value={values.date} onChange={(day) => set('date', day)} /></TourTarget>
         <View className="flex-row gap-2">
           {[
             { label: t("mobile.hoy"), offset: 0 },
@@ -258,10 +265,12 @@ export function MovementForm({ initial, submitLabel, hideType = false, type: fix
         {errorText(errors.date)}
       </View>
 
-      <TextField label={t("mobile.etiquetas.separadas.por.comas")} value={values.tags} onChangeText={(text) => set('tags', text)} placeholder={t("mobile.viaje.trabajo")} autoCapitalize="none" />
+      {allowRecurring && type === 'expense' && <RecurringFields value={recurring} onChange={setRecurring} />}
+
+      <TourTarget id="m-movform-tags"><TextField label={t("mobile.etiquetas.separadas.por.comas")} value={values.tags} onChangeText={(text) => set('tags', text)} placeholder={t("mobile.viaje.trabajo")} autoCapitalize="none" /></TourTarget>
 
       <FormError message={formError} />
-      <GradientButton label={submitLabel} onPress={submit} loading={submitting} disabled={submitting} />
+      <TourTarget id="m-movform-save"><GradientButton label={submitLabel} onPress={submit} loading={submitting} disabled={submitting} /></TourTarget>
 
       {onDelete && (
         <Pressable accessibilityRole="button" onPress={onDelete} className="items-center py-2">

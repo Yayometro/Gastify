@@ -26,6 +26,7 @@ const history = {
   "history.nothingMonth": "Nada este mes",
   "history.noCompare": "No hay elementos para comparar en este periodo.",
   "history.title": "Historial de movimientos",
+  "history.projections.seeAll": "Ver todas las proyecciones →",
   "history.loadingOld": "Cargando tus movimientos más antiguos… los números de este periodo se completarán solos."
 } as const;
 

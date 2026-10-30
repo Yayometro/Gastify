@@ -5,7 +5,7 @@ import { createTranslator, type Dict, type TranslateFn } from "@gastify/core/i18
 import { setCurrentTranslator } from "./now";
 import { chooseLocale, countryOf, DEFAULT_LOCALE, isLocale, type Locale } from "@gastify/core/i18n/locales";
 import { normalizeCountry } from "@gastify/core/i18n/countries";
-import { loadMessages, NAMESPACES } from "@gastify/core/i18n/catalogs";
+import { loadMessages, MOBILE_NAMESPACES } from "@gastify/core/i18n/catalogs";
 import { loadInfo, SPANISH_INFO, type InfoData } from "@gastify/core/info/catalog";
 import type { WalletText } from "@gastify/core/transformers/walletAnalyzer";
 import type { RootState } from "@/store";
@@ -99,7 +99,7 @@ export function I18nProvider({ children }: { children: React.ReactNode }): React
   useEffect(() => {
     if (remembered === undefined) return;
     let alive = true;
-    Promise.all([loadMessages(locale, NAMESPACES), loadInfo(locale)]).then(([messages, info]) => {
+    Promise.all([loadMessages(locale, MOBILE_NAMESPACES), loadInfo(locale)]).then(([messages, info]) => {
       if (alive) {
         setCurrentTranslator(locale, messages);
         setLoaded({ locale, messages, info, t: createTranslator(locale, messages) });

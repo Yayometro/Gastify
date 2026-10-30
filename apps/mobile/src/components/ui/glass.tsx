@@ -1,7 +1,7 @@
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
-import type { ReactNode } from 'react';
-import { Platform, StyleSheet, View, type StyleProp, type ViewStyle, useColorScheme } from 'react-native';
+import type { ReactNode, Ref } from 'react';
+import { Platform, StyleSheet, View, type HostInstance, type StyleProp, type ViewStyle, useColorScheme } from 'react-native';
 
 // The web's frosted-glass panes (`.gf-glass-card`, `.gf-nav-surface`), in dark mode only:
 // a translucent white wash over the mesh background, a soft top highlight and a hairline border.
@@ -12,11 +12,14 @@ export function GlassSurface({
   style,
   radius = 24,
   variant = 'card',
+  targetRef,
 }: {
   children?: ReactNode;
   style?: StyleProp<ViewStyle>;
   radius?: number;
   variant?: 'card' | 'nav' | 'side';
+  // The ref the guided tutorial measures to highlight this surface.
+  targetRef?: Ref<HostInstance>;
 }) {
   const scheme = useColorScheme();
   const dark = scheme === 'dark';
@@ -39,7 +42,7 @@ export function GlassSurface({
       : ['#ffffff', '#ffffff'];
 
   return (
-    <View style={[{ borderRadius: radius, overflow: 'hidden' }, style]}>
+    <View ref={targetRef} collapsable={false} style={[{ borderRadius: radius, overflow: 'hidden' }, style]}>
       {dark && Platform.OS === 'ios' && variant !== 'card' && (
         <BlurView intensity={variant === 'side' ? 90 : variant === 'nav' ? 70 : 30} tint="dark" style={StyleSheet.absoluteFill} />
       )}

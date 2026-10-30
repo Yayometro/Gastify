@@ -1,6 +1,6 @@
 import { LinearGradient } from 'expo-linear-gradient';
-import { useState } from 'react';
-import { Text, View, useColorScheme } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { AccessibilityInfo, Animated, Easing, Text, View, useColorScheme } from 'react-native';
 
 import { Colors } from '@/constants/theme';
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
@@ -45,11 +45,45 @@ export function BudgetProgress({
   const TIP = 40;
   const left = Math.max(0, Math.min(width - TIP, fill * width - TIP / 2));
 
+  // A soft shine runs left to right over the filled part (the web's "energy"). It stays still when the person asked for
+  // less motion, and is skipped while the bar is almost empty. A bar over its limit runs a little faster.
+  const fillPx = width * fill;
+  const shine = useRef(new Animated.Value(0)).current;
+  const [reduceMotion, setReduceMotion] = useState(false);
+  useEffect(() => {
+    let alive = true;
+    AccessibilityInfo.isReduceMotionEnabled().then((value) => alive && setReduceMotion(value)).catch(() => undefined);
+    return () => {
+      alive = false;
+    };
+  }, []);
+  useEffect(() => {
+    if (reduceMotion || fill < 0.03 || fillPx < 12) return;
+    shine.setValue(0);
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(shine, { toValue: 1, duration: exceeded ? 2000 : 2800, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+        Animated.delay(exceeded ? 600 : 1200),
+        Animated.timing(shine, { toValue: 0, duration: 0, useNativeDriver: true }),
+      ])
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [reduceMotion, fill, fillPx, exceeded, shine]);
+  const shineWidth = Math.max(24, fillPx * 0.3);
+
   return (
     <View className="gap-1.5">
       <View onLayout={(event) => setWidth(event.nativeEvent.layout.width)} style={{ height: TIP, justifyContent: 'center' }} accessibilityLabel={t("mobile.budgets.progressLabel", { p1: percent, p2: saving ? t("mobile.budgets.ofGoal") : t("mobile.budgets.ofLimit") })}>
         <View style={{ height: 20, borderRadius: 10, overflow: 'hidden', backgroundColor: colors.border }}>
-          <LinearGradient colors={[`${color}88`, color]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={{ height: '100%', width: `${fill * 100}%`, borderRadius: 10 }} />
+          <View style={{ height: '100%', width: `${fill * 100}%`, borderRadius: 10, overflow: 'hidden' }}>
+            <LinearGradient colors={[`${color}88`, color]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={{ height: '100%', width: '100%' }} />
+            {!reduceMotion && fill >= 0.03 && fillPx >= 12 ? (
+              <Animated.View pointerEvents="none" style={{ position: 'absolute', top: 0, bottom: 0, left: 0, width: shineWidth, transform: [{ translateX: shine.interpolate({ inputRange: [0, 1], outputRange: [-shineWidth, fillPx] }) }] }}>
+                <LinearGradient colors={['rgba(255,255,255,0)', 'rgba(255,255,255,0.34)', 'rgba(255,255,255,0)']} start={{ x: 0, y: 0.3 }} end={{ x: 1, y: 0.7 }} style={{ flex: 1 }} />
+              </Animated.View>
+            ) : null}
+          </View>
         </View>
         <View
           style={{

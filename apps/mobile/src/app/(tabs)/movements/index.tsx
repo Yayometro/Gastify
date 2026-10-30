@@ -60,7 +60,10 @@ import { DUPLICATE_DEFAULTS, type DuplicateSettings } from '@gastify/core/transa
 import { useT, useInfo, useLocale } from "@/i18n/client";
 import type { TranslateFn } from "@gastify/core/i18n/translate";
 import { tNow } from '@/i18n/now';
+import { TourPressable, TourTarget, useTourScroller } from '@/components/tour/tour-target';
+import { TutorialTip } from '@/components/tour/tutorial-tip';
 
+import { HelpSep } from '@/components/ui/help-sep';
 type DaySection = { key: string; title: string; data: TransactionData[] };
 
 
@@ -120,6 +123,16 @@ export default function MovementsScreen() {
   const [headerHeight, setHeaderHeight] = useState(0);
   const railTop = scrollY.interpolate({ inputRange: [0, Math.max(1, headerHeight)], outputRange: [insets.top + 16 + headerHeight, insets.top + 16], extrapolate: 'clamp' });
   const listRef = useRef<SectionList<TransactionData, DaySection>>(null);
+  // How far the list is scrolled, so the guided tutorial can bring a control into view.
+  const offset = useRef(0);
+  const tourScroller = useMemo(
+    () => ({
+      scrollBy: (delta: number) => (listRef.current?.getScrollResponder() as { scrollTo?: (options: { y: number; animated: boolean }) => void } | null | undefined)?.scrollTo?.({ y: Math.max(0, offset.current + delta), animated: true }),
+      scrollToTop: () => (listRef.current?.getScrollResponder() as { scrollTo?: (options: { y: number; animated: boolean }) => void } | null | undefined)?.scrollTo?.({ y: 0, animated: false }),
+    }),
+    []
+  );
+  useTourScroller(tourScroller);
   // A second tap on Movimientos: back to the top of the list and a refresh.
   const refreshNow = useRefreshAppData().refresh;
   useEffect(() => onTabReselect((path) => {
@@ -245,24 +258,32 @@ export default function MovementsScreen() {
         </Pressable>
       )}
       <View className="flex-row items-end justify-between gap-3">
-        <Text className="font-inter-bold text-4xl text-gf-text">{t("mobile.movimientos")}</Text>
-        <Pressable accessibilityRole="button" onPress={() => setExportOpen(true)} disabled={items.length === 0} hitSlop={8} className="pb-2">
+        <View className="flex-row items-center gap-3 pb-1">
+          <Text className="font-inter-bold text-4xl text-gf-text">{t("mobile.movimientos")}</Text>
+          <HelpSep />
+          <View className="flex-row items-center gap-0.5">
+            <TutorialTip label={t("mobile.movimientos")} />
+          </View>
+        </View>
+        <TourPressable id="m-mov-export" accessibilityRole="button" onPress={() => setExportOpen(true)} disabled={items.length === 0} hitSlop={8} className="pb-2">
           <Text className="font-inter-semibold text-sm" style={{ color: items.length ? colors.accent : colors.textSecondary }}>{t("mobile.exportar")}</Text>
-        </Pressable>
+        </TourPressable>
       </View>
 
       <View className="flex-row gap-3">
-        <Pressable accessibilityRole="button" onPress={() => router.push('/movements/import')} className="flex-1 flex-row items-center justify-center gap-2 rounded-full py-3" style={{ backgroundColor: colors.accentSoft, borderWidth: 1, borderColor: colors.border }}>
+        <TourPressable id="m-mov-import" accessibilityRole="button" onPress={() => router.push('/movements/import')} className="flex-1 flex-row items-center justify-center gap-2 rounded-full py-3" style={{ backgroundColor: colors.accentSoft, borderWidth: 1, borderColor: colors.border }}>
           <Ionicons name="document-attach-outline" size={18} color={colors.accent} />
           <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{t("mobile.importar.de.excel")}</Text>
-        </Pressable>
-        <Pressable accessibilityRole="button" onPress={() => setToolsOpen(true)} className="flex-1 flex-row items-center justify-center gap-2 rounded-full py-3" style={{ backgroundColor: colors.accentSoft, borderWidth: 1, borderColor: colors.border }}>
+        </TourPressable>
+        <TourPressable id="m-mov-categorize" accessibilityRole="button" onPress={() => setToolsOpen(true)} className="flex-1 flex-row items-center justify-center gap-2 rounded-full py-3" style={{ backgroundColor: colors.accentSoft, borderWidth: 1, borderColor: colors.border }}>
           <Ionicons name="sparkles" size={18} color={colors.accent} />
           <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{t("mobile.categorizar")}</Text>
-        </Pressable>
+        </TourPressable>
       </View>
 
-      <ChipPicker items={presetsWithYears(yearsWithMovements(transactions.data), t).map((p) => ({ id: p.value, label: p.label }))} value={preset} onChange={(id) => setPresetState(id as RangePreset)} moreAfter={99} />
+      <TourTarget id="m-mov-period">
+        <ChipPicker items={presetsWithYears(yearsWithMovements(transactions.data), t).map((p) => ({ id: p.value, label: p.label }))} value={preset} onChange={(id) => setPresetState(id as RangePreset)} moreAfter={99} />
+      </TourTarget>
 
       {preset === 'month' && <MonthSwitcher value={month} onChange={setMonth} latest={now} />}
       {preset === 'custom' && (
@@ -273,7 +294,8 @@ export default function MovementsScreen() {
       )}
 
       <View className="flex-row gap-3">
-        <Pressable
+        <TourPressable
+          id="m-mov-filters"
           accessibilityRole="button"
           accessibilityState={{ expanded: filtersOpen }}
           onPress={() => setFiltersOpen((open) => !open)}
@@ -284,8 +306,9 @@ export default function MovementsScreen() {
             <Text className="font-inter-semibold text-base text-gf-text">{t("mobile.filtros.p1", { p1: active > 0 ? ` (${active})` : '' })}</Text>
           </View>
           <Ionicons name={filtersOpen ? 'chevron-up' : 'chevron-down'} size={18} color={colors.textSecondary} />
-        </Pressable>
-        <Pressable
+        </TourPressable>
+        <TourPressable
+          id="m-mov-select"
           accessibilityRole="button"
           accessibilityState={{ selected: selectionMode }}
           onPress={() => { setSelectionMode((on) => !on); setSelected([]); }}
@@ -293,7 +316,7 @@ export default function MovementsScreen() {
           style={selectionMode ? { backgroundColor: colors.accent } : { backgroundColor: colors.backgroundElement, borderWidth: 1, borderColor: colors.border }}>
           <Ionicons name="checkmark-done-outline" size={20} color={selectionMode ? '#ffffff' : colors.accent} />
           <Text className="font-inter-semibold text-base" style={{ color: selectionMode ? '#ffffff' : colors.text }}>{selectionMode ? t("common.success") : t("mobile.seleccionar")}</Text>
-        </Pressable>
+        </TourPressable>
       </View>
 
       {filtersOpen && (
@@ -382,7 +405,9 @@ export default function MovementsScreen() {
           </Pressable>
         </Card>
       )}
-      <TotalsCard totals={totals} currency={currency} title={active > 0 ? t("mobile.totales.con.los.filtros") : preset === 'month' ? t("mobile.totales.del.mes") : t("mobile.totales.del.periodo")} />
+      <TourTarget id="m-mov-totals">
+        <TotalsCard totals={totals} currency={currency} title={active > 0 ? t("mobile.totales.con.los.filtros") : preset === 'month' ? t("mobile.totales.del.mes") : t("mobile.totales.del.periodo")} />
+      </TourTarget>
     </View>
   );
 
@@ -393,9 +418,9 @@ export default function MovementsScreen() {
           ref={listRef}
           sections={sections}
           keyExtractor={(item, index) => String(item._id ?? index)}
-          renderItem={({ item }) => {
+          renderItem={({ item, index, section }) => {
             const id = String(item._id);
-            return (
+            const row = (
               <MovementRow
                 movement={item}
                 currency={currency}
@@ -407,6 +432,8 @@ export default function MovementsScreen() {
                 onLongPress={() => { setSelectionMode(true); toggle(id); }}
               />
             );
+            // The first row of the list is the one the tutorial points at.
+            return index === 0 && section.title === sections[0]?.title ? <TourTarget id="m-mov-list">{row}</TourTarget> : row;
           }}
           renderSectionHeader={({ section }) => <Text className="pb-1 pt-4 font-inter-semibold text-sm text-gf-text-muted">{section.title}</Text>}
           ItemSeparatorComponent={() => <View style={{ height: scheme === 'dark' ? 0 : 1, backgroundColor: colors.border }} />}
@@ -423,7 +450,7 @@ export default function MovementsScreen() {
           contentContainerStyle={{ width: '100%', maxWidth: tablet ? TabletContentWidth : MaxContentWidth, alignSelf: 'center', paddingHorizontal: 24, paddingTop: 16, paddingBottom: BottomTabInset + 24 }}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refresh} />}
           showsVerticalScrollIndicator={false}
-          onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], { useNativeDriver: false })}
+          onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], { useNativeDriver: false, listener: (event) => { offset.current = (event as { nativeEvent: { contentOffset: { y: number } } }).nativeEvent.contentOffset.y; } })}
           scrollEventThrottle={16}
         />
       </SafeAreaView>

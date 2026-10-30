@@ -2,6 +2,7 @@ import { useMemo, useRef, useState } from 'react';
 import { Animated, PanResponder, Text, View, useColorScheme } from 'react-native';
 
 import { Colors } from '@/constants/theme';
+import { useTourTarget } from '@/components/tour/tour-target';
 import { useT } from "@/i18n/client";
 
 // A thin rail on the right edge of a long list: drag a finger along it to jump between its sections (the days of
@@ -39,9 +40,11 @@ export function DateRail({ labels, onJump, top = 90 }: { labels: string[]; onJum
   if (labels.length < 4) return null;
   const step = Math.max(1, Math.ceil(labels.length / 24));
 
+  const railRef = useTourTarget('m-mov-daterail');
   return (
     <>
       <Animated.View
+        ref={railRef as never}
         {...handlers}
         accessibilityLabel={t("mobile.saltar.entre.fechas")}
         onLayout={(event) => {

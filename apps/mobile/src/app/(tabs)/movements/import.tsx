@@ -12,6 +12,7 @@ import { useToast } from '@/components/toast';
 import { Card } from '@/components/ui/card';
 import { GradientButton } from '@/components/ui/gradient-button';
 import { OutlineButton } from '@/components/ui/outline-button';
+import { TourTarget } from '@/components/tour/tour-target';
 import { reloadAfterWrite } from '@/hooks/use-load-app-data';
 import { shareExcelTemplate, uploadExcelTemplate } from '@/lib/export-file';
 import { messageOf } from '@/lib/write';
@@ -74,18 +75,22 @@ export default function ImportScreen() {
   };
 
   return (
-    <Screen title={t("mobile.importar.desde.excel")} backLabel={t("mobile.movimientos")} onBack={() => router.back()}>
-      <Card title={t("mobile.1.descarga.la.plantilla")} info={APP_INFO.plantilla}>
+    <Screen title={t("mobile.importar.desde.excel")} backLabel={t("mobile.movimientos")} onBack={() => router.back()} titleInfo={APP_INFO.importar_desde_excel} tutorial="m-import">
+      <Card tour="m-import-template" title={t("mobile.1.descarga.la.plantilla")} info={APP_INFO.plantilla}>
         <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.se.guarda.como.archivo.excel")}</Text>
-        <OutlineButton label={t("mobile.descargar.plantilla")} icon={<Ionicons name="download-outline" size={20} color="#7e22ce" />} onPress={template} loading={busy === 'template'} disabled={busy !== null || !email} />
+        <TourTarget id="m-import-download">
+          <OutlineButton label={t("mobile.descargar.plantilla")} icon={<Ionicons name="download-outline" size={20} color="#7e22ce" />} onPress={template} loading={busy === 'template'} disabled={busy !== null || !email} />
+        </TourTarget>
       </Card>
 
-      <Card title={t("mobile.2.sube.tu.archivo")}>
+      <Card tour="m-import-upload" title={t("mobile.2.sube.tu.archivo")}>
         <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.elige.el.archivo.xlsx.ya")}</Text>
-        <GradientButton label={busy === 'upload' ? 'Importando…' : t("mobile.elegir.archivo.e.importar")} onPress={upload} loading={busy === 'upload'} disabled={busy !== null || !email} />
+        <TourTarget id="m-import-pick">
+          <GradientButton label={busy === 'upload' ? t("mobile.importando") : t("mobile.elegir.archivo.e.importar")} onPress={upload} loading={busy === 'upload'} disabled={busy !== null || !email} />
+        </TourTarget>
         <FormError message={error} />
         {result && (
-          <View className="gap-1 rounded-2xl border border-gf-border p-3">
+          <TourTarget id="m-import-result" className="gap-1 rounded-2xl border border-gf-border p-3">
             <Text className="font-inter-semibold text-base text-gf-text">
               {result.created === 0 ? t("mobile.no.se.creo.ningun.movimiento") : tNow("mobile.movimientos.creados", { count: result.created, p1: result.created })}
             </Text>
@@ -94,7 +99,7 @@ export default function ImportScreen() {
                 {t("mobile.p1.quedaron.sin.categoria.el", { p1: result.uncategorized })}
               </Text>
             )}
-          </View>
+          </TourTarget>
         )}
       </Card>
     </Screen>

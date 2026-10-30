@@ -9,18 +9,20 @@ export interface HistoryGateProps {
   starts: (Date | string | number | null | undefined)[];
   children: React.ReactNode;
   className?: string;
+  // The guided tutorial's anchor (data-tour) for this section.
+  tour?: string;
 }
 
 // Covers a section with a "loading your older history" notice while the movements it
 // needs have not arrived yet. The section stays mounted (so its date pickers keep
 // working and nothing resets) and corrects itself when the history lands.
-function HistoryGate({ starts, children, className }: HistoryGateProps): React.JSX.Element {
+function HistoryGate({ starts, children, className, tour }: HistoryGateProps): React.JSX.Element {
   const t = useT();
   const ready = useHistoryReadyFor(...starts);
   return (
     // The children stay direct children (callers rely on flex/gap layouts on this element);
     // the notice is absolutely positioned so it takes no space.
-    <div className={`relative ${className || ""}`} aria-busy={!ready}>
+    <div className={`relative ${className || ""}`} data-tour={tour} aria-busy={!ready}>
       {children}
       {!ready && (
         <div

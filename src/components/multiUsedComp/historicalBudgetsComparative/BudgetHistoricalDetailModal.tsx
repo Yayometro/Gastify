@@ -1,5 +1,6 @@
 "use client";
 
+import TutorialTip from "@/components/tour/TutorialTip";
 import React from "react";
 import CategoIcon from "@/components/multiUsedComp/CategoIcon";
 import { formatMoneyMajor } from "@gastify/core/money/currencies";
@@ -30,13 +31,13 @@ function BudgetHistoricalDetailModal({
   return (
     <div className="content absolute gf-glass-violet flex flex-col w-full h-full max-w-[640px] max-h-[80%] rounded-2xl items-center overflow-hidden z-[1001]">
       <header className="w-full text-white px-6 py-4">
-        <p className="text-lg">{budget.name || t("web.unnamed.budget")}</p>
-        <p className="text-xs text-white/80">
+        <p className="flex items-center text-lg">{budget.name || t("web.unnamed.budget")}<span aria-hidden="true" className="mx-2 inline-block h-5 w-px shrink-0 align-middle bg-purple-300/40" /><TutorialTip tour="hisBudgetDetail" label={budget.name || t("web.unnamed.budget")} /></p>
+        <p data-tour="bh-summary" className="text-xs text-white/80">
           {t("budgets.monthsMet", { p1: monthlySeries[0]?.label, p2: monthlySeries[monthlySeries.length - 1]?.label, p3: monthsMet, p4: monthsTracked })}
         </p>
       </header>
       <div className="w-full flex-1 overflow-y-auto px-6 py-5">
-        <table className="w-full text-sm">
+        <table data-tour="bh-table" className="w-full text-sm">
           <thead>
             <tr className="text-[11px] text-gf-text-muted">
               <th className="text-left font-normal pb-2">{t("budgets.comparative.month")}</th>

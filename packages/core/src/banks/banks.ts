@@ -67,12 +67,13 @@ export function bankCountryForCurrency(currency: string | null | undefined): str
   return currency === "MXN" ? "MX" : "MX";
 }
 
-// An account or card number as the person typed it: digits only, 4 to 19 of them, or nothing. The CVV is never kept.
+// An account or card number as the person typed it: digits only. Only the LAST FOUR digits are ever kept (so a longer number,
+// pasted or saved before this rule, is cut to its end), or nothing. The CVV is never kept.
 export function normalizeCardNumber(value: unknown): { ok: boolean; value: string | null; message?: string } {
   if (value === null || value === undefined || String(value).trim() === "") return { ok: true, value: null };
   const digits = String(value).replace(/[\s-]/g, "");
   if (!/^\d{4,19}$/.test(digits)) return { ok: false, value: null, message: "accounts.error.cardNumber" };
-  return { ok: true, value: digits };
+  return { ok: true, value: digits.slice(-4) };
 }
 
 // "•••• 1234" for hidden, the number in groups of four for shown.

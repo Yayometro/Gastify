@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import TutorialTip from "@/components/tour/TutorialTip";
 import { Skeleton, Tooltip } from "antd";
 import UniversalCategoIcon from "./UniversalCategoIcon";
 import EmptyModule from "./EmptyModule";
@@ -144,11 +145,12 @@ function BudgetCont({
   return (
     <div className="budget-cont gf-glass-card py-4 px-2 w-full max-w-[1200px] mx-auto rounded-[32px]">
       <div className="wallet-budget-Content">
-        <h1 className="wallet-budget-title text-2xl text-center font-bold">
+        <h1 data-tour="dash-bud-title" className="wallet-budget-title text-2xl text-center font-bold">
           {t("budgets.walletTitle")}
+          <span aria-hidden="true" className="mx-2 inline-block h-5 w-px shrink-0 align-middle bg-purple-300/40" /><TutorialTip className="ml-0.5" tour="dashBudgets" label={t("budgets.walletTitle")} />
         </h1>
       </div>
-      <div className="filters flex items-center justify-center gap-2 flex-wrap my-2">
+      <div data-tour="dash-bud-period" className="filters flex items-center justify-center gap-2 flex-wrap my-2">
         <SelecterFilter
           getValue={getValueFromSelecter}
           periodOverride={generate_timeperiod_ranges_array_for_dashboard(initialToday.getFullYear())}
@@ -166,7 +168,7 @@ function BudgetCont({
           </button>
         </Tooltip>
       </div>
-      <div className="bc-tab-headers-cont mx-auto mb-3 flex w-fit max-w-full items-center justify-center gap-1 rounded-full gf-glass-inset p-1.5 mb-2">
+      <div data-tour="dash-bud-tabs" className="bc-tab-headers-cont mx-auto mb-3 flex w-fit max-w-full items-center justify-center gap-1 rounded-full gf-glass-inset p-1.5 mb-2">
         <div
           onClick={() => handleTab("budget")}
           className={`tab-budget px-5 py-2 text-base font-semibold cursor-pointer rounded-full whitespace-nowrap transition-all ${
@@ -205,7 +207,7 @@ function BudgetCont({
       ) : (
         <div className={`savings-cont ${!isBudget ? "" : "hidden"}`}>
           <p className="text-xl font-norma text-center">{t("budgets.savings")}</p>
-          <div className="ind-budget-cont-slide flex flex-col gap-2 max-h-[700px] overflow-y-auto pb-2 px-1">
+          <div data-tour="dash-bud-list" className="ind-budget-cont-slide flex flex-col gap-2 max-h-[700px] overflow-y-auto pb-2 px-1">
             {savings.map((saving, index) => (
               <BudgetBarRow
                 budget={saving}
@@ -229,7 +231,7 @@ function BudgetCont({
       ) : (
         <div className={`individual-budget-cont ${!isBudget ? "hidden" : ""}`}>
           <p className="text-xl font-norma text-center">{t("budgets.billsTitle")}</p>
-          <div className="ind-budget-cont-slide flex flex-col gap-2 max-h-[700px] overflow-y-auto pb-2 px-1">
+          <div data-tour="dash-bud-list" className="ind-budget-cont-slide flex flex-col gap-2 max-h-[700px] overflow-y-auto pb-2 px-1">
             {budgets.map((budget, index) => (
               <BudgetBarRow
                 budget={budget}

@@ -277,6 +277,11 @@ const en: Record<keyof typeof web, string> = {
   "web.estimated": "estimated",
   "web.exact": "exact",
   "web.hola.p1": "Hello, {p1}",
+  "web.bankPicker.main": "Main",
+  "web.bankPicker.other": "Other banks and digital",
+  "web.bankPicker.seeAll": "See all ({p1}) ›",
+  "web.bankPicker.seeLess": "See less ‹",
+  "web.bankPicker.none": "No bank matches “{p1}”.",
 };
 
 export default en;

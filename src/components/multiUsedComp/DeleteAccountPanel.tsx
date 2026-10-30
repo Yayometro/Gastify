@@ -110,7 +110,7 @@ function DeleteAccountPanel(): React.JSX.Element {
   }
 
   return (
-    <div className="remove-account-prof w-full pt-8 pb-[100px] flex flex-col items-center gap-3">
+    <div className="remove-account-prof w-full pt-8 pb-[100px] flex flex-col items-center gap-3" data-tour="prof-delete">
       {!isOpen ? (
         <button
           type="button"

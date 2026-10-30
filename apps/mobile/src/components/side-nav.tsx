@@ -9,6 +9,7 @@ import { useSelector } from 'react-redux';
 
 import { NotificationsGlyph } from '@/components/notifications-bell';
 import { NAV_ICON } from '@/lib/nav-icons';
+import { TourPressable } from '@/components/tour/tour-target';
 import { GlassSurface } from '@/components/ui/glass';
 import { Colors } from '@/constants/theme';
 import { useThemeMode } from '@/hooks/use-theme-mode';
@@ -19,6 +20,20 @@ import { useT } from "@/i18n/client";
 import type { TranslateFn } from "@gastify/core/i18n/translate";
 
 export const SIDE_NAV_WIDTH = 84;
+
+// The id each button of the column answers to for the tutorial (the same as the bottom bar's, so one tour serves both).
+const SIDE_ANCHOR: Record<string, string> = {
+  wallet: 'm-tab-home',
+  movements: 'm-tab-movements',
+  budgets: 'm-tab-budgets',
+  projections: 'm-tab-projections',
+  analyzer: 'm-tab-analyzer',
+  add: 'm-tab-add',
+  accounts: 'm-tab-accounts',
+  history: 'm-tab-history',
+  categories: 'm-tab-categories',
+  notifications: 'm-bell',
+};
 
 type Item = { key: string; label: string; href: string; active: (path: string) => boolean; icon: (color: string) => ReactNode };
 
@@ -51,8 +66,9 @@ export function SideNav() {
   const user = useSelector((state: RootState) => state.userReducer.data) as UserData | null;
 
   const iconButton = (key: string, label: string, onPress: () => void, icon: ReactNode, active = false) => (
-    <Pressable
+    <TourPressable
       key={key}
+      id={SIDE_ANCHOR[key]}
       accessibilityRole="button"
       accessibilityLabel={label}
       accessibilityState={{ selected: active }}
@@ -62,7 +78,7 @@ export function SideNav() {
       {/* The selected item: a small, rounded, almost-square pill behind the icon (same width, less height). */}
       {active && <View pointerEvents="none" style={[styles.pill2, dark ? styles.activeDark : { backgroundColor: colors.accentSoft }]} />}
       {icon}
-    </Pressable>
+    </TourPressable>
   );
   const navItem = (item: Item) => iconButton(item.key, item.label, () => router.navigate(item.href as never), item.icon(item.active(pathname) ? (dark ? '#ffffff' : colors.accent) : dark ? 'rgba(255,255,255,0.88)' : colors.text), item.active(pathname));
   const profileActive = is(pathname, '/more/profile');

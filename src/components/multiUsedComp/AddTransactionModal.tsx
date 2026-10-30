@@ -1,5 +1,7 @@
 "use client";
+import TutorialTip from "@/components/tour/TutorialTip";
 import type { TranslateFn } from "@gastify/core/i18n/translate";
+import type { TourId } from "@gastify/core/tour/tourSteps";
 
 import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
@@ -29,6 +31,7 @@ import EditAccountModal from "./EditAccountModal";
 import TransferExchangeModal from "./TransferExchangeModal";
 import BudgetEditModal from "./Budgets/BudgetEditModal";
 import { InfoTip } from "./InfoTip";
+import TitleWithHelp from "@/components/multiUsedComp/TitleWithHelp";
 import { useInfo, useT } from "@/i18n/client";
 
 export interface AddTransactionModalProps {
@@ -44,10 +47,10 @@ const transactionInfo = (t: TranslateFn, { CREATE_KIND_INFO }: Pick<InfoData, "C
   text: t("movements.help.transactionText"),
 });
 
-// The Excel import has its own explanation: the same template the app downloads, filled and uploaded.
-const excelInfo = (t: TranslateFn): InfoText => ({
-  title: t("movements.help.importTitle"),
-  text: t("movements.help.importText"),
+// The Excel import has its own explanation: its text from the app's catalog, and the steps of the same template the app
+// downloads, filled and uploaded.
+const excelInfo = (appInfo: InfoData["APP_INFO"], t: TranslateFn): InfoText => ({
+  ...appInfo.importar_desde_excel,
   sections: [
     {
       label: t("movements.help.how"),
@@ -60,7 +63,7 @@ const excelInfo = (t: TranslateFn): InfoText => ({
 });
 
 // The options of the "+", in the order of the app's hub. Each one opens its own form on the right.
-const optionsFor = (t: TranslateFn, { CREATE_KIND_INFO, CREATE_KIND_SUMMARY }: InfoData): Option[] => [
+const optionsFor = (t: TranslateFn, { APP_INFO, CREATE_KIND_INFO, CREATE_KIND_SUMMARY }: InfoData): Option[] => [
   // One form for both: a switch in it chooses whether it is an income or an expense.
   { id: "expense", label: t("movements.option.transaction"), icon: <IoArrowDownCircleOutline size={20} />, info: transactionInfo(t, { CREATE_KIND_INFO }), summary: t("movements.option.transactionSummary") },
   { id: "transfer", label: t("movements.help.transfer"), icon: <IoSwapHorizontalOutline size={20} />, info: CREATE_KIND_INFO.transfer, summary: CREATE_KIND_SUMMARY.transfer },
@@ -69,8 +72,21 @@ const optionsFor = (t: TranslateFn, { CREATE_KIND_INFO, CREATE_KIND_SUMMARY }: I
   { id: "budget", label: t("movements.help.budget"), icon: <IoPieChartOutline size={20} />, info: CREATE_KIND_INFO.budget, summary: CREATE_KIND_SUMMARY.budget },
   { id: "saving", label: t("movements.help.saving"), icon: <IoCashOutline size={20} />, info: CREATE_KIND_INFO.saving, summary: CREATE_KIND_SUMMARY.saving },
   { id: "project", label: t("movements.help.project"), icon: <IoAirplaneOutline size={20} />, info: CREATE_KIND_INFO.project, summary: CREATE_KIND_SUMMARY.project },
-  { id: "excel", label: t("movements.help.importTitle"), icon: <IoDocumentAttachOutline size={20} />, info: excelInfo(t), summary: t("movements.option.excelSummary") },
+  { id: "excel", label: t("movements.help.importTitle"), icon: <IoDocumentAttachOutline size={20} />, info: excelInfo(APP_INFO, t), summary: t("movements.option.excelSummary") },
 ];
+
+// The tutorial of each form. Its compass sits beside the form's title, so the button always matches the option that is open.
+// The Excel import's compass sits in this same header: its form has no title of its own (see ReadFileComp inWindow).
+const FORM_TOUR: Partial<Record<Option["id"], TourId>> = {
+  expense: "addTransaction",
+  transfer: "addTransfer",
+  account: "accForm",
+  category: "catCreate",
+  budget: "addBudget",
+  saving: "addSaving",
+  project: "addProject",
+  excel: "addImport",
+};
 
 // The "+" of the web: one window to create anything, as the app's "+" does. On a wide screen the options are a column at
 // the left and the form is at the right; on a narrow one the options are a row that scrolls sideways above the form.
@@ -95,6 +111,7 @@ function AddTransactionModal({ close }: AddTransactionModalProps): React.JSX.Ele
 
   const options = optionsFor(t, info);
   const option = options.find((item) => item.id === active) ?? options[0];
+  const formTour = FORM_TOUR[option.id];
   const again = () => setRound((value) => value + 1);
 
   const form = () => {
@@ -115,23 +132,29 @@ function AddTransactionModal({ close }: AddTransactionModalProps): React.JSX.Ele
       case "project":
         return <BudgetEditModal key={key} mode="creation" inline initialType={BUDGET_TYPES.PROJECT} onClose={again} onBack={null} />;
       case "excel":
-        return <div key={key}><ReadFileComp /></div>;
+        return <div key={key}><ReadFileComp inWindow /></div>;
     }
   };
 
   return createPortal(
     <div className="fixed inset-0 z-[5000] flex items-center justify-center bg-black/50 backdrop-blur-md p-3" onClick={(event) => { if (event.target === event.currentTarget && close) (close as () => void)(); }}>
-      <div className="content gf-glass-violet relative z-[10002] flex h-[92vh] w-[96vw] flex-col overflow-hidden rounded-3xl md:h-[min(860px,90vh)] md:w-[min(1180px,94vw)]">
-        <div className="flex items-center gap-3 px-6 pb-2 pt-5 pr-16">
-          <h1 className="text-2xl font-bold text-white">{t("movements.help.create")}</h1>
-          <InfoTip info={CREATE_SCREEN_INFO} />
+      <div data-tour="add-modal" className="content gf-glass-violet relative z-[10002] flex h-[92vh] w-[96vw] flex-col overflow-hidden rounded-3xl md:h-[min(860px,90vh)] md:w-[min(1180px,94vw)]">
+        <div data-tour="add-title" className="flex items-center px-6 pb-2 pt-5 pr-16">
+          <h1 className="text-2xl font-bold text-gf-text">{t("movements.help.create")}</h1>
+          <span aria-hidden="true" className="mx-2 inline-block h-5 w-px shrink-0 align-middle bg-purple-300/40" />
+          <span className="inline-flex shrink-0 items-center">
+            <InfoTip info={CREATE_SCREEN_INFO} />
+            <span data-tour="add-window-tutorial" className="inline-flex">
+              <TutorialTip className="ml-0.5" tour="addModal" label={t("movements.help.create")} />
+            </span>
+          </span>
         </div>
         <button type="button" aria-label={t("movements.close")} onClick={close as () => void} className="absolute right-4 top-4 z-[100] rounded-full gf-glass-card p-1.5 text-purple-100 transition-colors hover:text-white">
           <CategoIcon type={"MdClose"} siz={20} />
         </button>
 
         <div className="flex min-h-0 flex-1 flex-col md:flex-row">
-          <nav className="flex shrink-0 gap-2 overflow-x-auto border-b border-white/10 p-3 md:w-64 md:flex-col md:overflow-x-visible md:overflow-y-auto md:border-b-0 md:border-r">
+          <nav data-tour="add-options" className="flex shrink-0 gap-2 overflow-x-auto border-b border-white/10 p-3 md:w-64 md:flex-col md:overflow-x-visible md:overflow-y-auto md:border-b-0 md:border-r">
             {options.map((item) => {
               const selected = item.id === active;
               return (
@@ -153,12 +176,19 @@ function AddTransactionModal({ close }: AddTransactionModalProps): React.JSX.Ele
           </nav>
 
           <section className="flex min-h-0 flex-1 flex-col">
-            <div className="flex items-center gap-3 px-5 pb-2 pt-4 md:px-6">
-              <h2 className="text-xl font-bold text-white">{option.label}</h2>
-              <InfoTip info={option.info} />
-            </div>
+            <TitleWithHelp
+              as="h2"
+              title={option.label}
+              info={option.info}
+              tour={formTour}
+              tourLabel={option.label}
+              titleClassName="min-w-0 truncate text-xl font-bold text-gf-text"
+              className="min-w-0 px-5 pb-2 pt-4 md:px-6"
+              infoDataTour="add-help"
+              tourDataTour="add-form-tutorial"
+            />
             <p className="px-5 pb-3 text-sm text-purple-100/80 md:px-6">{option.summary}</p>
-            <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-8 md:px-6">
+            <div data-tour="add-form" className="min-h-0 flex-1 overflow-y-auto px-5 pb-8 md:px-6">
               <SelectCategories>{form()}</SelectCategories>
             </div>
           </section>

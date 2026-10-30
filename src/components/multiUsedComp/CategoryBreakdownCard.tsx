@@ -1,5 +1,6 @@
 "use client";
 
+import TutorialTip from "@/components/tour/TutorialTip";
 import React, { useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
@@ -7,7 +8,6 @@ import type { RootState } from "@/lib/store";
 import type { WalletData } from "@/lib/features/walletSlice";
 import type { TransactionData } from "@/lib/features/transacctionsSlice";
 import UniversalCategoIcon from "./UniversalCategoIcon";
-import { InfoTip } from "./InfoTip";
 import { BreakdownBubbles, BreakdownMap, BreakdownRing, type BreakdownChartProps } from "./BreakdownCharts";
 import useModal from "@/hooks/useModalBasic";
 import ModalContentTopMonthItem, { type ModalContentTopMonthItemItem } from "@/components/modals/contents/modalForTopMonthItem/ModalContentTopMonthItem";
@@ -17,7 +17,7 @@ import { formatMoneyMajor } from "@gastify/core/money/currencies";
 import { categoryBreakdown, type BreakdownSlice } from "@gastify/core/history/categoryBreakdown";
 import { ALL_MOVEMENTS, backOne, drillView, openSlice, type DrillState } from "@gastify/core/history/categoryDrill";
 import type { TransactionLike } from "@gastify/core/transformers/transactionsChange";
-import { useT, useInfo } from "@/i18n/client";
+import { useT } from "@/i18n/client";
 import type { TranslateFn } from "@gastify/core/i18n/translate";
 
 // The category breakdown of the period, the same as the phone's "Resumen de transacciones": one of the charts (ring, bubbles
@@ -58,12 +58,16 @@ function HistoryArrow({ direction, label, disabled, onClick }: { direction: "bac
 
 export interface CategoryBreakdownCardProps {
   timePeriod?: [Date, Date] | null;
+  // The movements to summarise. The account page passes its own account's; the Wallet leaves it out and reads them all from the store.
+  transactions?: TransactionData[];
+  // The account page already has its own heading for the block, so the card shows only its chart and list controls.
+  hideTitle?: boolean;
 }
 
-function CategoryBreakdownCard({ timePeriod }: CategoryBreakdownCardProps): React.JSX.Element {
-  const { APP_INFO } = useInfo();
+function CategoryBreakdownCard({ timePeriod, transactions: transactionsProp, hideTitle = false }: CategoryBreakdownCardProps): React.JSX.Element {
   const t = useT();
-  const transactions = useSelector((state: RootState) => state.transacctionsReducer?.data) || EMPTY;
+  const storeTransactions = useSelector((state: RootState) => state.transacctionsReducer?.data) || EMPTY;
+  const transactions = transactionsProp ?? storeTransactions;
   const primary = useSelector((state: RootState) => (state.walletReducer?.data as WalletData)?.primaryCurrency) || "MXN";
   const [kind, setKind] = useState<"spending" | "incomes">("spending");
   const [chart, setChart] = useState<ChartId>("map");
@@ -125,12 +129,15 @@ function CategoryBreakdownCard({ timePeriod }: CategoryBreakdownCardProps): Reac
 
   return (
     <section className="gf-glass-card w-full rounded-[32px] p-5">
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <h2 className="text-xl font-extrabold text-gf-text">{t("categories.summary.title")}</h2>
-          <InfoTip info={APP_INFO.resumen_de_transacciones} />
-        </div>
-        <div className="flex gap-1 rounded-full gf-glass-inset p-1.5">
+      <div className={`mb-4 flex flex-wrap items-center ${hideTitle ? "justify-center" : "justify-between"} gap-3`}>
+        {!hideTitle && (
+          <div className="flex items-center gap-2" data-tour="dash-brk-title">
+            <h2 className="text-xl font-extrabold text-gf-text">{t("categories.summary.title")}</h2>
+            <span aria-hidden="true" className="mx-2 inline-block h-5 w-px shrink-0 align-middle bg-purple-300/40" />
+            <TutorialTip tour="dashBreakdown" label={t("categories.summary.title")} />
+          </div>
+        )}
+        <div data-tour="dash-brk-kind" className="flex gap-1 rounded-full gf-glass-inset p-1.5">
           {[
             { id: "spending" as const, label: t("categories.summary.bills") },
             { id: "incomes" as const, label: t("categories.summary.incomes") },
@@ -153,7 +160,7 @@ function CategoryBreakdownCard({ timePeriod }: CategoryBreakdownCardProps): Reac
 
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="flex min-w-0 flex-col items-center gap-3">
-          <div className="flex gap-1 rounded-full gf-glass-inset p-1.5">
+          <div data-tour="dash-brk-chart-type" className="flex gap-1 rounded-full gf-glass-inset p-1.5">
             {chartsFor(t).map((option) => (
               <button
                 key={option.id}
@@ -166,15 +173,15 @@ function CategoryBreakdownCard({ timePeriod }: CategoryBreakdownCardProps): Reac
               </button>
             ))}
           </div>
-          <div className="flex w-full items-center justify-between px-1">
+          <div data-tour="dash-brk-nav" className="flex w-full items-center justify-between px-1">
             <HistoryArrow direction="back" label={t("categories.summary.back")} disabled={path.path.length === 0} onClick={back} />
-            <p className="text-2xl font-bold" style={{ color: isSpending ? "#fb7185" : "#4ade80" }}>
+            <p className={`text-2xl font-bold ${isSpending ? "text-rose-400" : "text-green-400"}`}>
               {formatMoneyMajor(total, primary, { showCode: false })}
             </p>
             <HistoryArrow direction="forward" label={t("categories.summary.forward")} disabled={path.path.length !== 1} onClick={forward} />
           </div>
           {/* The chart is always inside this box: it fills it and never grows past it. */}
-          <div className={`${PANEL_HEIGHT} w-full min-w-0 overflow-hidden`}>
+          <div data-tour="dash-brk-chart" className={`${PANEL_HEIGHT} w-full min-w-0 overflow-hidden`}>
             {chart === "ring" && <BreakdownRing {...chartProps} />}
             {chart === "bubbles" && <BreakdownBubbles {...chartProps} />}
             {chart === "map" && <BreakdownMap {...chartProps} />}
@@ -183,7 +190,7 @@ function CategoryBreakdownCard({ timePeriod }: CategoryBreakdownCardProps): Reac
 
         {/* On desktop this column stretches to the chart column's height; the list sits in an absolute box so its rows never
             push the card taller, and it scrolls when there are more rows than fit. */}
-        <div className={`flex min-h-0 min-w-0 flex-col gap-2 ${PANEL_HEIGHT} lg:h-auto`}>
+        <div data-tour="dash-brk-list" className={`flex min-h-0 min-w-0 flex-col gap-2 ${PANEL_HEIGHT} lg:h-auto`}>
           {path.path.length > 0 && (
             <button type="button" onClick={back} className="mb-1 flex items-center gap-1 self-start text-base font-semibold text-purple-300 hover:text-white">
               ‹ {view.level === 1 ? t("web.all.categories") : view.current?.name ?? t("common.back")}

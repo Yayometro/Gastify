@@ -15,9 +15,11 @@ export interface CategoryListProps {
   clUser?: UserData | Record<string, unknown> | null;
   readOnly?: boolean;
   onSelectCategory?: (category: CategoryData) => void;
+  // The guided tutorial's anchor (data-tour) for the first tile of the list.
+  tileTour?: string;
 }
 
-function CategoryList({ clCategories, clUser, readOnly = false, onSelectCategory }: CategoryListProps): React.JSX.Element {
+function CategoryList({ clCategories, clUser, readOnly = false, onSelectCategory, tileTour }: CategoryListProps): React.JSX.Element {
   const t = useT();
   const [onEdition, setOnEdition] = useState<string | boolean>(false);
   const [selectedCategory, setSelectedCategory] = useState<CategoryData>({});
@@ -45,13 +47,14 @@ function CategoryList({ clCategories, clUser, readOnly = false, onSelectCategory
             <p className="">{t("categories.loading")}</p>
           </div>
         ) : (
-          clCategories.map((category) => (
+          clCategories.map((category, position) => (
             <Tooltip
               title={`${category?.name || t("web.no.name")}`}
               key={`cc-clist-key-cat-${category._id}`}
             >
               <button
                 type="button"
+                data-tour={position === 0 ? tileTour : undefined}
                 style={{ backgroundColor: category.color || "#ABABAB" }}
                 aria-label={t("shared.demo.categories.open", { p1: category?.name || t("categories.thisOne") })}
                 className={`gf-glass-tile w-[100px] h-[100px] sm:w-[130px] sm:h-[130px] flex flex-col justify-center items-center rounded-full px-2 py-1 transition ${readOnly ? "cursor-pointer hover:brightness-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-200" : "hover:brightness-90 cursor-pointer"}`}

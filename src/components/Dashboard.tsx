@@ -1,5 +1,6 @@
 "use client";
 
+import TutorialTip from "@/components/tour/TutorialTip";
 import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -51,6 +52,7 @@ import TimeRange from "./Filters/timeRange/TimeRange";
 import TopElementsContainer from "./multiUsedComp/TopElementsContainer";
 
 import { InfoTip } from "@/components/multiUsedComp/InfoTip";
+import TitleWithHelp from "@/components/multiUsedComp/TitleWithHelp";
 import { useT, useInfo, useLocale } from "@/i18n/client";
 import { monthTitle } from "@gastify/core/i18n/dates";
 
@@ -458,8 +460,8 @@ function Wallet({ session, readOnly = false, demoRatesToMxn }: DashboardProps): 
   }
 
   const accountsPanel = (
-    <div className="scrollbar-thin-white bg-white/10 rounded-2xl p-3 flex flex-col gap-1.5 w-full h-full overflow-y-auto">
-      <span className="inline-flex items-center gap-1.5"><span className="text-white/70 text-[10px] uppercase tracking-wide">{t("dashboard.accounts.yours")}</span><InfoTip info={APP_INFO.cuentas} /></span>
+    <div data-tour="dash-accounts-panel" className="scrollbar-thin-white bg-white/10 rounded-2xl p-3 flex flex-col gap-1.5 w-full h-full overflow-y-auto">
+      <TitleWithHelp as="span" title={t("dashboard.accounts.yours")} info={APP_INFO.cuentas} titleClassName="text-white/70 text-[10px] uppercase tracking-wide" />
       {!accounts || accounts.length === 0 ? (
         <span className="text-white/60 text-xs">{t("dashboard.accounts.none")}</span>
       ) : (
@@ -492,8 +494,8 @@ function Wallet({ session, readOnly = false, demoRatesToMxn }: DashboardProps): 
   );
 
   const summaryPanel = loading || !periodReady ? panelSkeleton(t("dashboard.summary")) : (
-    <div className="bg-white/10 rounded-2xl p-3 flex flex-col w-full h-full">
-      <span className="inline-flex items-center gap-1.5"><span className="text-white/70 text-[10px] uppercase tracking-wide">{t("dashboard.summary")}</span><InfoTip info={APP_INFO.resumen} /></span>
+    <div data-tour="dash-summary-panel" className="bg-white/10 rounded-2xl p-3 flex flex-col w-full h-full">
+      <span className="inline-flex items-center gap-1.5"><span className="text-white/70 text-[10px] uppercase tracking-wide">{t("dashboard.summary")}</span><span aria-hidden="true" className="mx-2 inline-block h-5 w-px shrink-0 align-middle bg-purple-300/40" /><InfoTip info={APP_INFO.resumen} /></span>
       <div className="flex flex-col gap-2 justify-end flex-1">
       <div className="flex items-center justify-between gap-3 w-full">
         <span className="flex items-center gap-1.5 text-white text-sm shrink-0">
@@ -546,8 +548,8 @@ function Wallet({ session, readOnly = false, demoRatesToMxn }: DashboardProps): 
   );
 
   const comparisonPanel = loading || !periodReady ? panelSkeleton(t("dashboard.vsPrevious")) : (
-    <div className="bg-white/10 rounded-2xl p-3 flex flex-col gap-1.5 w-full h-full">
-      <span className="inline-flex items-center gap-1.5"><span className="text-white/70 text-[10px] uppercase tracking-wide">{t("dashboard.vsPrevious")}</span><InfoTip info={APP_INFO.vs_el_mes_anterior} /></span>
+    <div data-tour="dash-compare-panel" className="bg-white/10 rounded-2xl p-3 flex flex-col gap-1.5 w-full h-full">
+      <TitleWithHelp as="span" title={t("dashboard.vsPrevious")} info={APP_INFO.vs_el_mes_anterior} titleClassName="text-white/70 text-[10px] uppercase tracking-wide" />
       {renderDeltaRow(t("analyzer.incomes"), totalIncome, prevTotalIncome, INCOME_COLOR)}
       {renderDeltaRow(t("analyzer.bills"), totalBill, prevTotalBill, EXPENSE_COLOR)}
       {renderDeltaRow(t("analyzer.balance"), totalAmountBalance, prevTotalIncome - prevTotalBill, BALANCE_COLOR)}
@@ -559,7 +561,7 @@ function Wallet({ session, readOnly = false, demoRatesToMxn }: DashboardProps): 
       {user && wallet ? (
         <div className="walllet-header" id={readOnly ? "demo-summary" : undefined}>
           <div className="wallet-header pt-4 pb-2 px-3 flex flex-col gap-3 justify-between sm:rounded-t-2xl sm:flex-col sm:mx-2 sm:items-center">
-            <div className="w-full">
+            <div className="w-full" data-tour="dash-header">
               <div className="flex items-center gap-4 sm:gap-6">
                 {/* The wordmark, at the far left of the header: white on the dark theme, black on the light one. */}
                 <Image
@@ -571,10 +573,12 @@ function Wallet({ session, readOnly = false, demoRatesToMxn }: DashboardProps): 
                   className="h-7 w-auto shrink-0 sm:h-10"
                 />
                 <div className="h-7 w-px shrink-0 bg-white/30 sm:h-10" aria-hidden="true" />
-                <div className="min-w-0 flex-1">
+                <div className="min-w-0 flex-1 flex items-center">
                   <h2 className="text-white text-2xl font-bold sm:text-4xl">
                     {!user.fullName ? <Spin size="large" /> : t("web.hola.p1", { p1: user.fullName.split(" ")[0] })}
                   </h2>
+                  <span aria-hidden="true" className="mx-2 inline-block h-5 w-px shrink-0 align-middle bg-purple-300/40" />
+                  <TutorialTip size={26} tour="dashboard" label={t("navbar.wallet")} />
                 </div>
                 <div className="flex shrink-0 items-center gap-3">
                   <span className="hidden rounded-full gf-glass-inset px-3 py-1 text-sm font-semibold text-white sm:inline-flex">
@@ -636,7 +640,8 @@ function Wallet({ session, readOnly = false, demoRatesToMxn }: DashboardProps): 
                 </div>
               </div>
             </div>
-            <div className="filters flex items-center justify-center gap-2">
+            <div className="filters flex items-center justify-center gap-2" data-tour="dash-filters">
+              <div data-tour="dash-filters-preset">
               <SelecterFilterComp
                 getValue={getValueFromSelecter}
                 periodOverride={generate_timeperiod_ranges_array_for_dashboard(
@@ -646,18 +651,15 @@ function Wallet({ session, readOnly = false, demoRatesToMxn }: DashboardProps): 
                   "gf-glass-card text-gf-text w-fit text-[10px] font-light flex items-center justify-center rounded-2xl px-[4px] sm:font-base sm:font-extralight active:border-0 hover:border-0 outline-none active:outline-none ring-offset-0 relative pulse-animation-short min-[400px]:py-[2px] min-[640px]:py-[4px]"
                 }
               />
+              </div>
+              <div data-tour="dash-filters-range">
               <TimeRangeComp
                 rpDate={handleRangeDate}
                 rpResponse={""}
               />
-              <Tooltip title={t("dashboard.dateTip")}>
-                <div className="text-white w-[10px]">
-                  <UniversalCategoIconComp
-                    type={`${"fa/FaRegQuestionCircle"}`}
-                    siz={15}
-                  />
-                </div>
-              </Tooltip>
+              </div>
+              <span aria-hidden="true" className="mx-2 inline-block h-5 w-px shrink-0 align-middle bg-purple-300/40" /><TutorialTip tour="dashFilters" label={t("tour.dashFilters.name")} />
+              
             </div>
           </div>
           <HistoryGate starts={[startDate]} className="content-wallet content-wallet-glass px-2 rounded-t-[50px] rounded-b-[20px] pt-5 pb-[70px] flex flex-col gap-8">
@@ -665,7 +667,7 @@ function Wallet({ session, readOnly = false, demoRatesToMxn }: DashboardProps): 
               timePeriodFromFather={startDate && endDate ? [new Date(startDate), new Date(endDate)] : undefined}
               demoMode={readOnly}
             />
-            <div id={readOnly ? "demo-accounts" : undefined} className="multi-container lg:flex lg:item">
+            <div id={readOnly ? "demo-accounts" : undefined} className="multi-container lg:flex lg:item" data-tour="dash-accounts">
               <MultiCreditCardComp
                 timePeriod={[startDate, endDate]}
                 acc={accounts}
@@ -676,10 +678,10 @@ function Wallet({ session, readOnly = false, demoRatesToMxn }: DashboardProps): 
                 demoRatesToMxn={demoRatesToMxn}
               />
             </div>
-            <LazyMount id={readOnly ? "demo-categories" : undefined} className="w-full">
+            <LazyMount id={readOnly ? "demo-categories" : undefined} className="w-full" tour="dash-breakdown">
               <CategoryBreakdownCard timePeriod={[startDate, endDate]} />
             </LazyMount>
-            <div id={readOnly ? "demo-top" : undefined} className="top-3-general-container w-full">
+            <div id={readOnly ? "demo-top" : undefined} className="top-3-general-container w-full" data-tour="dash-top">
               <LazyMount className="w-full top-3-modules-cont flex flex-col justify-center items-center gap-2 lg:flex-col">
                 <TopElementsContainer timePeriodFromFather={[new Date(startDate), new Date(endDate)]} demoMode={readOnly} />
               </LazyMount>
@@ -716,14 +718,14 @@ function Wallet({ session, readOnly = false, demoRatesToMxn }: DashboardProps): 
                 </div>
               </div> */}
               {/* Budgets on the left, Transactions details on the right: each one takes half of the screen on desktop. */}
-              <LazyMount id={readOnly ? "demo-budgets" : undefined} className="budget w-full min-w-0">
+              <LazyMount id={readOnly ? "demo-budgets" : undefined} className="budget w-full min-w-0" tour="dash-budgets">
                 <div className="flex h-full flex-col gap-4">
                   <BudgetCont bcSession={session} readOnly={readOnly} />
                   {readOnly && <DemoBudgetComparisonCard startDate={startDate} endDate={endDate} context="dashboard" />}
                 </div>
               </LazyMount>
               {/* The card is as tall as the budgets beside it (on desktop); its list scrolls inside the card. */}
-              <LazyMount id={readOnly ? "demo-movements" : undefined} className="movements relative w-full min-w-0 h-[640px] lg:h-auto">
+              <LazyMount id={readOnly ? "demo-movements" : undefined} className="movements relative w-full min-w-0 h-[640px] lg:h-auto" tour="dash-movements">
                 <div className="gf-glass-card absolute inset-0 flex flex-col rounded-[32px] p-5">
                   <Movements
                     embedded

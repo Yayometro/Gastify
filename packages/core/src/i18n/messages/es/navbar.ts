@@ -37,6 +37,8 @@ const navbar = {
   "navbar.hint.categories": "Las categorías y subcategorías con las que clasificas tus movimientos.",
   "navbar.hint.theme": "Cambia entre modo claro y modo oscuro.",
   "navbar.hint.addTransaction": "Registra un gasto, un ingreso, una transferencia, una cuenta o un presupuesto.",
+  "navbar.people": "Personas",
+  "navbar.hint.people": "Cuánto gastas alrededor de las personas importantes para ti y hasta cuánto quieres gastar.",
 } as const;
 
 export default navbar;

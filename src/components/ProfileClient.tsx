@@ -21,6 +21,9 @@ import ProfileDataCard from "./profile/ProfileDataCard";
 import ProfileAccessCard from "./profile/ProfileAccessCard";
 import ProfileSignOut from "./profile/ProfileSignOut";
 import ProfileCountryCard from "./profile/ProfileCountryCard";
+import TourProfileCard from "./tour/TourProfileCard";
+import ProfileAppearanceCard from "./profile/ProfileAppearanceCard";
+import TutorialTip from "./tour/TutorialTip";
 import { ProfileCard, errorMessage, saveAccount } from "./profile/ProfileParts";
 import DemoProfileSettings from "@/components/demo/DemoProfileSettings";
 
@@ -63,9 +66,9 @@ function ProfileClient({ pcSession, readOnly = false }: ProfileClientProps): Rea
           width={150}
           height={150}
         />
-        <h1 className="pt-5 text-3xl">Alex Rivera</h1>
+        <h1 className="pt-5 text-3xl">Alex Rivera<span aria-hidden="true" className="mx-2 inline-block h-5 w-px shrink-0 align-middle bg-purple-300/40" /><TutorialTip className="ml-0.5" tour="profile" label={t("navbar.profile")} /></h1>
         <p className="mt-1 text-sm text-gf-text-muted">{t("shared.demo.profileSubtitle")}</p>
-        <div className="mx-auto mt-8 flex w-full max-w-2xl flex-col items-start gap-5 rounded-3xl border border-purple-300/15 bg-black/10 p-5 text-left sm:p-7">
+        <div className="mx-auto mt-8 flex w-full max-w-2xl flex-col items-start gap-5 rounded-3xl border border-purple-300/15 bg-black/10 p-5 text-left sm:p-7" data-tour="prof-header">
           <div className="w-full">
             <p className="text-[11px] text-gf-text-muted">{t("profile.fullName.label")}</p>
             <div className="gf-profile-field mt-1 w-full truncate rounded-xl border border-purple-400/50 px-3 py-2 text-lg font-light">Alex Rivera</div>
@@ -155,28 +158,31 @@ function ProfilePanel({ user, pcSession }: { user: UserData; pcSession?: string 
 
   return (
     <>
-      <header className="flex flex-col items-center gap-3 py-2">
+      <header className="flex flex-col items-center gap-3 py-2" data-tour="prof-header">
         {user.image ? (
           <Image className="rounded-full border border-gf-border object-cover shadow-md" src={user.image} alt={t("navbar.profileAlt", { p1: user.fullName })} width={96} height={96} />
         ) : (
           <div className="flex h-24 w-24 items-center justify-center rounded-full bg-purple-700 text-3xl font-bold text-white shadow-md">{initialsOf(user.fullName)}</div>
         )}
         <div className="flex flex-col items-center text-center">
-          <p className="text-xl font-bold text-gf-text">{user.fullName || "—"}</p>
+          <div className="flex items-center gap-2">
+            <p className="text-xl font-bold text-gf-text">{user.fullName || "—"}</p>
+          </div>
           <p className="text-sm text-gf-text-muted">{user.mail}</p>
         </div>
         <CldUploadWidget uploadPreset="Gastify_Cloudinary_Preset" onSuccess={(success) => onPhotoUploaded(success)}>
-          {({ open }) => <button type="button" onClick={() => open()} className="rounded-full gf-glass-inset px-4 py-2 text-sm font-semibold text-gf-text">{t("profile.photo.change")}</button>}
+          {({ open }) => <button type="button" data-tour="prof-photo-button" onClick={() => open()} className="rounded-full gf-glass-inset px-4 py-2 text-sm font-semibold text-gf-text">{t("profile.photo.change")}</button>}
         </CldUploadWidget>
       </header>
 
       <ProfileDataCard user={user} />
       <ProfileAccessCard email={user.mail ?? ""} />
-      <ProfileCard title={t("profile.language.title")}>
+      <ProfileCard title={t("profile.language.title")} tour="prof-language" help={<><span aria-hidden="true" className="mx-2 inline-block h-5 w-px shrink-0 align-middle bg-purple-300/40" /><TutorialTip tour="profLanguage" label={t("profile.language.title")} /></>}>
         <AccountLanguage current={isLocale(user.language) ? user.language : null} onSave={saveLanguage} />
       </ProfileCard>
       <ProfileCountryCard />
-      <ProfileCard title={t("profile.account.title")}>
+      <ProfileAppearanceCard />
+      <ProfileCard title={t("profile.account.title")} tour="prof-account">
         <div className="flex flex-col gap-3">
           <div className="flex items-center justify-between gap-3">
             <span className="text-sm text-gf-text-muted">{t("profile.account.email")}</span>
@@ -190,9 +196,14 @@ function ProfilePanel({ user, pcSession }: { user: UserData; pcSession?: string 
           )}
         </div>
       </ProfileCard>
-      <PasskeysPanel />
-      <TwoFactorPanel />
-      <TypedApiTokensPanel mail={pcSession} />
+      <div className="flex flex-col gap-4">
+        <PasskeysPanel />
+        <TwoFactorPanel />
+      </div>
+      <div data-tour="prof-ai">
+        <TypedApiTokensPanel mail={pcSession} />
+      </div>
+      <TourProfileCard />
       <ProfileSignOut />
       <DeleteAccountPanel />
     </>

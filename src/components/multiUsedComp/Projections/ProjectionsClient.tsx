@@ -7,27 +7,17 @@ import useGetDataFromProvider from "@/hooks/getAllInfo/useGetInfoFromProvider";
 import useProjectionTable, { type ProjectionBaselineData } from "@/hooks/useProjectionTable";
 import fetcher from "@/helpers/fetcher";
 import CategoIcon from "../CategoIcon";
-import UniversalCategoIcon from "../UniversalCategoIcon";
 import { usdFormatChanger } from "@/helpers/transformers/transactionsChange";
 import IncomeSourcesPanel from "./IncomeSourcesPanel";
 import HistoricalBaselinePanel from "./HistoricalBaselinePanel";
 import ProjectionsView, { type ProjectionRow } from "./ProjectionsView";
 import ProjectionAccuracyReport from "./ProjectionAccuracyReport";
-import ProjectionMonthDetailModal, {
-  type BucketBreakdownItem,
-  type IncomeOccurrenceItem,
-  type SaveBuffersPayload,
-} from "./ProjectionMonthDetailModal";
-import ProjectionsInfoModal from "./ProjectionsInfoModal";
-import { getTransactionsFromTimeRange, filterBillsOrIncomes } from "@/helpers/transformers/transactionsChange";
-import { getMonthBucketBreakdown, getExpectedOccurrencesInMonth, getMonthCurrencyBreakdown } from "@/helpers/transformers/projectionsChange";
-import { getValueActiveInMonth } from "@/helpers/transformers/budgetHistory";
-import { isSpendingBudget } from "@/helpers/transformers/budgetTypes";
+import ProjectionMonthDetailModal, { type SaveBuffersPayload } from "./ProjectionMonthDetailModal";
+import { buildSelectedMonthDetails, EMPTY_MONTH_DETAILS, type SelectedMonthDetails } from "./projectionMonthDetails";
 import PrimaryCurrencySelector, { type PrimaryCurrencySelectorWallet } from "../PrimaryCurrencySelector";
-import type { MonthDateRange } from "@gastify/core/time/timeFunctions";
-import type { CurrencyBreakdownData } from "../CurrencyBreakdownChips";
 
 import { InfoTip } from "@/components/multiUsedComp/InfoTip";
+import TutorialTip from "@/components/tour/TutorialTip";
 import { useT, useInfo } from "@/i18n/client";
 
 export interface ProjectionsClientProps {
@@ -37,20 +27,12 @@ export interface ProjectionsClientProps {
   demoProjectionBaseline?: ProjectionBaselineData | null;
 }
 
-export interface SelectedMonthDetails {
-  bucketBreakdown: BucketBreakdownItem[];
-  incomeOccurrences: IncomeOccurrenceItem[];
-  incomeCurrencyBreakdown: CurrencyBreakdownData | null;
-  expenseCurrencyBreakdown: CurrencyBreakdownData | null;
-}
-
 function ProjectionsClient({ mcSession, readOnly = false, demoRatesToMxn, demoProjectionBaseline }: ProjectionsClientProps): React.JSX.Element {
   const { APP_INFO } = useInfo();
   const t = useT();
   const { transacciones, budgets, accounts, wallet, user, loading } = useGetDataFromProvider();
   const [year, setYear] = useState<number>(new Date().getFullYear());
   const [selectedMonthName, setSelectedMonthName] = useState<string | null>(null);
-  const [showInfoModal, setShowInfoModal] = useState<boolean>(false);
   const toFetch = fetcher();
 
   const walletPrimaryCurrency = (wallet as { primaryCurrency?: string } | null | undefined)?.primaryCurrency || "MXN";
@@ -92,37 +74,17 @@ function ProjectionsClient({ mcSession, readOnly = false, demoRatesToMxn, demoPr
   const selectedUnexpectedIncomeBuffer = selectedMonthBufferEntry?.unexpectedIncomeBuffer || 0;
 
   const selectedMonthDetails = useMemo<SelectedMonthDetails>(() => {
-    if (!selectedRow) return { bucketBreakdown: [], incomeOccurrences: [], incomeCurrencyBreakdown: null, expenseCurrencyBreakdown: null };
-    const { start, end } = (monthRanges.get(selectedRow.monthName) || {}) as MonthDateRange;
-    const monthTx = getTransactionsFromTimeRange(transacciones || [], start, end);
-    const { bills, incomes } = filterBillsOrIncomes(monthTx);
-    const expenseCurrencyBreakdown = getMonthCurrencyBreakdown(bills, walletPrimaryCurrency);
-    const incomeCurrencyBreakdown = getMonthCurrencyBreakdown(incomes, walletPrimaryCurrency);
-    // Past months compare against the goalAmount that was actually active back
-    // then (via history[]), not today's value - otherwise the chart would show
-    // a budget you only set recently as if it applied to a much older month.
-    const nonSavingBudgets = (budgetsConverted || []).filter(isSpendingBudget);
-    const budgetsForChart =
-      selectedRow.type === "actual"
-        ? nonSavingBudgets
-            .map((b) => {
-              const resolved = getValueActiveInMonth(b.history, start);
-              return resolved ? { ...b, goalAmount: resolved.goalAmount } : null;
-            })
-            .filter(Boolean)
-        : nonSavingBudgets.filter((b) => !b.archived);
-    const bucketBreakdown = getMonthBucketBreakdown(bills, budgetsForChart, selectedUnexpectedBuffer, { budget: t("budgets.alert.defaultName"), unexpected: t("projections.unexpectedRow") });
-    const incomeOccurrences =
-      selectedRow.type === "actual"
-        ? []
-        : (incomeSourcesConverted || [])
-            .filter((s) => s.active && !s.archived)
-            .map((s) => ({
-              name: s.name,
-              amount: s.amount as number,
-              occurrences: getExpectedOccurrencesInMonth(s, start, end),
-            }));
-    return { bucketBreakdown, incomeOccurrences, incomeCurrencyBreakdown, expenseCurrencyBreakdown };
+    if (!selectedRow) return EMPTY_MONTH_DETAILS;
+    return buildSelectedMonthDetails({
+      rowType: selectedRow.type,
+      range: monthRanges.get(selectedRow.monthName),
+      transactions: transacciones || [],
+      budgets: budgetsConverted || [],
+      incomeSources: incomeSourcesConverted || [],
+      unexpectedBuffer: selectedUnexpectedBuffer,
+      walletPrimaryCurrency,
+      labels: { budget: t("budgets.alert.defaultName"), unexpected: t("projections.unexpectedRow") },
+    });
   }, [selectedRow, monthRanges, transacciones, budgetsConverted, incomeSourcesConverted, selectedUnexpectedBuffer, walletPrimaryCurrency, t]);
 
   const handleSaveBuffers = async ({ unexpectedBuffer: newBuffer, unexpectedIncomeBuffer: newIncomeBuffer }: SaveBuffersPayload): Promise<void> => {
@@ -155,10 +117,10 @@ function ProjectionsClient({ mcSession, readOnly = false, demoRatesToMxn, demoPr
     <div className="w-full h-full sm:pr-2 pb-10">
       <div className="w-full profile-img py-4 text-center text-white">
         <h1 className="text-2xl sm:text-3xl md:text-4xl font-thin">
-          {t("projections.title")}<InfoTip info={APP_INFO.proyecciones} />
+          {t("projections.title")}<span aria-hidden="true" className="mx-2 inline-block h-5 w-px shrink-0 align-middle bg-purple-300/40" /><InfoTip info={APP_INFO.proyecciones} /><TutorialTip className="ml-0.5" tour="projections" label={t("navbar.projections")} />
         </h1>
       </div>
-      {!readOnly && <div className="w-full flex items-center justify-center pt-2">
+      {!readOnly && <div className="w-full flex items-center justify-center pt-2" data-tour="proj-currency">
         <Tooltip title={t("projections.currency.help")}>
           <div>
             <PrimaryCurrencySelector pcsWallet={wallet as PrimaryCurrencySelectorWallet | null | undefined} />
@@ -166,7 +128,7 @@ function ProjectionsClient({ mcSession, readOnly = false, demoRatesToMxn, demoPr
         </Tooltip>
       </div>}
       <div className="content-profile-cont w-full h-full content-wallet-glass items-center mt-[10px] sm:mt-[20px] rounded-t-[60px] rounded-b-2xl px-4 sm:px-8 py-6">
-        <div className="flex items-center justify-center gap-3 mb-2">
+        <div className="flex items-center justify-center gap-3 mb-2" data-tour="proj-year">
           <div className="cursor-pointer" onClick={() => setYear((y) => y - 1)}>
             <CategoIcon type="MdChevronLeft" siz={28} />
           </div>
@@ -174,29 +136,24 @@ function ProjectionsClient({ mcSession, readOnly = false, demoRatesToMxn, demoPr
           <div className="cursor-pointer" onClick={() => setYear((y) => y + 1)}>
             <CategoIcon type="MdChevronRight" siz={28} />
           </div>
-          <div className="cursor-pointer text-purple-500" onClick={() => setShowInfoModal(true)}>
-            <UniversalCategoIcon type="fa/FaRegQuestionCircle" siz={20} />
-          </div>
+          <span aria-hidden="true" className="mx-2 inline-block h-5 w-px shrink-0 align-middle bg-purple-300/40" /><TutorialTip tour="projYear" label={t("tour.projYear.name")} />
         </div>
 
-        <div className="flex items-center justify-center gap-1 mb-4 text-purple-300">
+        <div className="flex items-center justify-center gap-1 mb-4 text-purple-300" data-tour="proj-today">
           <p className="text-lg">
             {t("projections.today.total")} <span className="font-bold">{usdFormatChanger(startingBalance)}</span>
           </p>
-          <Tooltip title={t("projections.today.help")}>
-            <div>
-              <UniversalCategoIcon type="fa/FaRegQuestionCircle" siz={13} />
-            </div>
-          </Tooltip>
+          <span aria-hidden="true" className="mx-2 inline-block h-5 w-px shrink-0 align-middle bg-purple-300/40" />
+          <InfoTip info={{ title: t("projections.today.total"), text: t("projections.today.help") }} />
         </div>
 
-        {!readOnly && <IncomeSourcesPanel
+        {!readOnly && <div data-tour="proj-sources"><IncomeSourcesPanel
           incomeSources={incomeSources}
           userId={user?._id as string | undefined}
           walletId={wallet?._id as string | undefined}
           walletPrimaryCurrency={walletPrimaryCurrency}
           onChange={loadSettings}
-        />}
+        /></div>}
 
         {!readOnly && <HistoricalBaselinePanel
           baseline={projectionBaseline}
@@ -215,10 +172,13 @@ function ProjectionsClient({ mcSession, readOnly = false, demoRatesToMxn, demoPr
           {isLoading ? (
             <Skeleton active />
           ) : (
-            <ProjectionsView
-              rows={rowsWithEstimates as unknown as ProjectionRow[]}
-              onRowClick={(row) => setSelectedMonthName(row.monthName)}
-            />
+            <div data-tour="proj-table">
+              <ProjectionsView
+                tutorial="projTable"
+                rows={rowsWithEstimates as unknown as ProjectionRow[]}
+                onRowClick={(row) => setSelectedMonthName(row.monthName)}
+              />
+            </div>
           )}
 
           {!isLoading && (
@@ -248,7 +208,6 @@ function ProjectionsClient({ mcSession, readOnly = false, demoRatesToMxn, demoPr
           />
         )}
 
-        {showInfoModal && <ProjectionsInfoModal onClose={() => setShowInfoModal(false)} />}
       </div>
     </div>
   );

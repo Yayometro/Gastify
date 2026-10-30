@@ -1,9 +1,11 @@
 "use client";
+import TutorialTip from "@/components/tour/TutorialTip";
+import { InfoTip } from "@/components/multiUsedComp/InfoTip";
 import React from "react";
 import { Modal } from "antd";
 import dayjs from "dayjs";
 import { formatMoneyMajor } from "@gastify/core/money/currencies";
-import { useT } from "@/i18n/client";
+import { useT, useInfo } from "@/i18n/client";
 
 interface MonthRowProps {
   label: React.ReactNode;
@@ -159,6 +161,7 @@ export interface InsightDetailModalProps {
 // spending-pace card - same body renderers, different `data`.
 function InsightDetailModal({ insight, onClose, walletPrimaryCurrency }: InsightDetailModalProps) {
   const t = useT();
+  const { APP_INFO } = useInfo();
   if (!insight) return null;
   const { type, data, title, icon } = insight;
 
@@ -200,11 +203,34 @@ function InsightDetailModal({ insight, onClose, walletPrimaryCurrency }: Insight
     explanation = (
       <p className="text-xs text-gf-text-muted mb-3">
         {t("analyzer.subscriptions.rule")} <b>{d.categoryName}</b>.
+        {(d as { priceChange?: { from: number; to: number } | null }).priceChange ? (
+          <>
+            {" "}
+            {t("analyzer.subscriptions.priceChange", {
+              p1: formatMoneyMajor((d as { priceChange: { from: number; to: number } }).priceChange.from, walletPrimaryCurrency),
+              p2: formatMoneyMajor((d as { priceChange: { from: number; to: number } }).priceChange.to, walletPrimaryCurrency),
+            })}
+          </>
+        ) : null}
+        {(d as { firstSeen?: string | Date | null }).firstSeen ? <> {t("analyzer.subscriptions.firstSeen", { p1: dayjs((d as { firstSeen: string | Date }).firstSeen).format("DD MMM YYYY") })}</> : null}
       </p>
     );
     rows = (d.occurrences || []).map((o, i) => (
       <MonthRow key={i} label={dayjs(o.date).format("DD MMM YYYY")} right={formatMoneyMajor(o.amount, walletPrimaryCurrency)} />
     ));
+  } else if (type === "new_category") {
+    const d = data as { name: string; firstSeen?: string | Date | null; count?: number; sample?: { name?: string; date: string | Date; amount: number }[] };
+    explanation = (
+      <p className="text-xs text-gf-text-muted mb-3">
+        {t("analyzer.newCategory.explain", { p1: d.name, p2: d.firstSeen ? dayjs(d.firstSeen).format("DD MMM YYYY") : "—" })}
+      </p>
+    );
+    rows = [
+      ...(d.sample || []).map((o, i) => (
+        <MonthRow key={i} label={`${dayjs(o.date).format("DD MMM YYYY")} · ${o.name || ""}`} right={formatMoneyMajor(o.amount, walletPrimaryCurrency)} />
+      )),
+      ...((d.count || 0) > (d.sample?.length || 0) ? [<MonthRow key="more" label={t("analyzer.newCategory.more", { p1: (d.count || 0) - (d.sample?.length || 0) })} right="" />] : []),
+    ];
   } else if (type === "monthly_average") {
     const d = data as MonthlyAverageInsightDetailData;
     explanation = (
@@ -294,11 +320,13 @@ function InsightDetailModal({ insight, onClose, walletPrimaryCurrency }: Insight
         <div className="flex items-center gap-2 text-purple-300 font-semibold text-base">
           <span>{icon}</span>
           {title}
+          <span aria-hidden="true" className="mx-2 inline-block h-5 w-px shrink-0 align-middle bg-purple-300/40" />
+          {insight?.type === "trend_month" ? <InfoTip info={APP_INFO.tendencia_mes} /> : <TutorialTip tour="anaInsightDetail" label={typeof title === "string" ? title : ""} />}
         </div>
       }
     >
-      {explanation}
-      <div className="flex flex-col max-h-[360px] overflow-y-auto pr-1">{rows}</div>
+      <div data-tour="ins-explanation">{explanation}</div>
+      <div data-tour="ins-rows" className="flex flex-col max-h-[360px] overflow-y-auto pr-1">{rows}</div>
     </Modal>
   );
 }

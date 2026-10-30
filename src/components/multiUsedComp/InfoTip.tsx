@@ -14,13 +14,13 @@ export function InfoWindow({ info, onClose, body }: { info: InfoText; onClose: (
   const t = useT();
   return (
     <BasicModal
-      zIndexClass="z-[10010]"
+      zIndexClass="z-[30010]"
       close={onClose}
       renderContent={
-        <div className="content absolute gf-glass-violet flex flex-col w-[94vw] max-w-[580px] max-h-[88vh] rounded-3xl overflow-hidden z-[10011]">
+        <div className="content absolute gf-glass-violet flex flex-col w-[94vw] max-w-[580px] max-h-[88vh] rounded-3xl overflow-hidden z-[30011]">
           <div className="flex items-center gap-3 px-6 pt-6 pb-3 pr-14">
             <IoHelpCircleOutline size={26} className="shrink-0 text-purple-300" />
-            <h2 className="flex-1 text-xl font-bold text-white">{info.title}</h2>
+            <h2 className="flex-1 text-xl font-bold text-gf-text">{info.title}</h2>
           </div>
           <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-6 pb-4">
             {body ?? <InfoContent text={info.text} sections={info.sections} />}
@@ -30,7 +30,7 @@ export function InfoWindow({ info, onClose, body }: { info: InfoText; onClose: (
               {t("shared.understood")}
             </button>
           </div>
-          <button type="button" aria-label={t("shared.close")} onClick={onClose} className="absolute top-4 right-4 rounded-full gf-glass-card p-1.5 text-purple-100 hover:text-white transition-colors">
+          <button type="button" aria-label={t("shared.close")} onClick={onClose} className="absolute top-4 right-4 rounded-full gf-glass-card p-1.5 text-purple-100 hover:text-gf-text transition-colors">
             <CategoIcon type={"MdClose"} siz={18} />
           </button>
         </div>
@@ -41,25 +41,27 @@ export function InfoWindow({ info, onClose, body }: { info: InfoText; onClose: (
 
 // The "?" that explains a window or a section: the same explanation the app shows, in a window of its own.
 // It may sit inside a card that opens something when pressed: the tip and its window never reach that card.
-export function InfoTip({ info, className = "" }: { info: InfoText; className?: string }): React.JSX.Element {
+// A window with its own body (a guide with desplegables) passes it in `body`; the same shell is used then.
+export function InfoTip({ info, className = "", body }: { info: InfoText; className?: string; body?: React.ReactNode }): React.JSX.Element {
   const t = useT();
   const [open, setOpen] = useState<boolean>(false);
   return (
     <>
       <button
         type="button"
+        data-tour="info-tip"
         aria-label={t("shared.infoLabel", { p1: info.title })}
         onClick={(event) => {
           event.stopPropagation();
           setOpen(true);
         }}
-        className={`inline-flex items-center justify-center rounded-full text-purple-200 hover:text-white transition-colors ${className}`}
+        className={`inline-flex items-center justify-center align-middle rounded-full text-purple-200 hover:text-gf-text transition-colors ${className}`}
       >
         <IoHelpCircleOutline size={20} />
       </button>
       {open && (
         <span onClick={(event) => event.stopPropagation()}>
-          <InfoWindow info={info} onClose={() => setOpen(false)} />
+          <InfoWindow info={info} onClose={() => setOpen(false)} body={body} />
         </span>
       )}
     </>

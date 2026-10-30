@@ -4,9 +4,9 @@ import type { TranslateFn } from "@gastify/core/i18n/translate";
 import React from "react";
 import { createPortal } from "react-dom";
 import { useState } from "react";
-import { Tooltip } from "antd";
+import type { TourId } from "@gastify/core/tour/tourSteps";
 import CategoIcon from "@/components/multiUsedComp/CategoIcon";
-import UniversalCategoIcon from "@/components/multiUsedComp/UniversalCategoIcon";
+import TutorialTip from "@/components/tour/TutorialTip";
 import UncategorizedSuggestionsTab from "@/components/multiUsedComp/CategorySuggestions/UncategorizedSuggestionsTab";
 import { useT } from "@/i18n/client";
 
@@ -14,7 +14,8 @@ export interface ToolTab {
   id: string;
   label: string;
   title: string;
-  tooltip: string;
+  // The tool's own tutorial: its compass sits beside the tool's title.
+  tour: TourId;
   render: () => React.JSX.Element;
 }
 
@@ -31,7 +32,7 @@ function buildTabs(mail: string | null | undefined, t: TranslateFn): ToolTab[] {
       id: "uncategorized",
       label: t("movements.uncategorized"),
       title: t("movements.categorizer.title"),
-      tooltip: t("movements.categorizer.tooltip"),
+      tour: "toolsCategorizer",
       render: () => <UncategorizedSuggestionsTab mail={mail} />,
     },
   ];
@@ -56,15 +57,10 @@ function ToolsModal({ mail, onClose }: ToolsModalProps): React.JSX.Element {
 
         <div className="text-center">
           <h2 className="text-xl font-semibold text-gf-text">{tr("movements.tools")}</h2>
-          <div className="flex items-center justify-center gap-1 mt-1">
+          <div data-tour="tools-title" className="flex items-center justify-center mt-1">
             <p className="text-sm text-purple-600 font-medium">{current.title}</p>
-            {current.tooltip && (
-              <Tooltip title={current.tooltip}>
-                <div className="text-purple-400 cursor-help">
-                  <UniversalCategoIcon type="fa/FaRegQuestionCircle" siz={12} />
-                </div>
-              </Tooltip>
-            )}
+            <span aria-hidden="true" className="mx-2 inline-block h-4 w-px shrink-0 align-middle bg-purple-300/40" />
+            <TutorialTip tour={current.tour} label={current.title} />
           </div>
         </div>
 
@@ -86,7 +82,7 @@ function ToolsModal({ mail, onClose }: ToolsModalProps): React.JSX.Element {
           </div>
         )}
 
-        {current.render()}
+        <div data-tour="tools-body">{current.render()}</div>
       </div>
     </div>,
     document.body

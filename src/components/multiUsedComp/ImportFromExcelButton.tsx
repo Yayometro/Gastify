@@ -5,14 +5,14 @@ import { Tooltip } from "antd";
 import BasicModal from "@/components/modals/basicModal/BasicModal";
 import CategoIcon from "@/components/multiUsedComp/CategoIcon";
 import ReadFileComp from "./ReadFileComp";
-import { useT } from "@/i18n/client";
-
-const TypedReadFileComp = ReadFileComp as React.ComponentType<Record<string, never>>;
+import { useT, useInfo } from "@/i18n/client";
+import TitleWithHelp from "@/components/multiUsedComp/TitleWithHelp";
 
 // Import from Excel as a button on the Movements page: it opens the import in a window of its own, in the same glass as the
 // Tools window, so the page keeps only the buttons.
 function ImportFromExcelButton(): React.JSX.Element {
   const t = useT();
+  const { APP_INFO } = useInfo();
   const [open, setOpen] = useState<boolean>(false);
   return (
     <>
@@ -32,10 +32,10 @@ function ImportFromExcelButton(): React.JSX.Element {
           renderContent={
             <div className="content absolute gf-glass-violet flex flex-col w-[94vw] max-w-[900px] max-h-[90vh] rounded-3xl overflow-hidden z-[3001]">
               <div className="px-6 pt-6 pb-3 pr-14 text-center">
-                <h2 className="text-xl font-semibold text-gf-text">{t("movements.import.title")}</h2>
+                <TitleWithHelp as="h2" title={t("movements.import.title")} info={APP_INFO.importar_desde_excel} tour="addImport" titleClassName="text-xl font-semibold text-gf-text" className="justify-center" />
               </div>
               <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-4 pb-6 sm:px-6">
-                <TypedReadFileComp />
+                <ReadFileComp inWindow />
               </div>
               <button
                 type="button"

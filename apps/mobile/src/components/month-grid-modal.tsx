@@ -60,7 +60,7 @@ export function MonthGridModal({
               <Ionicons name="chevron-forward" size={26} color={colors.text} />
             </Pressable>
           </View>
-          <View className="flex-row flex-wrap justify-between gap-y-3 px-6">
+          <View className="flex-row flex-wrap justify-between gap-y-3 px-6 pb-8">
             {Array.from({ length: 12 }, (_, month) => monthName(month, locale)).map((label, month) => {
               const selected = value.getFullYear() === year && value.getMonth() === month;
               const future = index(year, month) > latestIndex;

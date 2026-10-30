@@ -3,8 +3,14 @@ import type { Locale } from "./locales";
 
 // The namespaces: one catalog file per namespace and language, under messages/<locale>/<namespace>.ts. A screen loads only the
 // namespaces it shows, so the first paint carries the text of its own screen and nothing else.
-export const NAMESPACES = ["common", "auth", "movements", "navbar", "dashboard", "budgets", "accounts", "categories", "profile", "history", "analyzer", "projections", "info", "errors", "inicio", "shared", "template", "web", "mobile"] as const;
+export const NAMESPACES = ["common", "auth", "movements", "navbar", "dashboard", "budgets", "accounts", "categories", "profile", "history", "analyzer", "projections", "info", "errors", "inicio", "shared", "tour", "tourDashboard", "tourMovements", "tourBudgets", "tourProjections", "tourAnalyzer", "tourAccounts", "tourHistory", "tourCategories", "tourProfile", "tourMobile", "template", "web", "mobile"] as const;
 export type Namespace = (typeof NAMESPACES)[number];
+
+// The tutorial texts of the web's pages (one namespace per page). The phone never shows them, so it does not load them.
+export const WEB_TOUR_NAMESPACES: readonly Namespace[] = ["tourDashboard", "tourMovements", "tourBudgets", "tourProjections", "tourAnalyzer", "tourAccounts", "tourHistory", "tourCategories", "tourProfile"];
+
+// The namespaces the phone loads: all but the web tutorials'.
+export const MOBILE_NAMESPACES: readonly Namespace[] = NAMESPACES.filter((namespace) => !WEB_TOUR_NAMESPACES.includes(namespace));
 
 type Loader = () => Promise<{ default: Dict }>;
 
@@ -20,6 +26,17 @@ const LOADERS: Record<Locale, Partial<Record<Namespace, Loader>>> = {
     projections: () => import("./messages/es/projections"),
     categories: () => import("./messages/es/categories"),
     shared: () => import("./messages/es/shared"),
+    tour: () => import("./messages/es/tour"),
+    tourDashboard: () => import("./messages/es/tourDashboard"),
+    tourMovements: () => import("./messages/es/tourMovements"),
+    tourBudgets: () => import("./messages/es/tourBudgets"),
+    tourProjections: () => import("./messages/es/tourProjections"),
+    tourAnalyzer: () => import("./messages/es/tourAnalyzer"),
+    tourAccounts: () => import("./messages/es/tourAccounts"),
+    tourHistory: () => import("./messages/es/tourHistory"),
+    tourCategories: () => import("./messages/es/tourCategories"),
+    tourProfile: () => import("./messages/es/tourProfile"),
+    tourMobile: () => import("./messages/es/tourMobile"),
     analyzer: () => import("./messages/es/analyzer"),
     budgets: () => import("./messages/es/budgets"),
     inicio: () => import("./messages/es/inicio"),
@@ -40,6 +57,17 @@ const LOADERS: Record<Locale, Partial<Record<Namespace, Loader>>> = {
     projections: () => import("./messages/en/projections"),
     categories: () => import("./messages/en/categories"),
     shared: () => import("./messages/en/shared"),
+    tour: () => import("./messages/en/tour"),
+    tourDashboard: () => import("./messages/en/tourDashboard"),
+    tourMovements: () => import("./messages/en/tourMovements"),
+    tourBudgets: () => import("./messages/en/tourBudgets"),
+    tourProjections: () => import("./messages/en/tourProjections"),
+    tourAnalyzer: () => import("./messages/en/tourAnalyzer"),
+    tourAccounts: () => import("./messages/en/tourAccounts"),
+    tourHistory: () => import("./messages/en/tourHistory"),
+    tourCategories: () => import("./messages/en/tourCategories"),
+    tourProfile: () => import("./messages/en/tourProfile"),
+    tourMobile: () => import("./messages/en/tourMobile"),
     analyzer: () => import("./messages/en/analyzer"),
     budgets: () => import("./messages/en/budgets"),
     inicio: () => import("./messages/en/inicio"),

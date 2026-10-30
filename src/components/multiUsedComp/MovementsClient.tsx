@@ -13,6 +13,8 @@ import CategorySuggestionsSection from "./CategorySuggestions/CategorySuggestion
 import DemoMovementTools from "@/components/demo/DemoMovementTools";
 import type { AppDispatch, RootState } from "@/lib/store";
 import { useT } from "@/i18n/client";
+import RecurringManager from "./RecurringManager";
+import TutorialTip from "@/components/tour/TutorialTip";
 
 // Typed bridges for unmigrated child JSX components
 const TypedMovements = Movements as React.ComponentType<{
@@ -100,7 +102,9 @@ function MovementsClient({ mcSession, readOnly = false }: MovementsClientProps):
           <div className="cc-categoryList-cont w-full flex flex-col justify-center items-center">
             <h1 className="text-3xl min-[text-[45px]]: py-2">
               {t("movements.title")}
+              <span aria-hidden="true" className="mx-2 inline-block h-5 w-px shrink-0 align-middle bg-purple-300/40" /><TutorialTip className="ml-0.5" tour="movements" label={t("navbar.movements")} />
             </h1>
+            {!readOnly && <div className="pb-1"><RecurringManager /></div>}
           </div>
           <div
             ref={splitRef}
@@ -108,7 +112,7 @@ function MovementsClient({ mcSession, readOnly = false }: MovementsClientProps):
           >
             {/* The tools: the two cards on wide screens (the categorizer takes the height left under the import), the two
                 buttons (each opens its tool) on narrow ones. */}
-            {readOnly ? <DemoMovementTools /> : <div className={wide ? "flex min-w-0 flex-col gap-4" : "flex flex-wrap items-center justify-center gap-3"}>
+            {readOnly ? <DemoMovementTools /> : <div data-tour="mov-tools" className={wide ? "flex min-w-0 flex-col gap-4" : "flex flex-wrap items-center justify-center gap-3"}>
               {wide ? (
                 <>
                   <div className="shrink-0">
@@ -126,7 +130,7 @@ function MovementsClient({ mcSession, readOnly = false }: MovementsClientProps):
               )}
             </div>}
             {/* The transactions: on wide screens as tall as the split (the list scrolls inside), a fixed box on narrow ones. */}
-            <div className={wide ? "relative min-w-0" : "relative h-[640px]"} style={wide ? { minHeight: splitHeight } : undefined}>
+            <div data-tour="mov-list" className={wide ? "relative min-w-0" : "relative h-[640px]"} style={wide ? { minHeight: splitHeight } : undefined}>
               <div className="gf-glass-frost absolute inset-0 flex flex-col rounded-[32px] p-4">
                 <TypedMovements mail={mcSession} embedded readOnly={readOnly} />
               </div>

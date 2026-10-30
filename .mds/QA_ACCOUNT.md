@@ -7,6 +7,10 @@ Es la cuenta de pruebas que se conserva. Úsala para probar cualquier sección d
 - **Segundo factor:** app autenticadora (código TOTP). Sin passkeys.
 - **Qué tiene (conteo del 2026-10-27):** 3 cuentas, 130 movimientos, 9 presupuestos y la categoría predeterminada. Idioma y país aún sin guardar.
 
+## Cuenta compartida de los agentes
+
+Para pruebas automatizadas existe otra cuenta, normal y sin permisos de admin: `qa.agentes.01e44d@example.com`, con 2FA ya activado y códigos generables con `node scripts/qa-totp.mjs`. Detalles y credenciales (en `.env.test-account.local`, no versionado): `rules.md` en la raíz.
+
 ## Reglas
 
 1. No borrar esta cuenta ni sus datos. Si una prueba necesita borrar algo, se hace en una cuenta desechable (regla 3).
@@ -31,3 +35,4 @@ Es la cuenta de pruebas que se conserva. Úsala para probar cualquier sección d
 |---|---|---|---|
 | 2026-10-27 | Claude Code | Designada como cuenta QA base. Sin cambios de datos. | Pedido del usuario: una cuenta fija para pruebas generales. |
 | 2026-10-27 | Claude Code, con permiso del usuario | Idioma `en` y país `AR`, escritos directamente en la base y leídos de vuelta. | Prueba de la escritura. No pasó por la interfaz porque no hay forma de iniciar sesión sin el código de la app autenticadora. |
+| 2026-10-30 | Claude Code, con permiso del usuario | Creada `qa.agentes.01e44d@example.com` (usuario normal) y activado su 2FA (TOTP) vía API de Better Auth. | Pedido del usuario: una cuenta fija para todos los agentes de prueba, sin depender de él para iniciar sesión. |

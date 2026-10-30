@@ -8,6 +8,7 @@ import dayjs from "dayjs";
 import fetcher from "@/helpers/fetcher";
 import runNotify from "@/helpers/gastifyNotifier";
 import CategoIcon from "./CategoIcon";
+import TutorialTip from "@/components/tour/TutorialTip";
 import { useT, useInfo } from "@/i18n/client";
 
 // Unmigrated JS CategoIcon infers required className from destructured params; typed bridge component
@@ -96,14 +97,15 @@ function ApiTokensPanel({ mail }: ApiTokensPanelProps): React.JSX.Element {
   return (
     <div className="api-tokens-panel w-full bg-gf-accent-soft-bg rounded-3xl p-4 mb-4">
       <div
+        data-tour="prof-tokens-header"
         className="flex justify-between items-center cursor-pointer"
         onClick={() => setIsOpen(!isOpen)}
       >
-        <div className="flex items-center gap-2"><h2 className="text-xl text-purple-300 font-normal">{tr("shared.tokens.title")}</h2><InfoTip info={APP_INFO.tokens_de_acceso} /></div>
+        <div className="flex items-center gap-2"><h2 className="text-xl text-purple-300 font-normal">{tr("shared.tokens.title")}</h2><span aria-hidden="true" className="mx-2 inline-block h-5 w-px shrink-0 align-middle bg-purple-300/40" /><InfoTip info={APP_INFO.tokens_de_acceso} /><TutorialTip tour="profTokens" label={tr("shared.tokens.title")} /></div>
         <TypedCategoIcon type={isOpen ? "MdExpandLess" : "MdExpandMore"} siz={24} />
       </div>
       {isOpen && (
-        <div className="mt-3">
+        <div className="mt-3" data-tour="prof-tokens-body">
           <p className="text-xs text-gf-text-muted mb-3">
             {tr("shared.tokens.help")}
           </p>
@@ -138,7 +140,7 @@ function ApiTokensPanel({ mail }: ApiTokensPanelProps): React.JSX.Element {
             </div>
           )}
 
-          <ul className="flex flex-col gap-2 mb-4">
+          <ul className="flex flex-col gap-2 mb-4" data-tour="prof-tokens-list">
             {tokens.length === 0 ? (
               <li className="text-xs text-gf-text-muted italic">{tr("shared.tokens.none")}</li>
             ) : (
@@ -166,6 +168,7 @@ function ApiTokensPanel({ mail }: ApiTokensPanelProps): React.JSX.Element {
 
           <form
             onSubmit={handleCreate}
+            data-tour="prof-tokens-form"
             className="form-trans-edit flex flex-col sm:flex-row gap-2 items-stretch sm:items-end bg-gf-surface rounded-2xl p-3"
           >
             <div className="flex flex-col flex-1">

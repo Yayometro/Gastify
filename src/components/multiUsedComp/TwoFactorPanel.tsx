@@ -10,6 +10,7 @@ import { redirectIfStepUpRequired } from "@/lib/auth/stepUpRedirect";
 import downloadBackupCodes from "@/helpers/downloadBackupCodes";
 import CategoIcon from "./CategoIcon";
 
+import TutorialTip from "@/components/tour/TutorialTip";
 import { InfoTip } from "@/components/multiUsedComp/InfoTip";
 import { useT, useInfo } from "@/i18n/client";
 
@@ -270,19 +271,19 @@ function TwoFactorPanel(): React.JSX.Element {
   }
 
   return (
-    <div className="two-factor-panel w-full bg-gf-accent-soft-bg rounded-3xl p-4 mb-4">
-      <div className="flex justify-between items-center cursor-pointer" onClick={() => setIsOpen(!isOpen)}>
-        <span className="inline-flex items-center gap-1.5"><h2 className="text-xl text-purple-300 font-normal">{t("shared.twoStep.title")}</h2><InfoTip info={APP_INFO.verificaci_n_en_dos_pasos} /></span>
+    <div className="two-factor-panel w-full bg-gf-accent-soft-bg rounded-3xl p-4 mb-4" data-tour="prof-twofactor">
+      <div data-tour="prof-twofactor-header" className="flex justify-between items-center cursor-pointer" onClick={() => setIsOpen(!isOpen)}>
+        <span className="inline-flex items-center gap-1.5"><h2 className="text-xl text-purple-300 font-normal">{t("shared.twoStep.title")}</h2><span aria-hidden="true" className="mx-2 inline-block h-5 w-px shrink-0 align-middle bg-purple-300/40" /><InfoTip info={APP_INFO.verificaci_n_en_dos_pasos} /><TutorialTip tour="profTwoFactor" label={t("shared.twoStep.title")} /></span>
         <TypedCategoIcon type={isOpen ? "MdExpandLess" : "MdExpandMore"} siz={24} />
       </div>
       {isOpen && (
-        <div className="mt-3">
+        <div className="mt-3" data-tour="prof-twofactor-body">
           <p className="text-xs text-gf-text-muted mb-3">
             {t("shared.twoStep.help")}
           </p>
 
           {!setupStep && (
-            <div className="bg-gf-surface rounded-2xl p-3 flex justify-between items-center">
+            <div className="bg-gf-surface rounded-2xl p-3 flex justify-between items-center" data-tour="prof-twofactor-status">
               <p className="text-sm text-gf-text">
                 {t("shared.twoStep.status")} <span className={twoFactorEnabled ? "text-green-400 font-semibold" : "text-gf-text-muted"}>{twoFactorEnabled ? t("web.on") : t("web.off")}</span>
               </p>

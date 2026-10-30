@@ -46,7 +46,7 @@ export default function AccountLanguage({
 
   return (
     <div className="flex flex-col items-center gap-1">
-      <div className="inline-flex flex-wrap items-center justify-center gap-1 rounded-full gf-glass-inset p-1" role="group" aria-label={t("profile.language.title")}>
+      <div data-tour="prof-language-options" className="inline-flex flex-wrap items-center justify-center gap-1 rounded-full gf-glass-inset p-1" role="group" aria-label={t("profile.language.title")}>
         {options.map((option) => (
           <button
             key={option.value ?? "automatic"}

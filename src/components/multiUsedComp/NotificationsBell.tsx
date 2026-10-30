@@ -6,8 +6,9 @@ import { IoNotificationsOutline, IoCheckmarkCircleOutline } from "react-icons/io
 import BasicModal from "@/components/modals/basicModal/BasicModal";
 import CategoIcon from "./CategoIcon";
 import useBudgetAlertList from "@/hooks/useBudgetAlertList";
-import { InfoTip } from "./InfoTip";
+import TitleWithHelp from "./TitleWithHelp";
 import AlertCelebration from "./notifications/AlertCelebration";
+import { openPendingRecurring, usePendingRecurring } from "@/lib/recurring/pendingStore";
 
 import type { BudgetAlert } from "@gastify/core/budgets/budgetAlerts";
 import { useT, useInfo, useLocale } from "@/i18n/client";
@@ -26,6 +27,8 @@ function NotificationsBell(): React.JSX.Element {
   const t = useT();
   const locale = useLocale();
   const { alerts, dismiss, dismissAll } = useBudgetAlertList();
+  // Recurring charges with a variable price that wait for the person's amount: one more notice, until they are answered.
+  const recurringPending = usePendingRecurring().items.length;
   const [celebrating, setCelebrating] = useState<BudgetAlert | null>(null);
   const [clearing, setClearing] = useState<boolean>(false);
   const [open, setOpen] = useState<boolean>(false);
@@ -52,9 +55,9 @@ function NotificationsBell(): React.JSX.Element {
       <button type="button" aria-label={t("navbar.notifications")} onClick={() => setOpen(true)} className="relative flex items-center justify-center">
         <IoNotificationsOutline size={28} className="hidden sm:inline" />
         <p className="sm:hidden hoverTooltip">{t("navbar.notifications")}</p>
-        {alerts.length > 0 && (
+        {alerts.length + (recurringPending > 0 ? 1 : 0) > 0 && (
           <span className="animate__animated animate__bounceIn absolute -right-1 -top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
-            {alerts.length}
+            {alerts.length + (recurringPending > 0 ? 1 : 0)}
           </span>
         )}
       </button>
@@ -68,8 +71,7 @@ function NotificationsBell(): React.JSX.Element {
             <div className="content absolute gf-glass-violet z-[5001] flex max-h-[80vh] w-[94vw] max-w-[480px] flex-col overflow-hidden rounded-3xl animate__animated animate__zoomIn animate__faster">
               <div className="flex items-center justify-between gap-3 px-6 pb-3 pt-6">
                 <div className="flex items-center gap-2">
-                  <h2 className="text-xl font-bold text-white">{t("navbar.notifications")}</h2>
-                  <InfoTip info={APP_INFO.notificaciones} />
+                  <TitleWithHelp as="h2" title={t("navbar.notifications")} info={APP_INFO.notificaciones} titleClassName="text-xl font-bold text-white" />
                 </div>
                 <div className="flex items-center gap-2">
                   {alerts.length > 0 && (
@@ -83,7 +85,20 @@ function NotificationsBell(): React.JSX.Element {
                 </div>
               </div>
               <div className="flex-1 overflow-y-auto px-6 pb-6">
-                {alerts.length === 0 ? (
+                {recurringPending > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setOpen(false);
+                      openPendingRecurring();
+                    }}
+                    className="mb-3 w-full rounded-2xl border border-amber-400/60 bg-amber-500/15 p-4 text-left transition-all hover:-translate-y-0.5"
+                  >
+                    <p className="text-sm font-bold text-white">{t("recurring.pending.title")}</p>
+                    <p className="mt-1 text-xs text-purple-100/90">{t("recurring.pending.bell", { p1: recurringPending })}</p>
+                  </button>
+                )}
+                {alerts.length === 0 && recurringPending === 0 ? (
                   <div className="flex flex-col items-center gap-2 py-10 text-center text-gf-text-muted">
                     <IoCheckmarkCircleOutline size={36} className="text-emerald-400" />
                     <p className="text-sm">{t("navbar.notifications.none")}</p>

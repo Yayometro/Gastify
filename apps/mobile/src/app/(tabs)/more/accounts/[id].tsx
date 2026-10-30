@@ -12,10 +12,12 @@ import { SummaryWidget } from '@/components/home/summary-widget';
 import { PeriodControls } from '@/components/period-controls';
 import { usePeriod } from '@/hooks/use-period';
 import { useRatesToPrimary } from '@/hooks/use-rates-to-primary';
-import { MovementRow } from '@/components/movements/movement-row';
+import { MovementDayList } from '@/components/movements/movement-day-list';
+import { TopRanking } from '@/components/top-ranking';
 import { Screen } from '@/components/screen';
 import { useToast } from '@/components/toast';
 import { Card } from '@/components/ui/card';
+import { TourPressable, TourTarget } from '@/components/tour/tour-target';
 import { usePrimaryCurrency } from '@/hooks/use-primary-currency';
 import { reloadAfterWrite } from '@/hooks/use-load-app-data';
 import { messageOf, sendWrite } from '@/lib/write';
@@ -89,22 +91,23 @@ export default function EditAccountScreen() {
 
   return (
     <Screen
+      tutorial="m-acc-detail"
       title={account.name || t("dashboard.bulk.account")}
       subtitle={t("mobile.accounts.currencySubtitle", { p1: account.currency || 'MXN' })}
       backLabel={returnTo ? t("shared.start") : t("accounts.title")}
       onBack={back}
       headerAction={
-        <Pressable accessibilityRole="button" accessibilityLabel={t("mobile.editar.cuenta")} onPress={() => setEditOpen((open) => !open)} className="flex-row items-center gap-1.5 rounded-full px-3 py-2" style={{ backgroundColor: colors.accentSoft }}>
+        <TourPressable id="m-acc-detail-edit" accessibilityRole="button" accessibilityLabel={t("mobile.editar.cuenta")} onPress={() => setEditOpen((open) => !open)} className="flex-row items-center gap-1.5 rounded-full px-3 py-2" style={{ backgroundColor: colors.accentSoft }}>
           <Ionicons name={editOpen ? 'close' : 'pencil'} size={16} color={colors.accent} />
           <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{editOpen ? t("accounts.close") : t("common.edit")}</Text>
-        </Pressable>
+        </TourPressable>
       }>
-      <AccountCard account={account} primary={primary} activity={activity[id]} rate={rates[account.currency ?? '']} />
+      <TourTarget id="m-acc-detail-card"><AccountCard account={account} primary={primary} activity={activity[id]} rate={rates[account.currency ?? '']} tourPrefix="m-acc-detail-part" /></TourTarget>
 
       {editOpen ? (
         <RevealUnder>
           <View className="gap-4">
-            <CardColorPicker account={account} />
+            <TourTarget id="m-acc-detail-color"><CardColorPicker account={account} /></TourTarget>
             <Card title={t("mobile.editar.cuenta")}>
               <AccountForm
                 key={id}
@@ -123,11 +126,14 @@ export default function EditAccountScreen() {
         </RevealUnder>
       ) : null}
 
-      <PeriodControls period={period} />
+      <TourTarget id="m-acc-detail-period"><PeriodControls period={period} /></TourTarget>
 
       <SummaryWidget summary={summary} movements={inPeriod} allMovements={mine} currency={primary} />
 
-      <Card title={t("mobile.accounts.movementsOf", { p1: period.label })} info={APP_INFO.movimientos_de_la_cuenta}>
+      {/* The web's order: the summary, the Top of this account (its own period and sizes), then its movements. */}
+      <TopRanking movements={mine} currency={primary} defaultPreset="thisMonth" returnTo={`/more/accounts/${id}`} />
+
+      <Card tour="m-acc-detail-movements" title={t("mobile.accounts.movementsOf", { p1: period.label })} info={APP_INFO.movimientos_de_la_cuenta}>
         <View className="flex-row justify-between">
           <Text className="font-inter text-base text-gf-text-muted">{t("mobile.entro")}</Text>
           <Text className="font-inter-semibold text-base" style={{ color: colors.income }}>+{formatMoneyMajor(totals.incomes, primary)}</Text>
@@ -136,10 +142,8 @@ export default function EditAccountScreen() {
           <Text className="font-inter text-base text-gf-text-muted">{t("mobile.salio")}</Text>
           <Text className="font-inter-semibold text-base" style={{ color: colors.expense }}>-{formatMoneyMajor(totals.spending, primary)}</Text>
         </View>
-        {inPeriod.slice(0, 5).map((movement) => (
-          <MovementRow key={String(movement._id)} movement={movement} currency={primary} onPress={() => router.push({ pathname: '/movements/[id]', params: { id: String(movement._id), returnTo: `/more/accounts/${id}` } })} />
-        ))}
         {inPeriod.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.sin.movimientos.en.este.periodo")}</Text>}
+        <MovementDayList movements={inPeriod} currency={primary} returnTo={`/more/accounts/${id}`} />
         {mine.length > 0 && (
           <Pressable accessibilityRole="link" onPress={() => router.push({ pathname: '/movements', params: { accountId: id, returnTo: `/more/accounts/${id}` } })}>
             <Text className="font-inter-semibold text-sm text-gf-text">{t("mobile.ver.todos.los.movimientos.de")}</Text>
@@ -147,9 +151,11 @@ export default function EditAccountScreen() {
         )}
       </Card>
 
-      <Pressable accessibilityRole="button" onPress={remove} className="items-center py-2">
-        <Text className="font-inter-semibold text-base text-red-500">{t("mobile.borrar.cuenta")}</Text>
-      </Pressable>
+      <TourTarget id="m-acc-detail-delete" className="items-center py-2">
+        <Pressable accessibilityRole="button" onPress={remove} className="items-center py-2">
+          <Text className="font-inter-semibold text-base text-red-500">{t("mobile.borrar.cuenta")}</Text>
+        </Pressable>
+      </TourTarget>
     </Screen>
   );
 }

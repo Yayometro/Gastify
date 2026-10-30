@@ -9,6 +9,7 @@ import { FormError } from '@/components/auth/auth-layout';
 import { IconPicker } from '@/components/icon-picker';
 import { CategoryBadge } from '@/components/category-badge';
 import { GradientButton } from '@/components/ui/gradient-button';
+import { TourTarget } from '@/components/tour/tour-target';
 import { TextField } from '@/components/ui/text-field';
 import { messageOf } from '@/lib/write';
 import { CATEGORY_COLORS, idOf, validateCategoryName } from '@gastify/core/categories/categoryForm';
@@ -82,39 +83,40 @@ export function CategoryForm({
     <View className="gap-5">
       <View className="flex-row items-end gap-3">
         <CategoryBadge icon={icon} color={color} size={56} />
-        <View className="flex-1 gap-2">
+        <TourTarget id="m-catform-name" className="flex-1 gap-2">
           <TextField label={t("mobile.nombre")} value={name} onChangeText={setName} placeholder={t("mobile.mascotas")} maxLength={40} autoCapitalize="sentences" />
-        </View>
+        </TourTarget>
       </View>
       {nameError && <Text className="font-inter text-sm text-red-500">{nameError}</Text>}
-      <View className="gap-2">
+      <TourTarget id="m-catform-color" className="gap-2">
         <Text className="font-inter-semibold text-base text-gf-text">{t("mobile.color")}</Text>
         <ColorPicker value={color} onChange={setColor} />
-      </View>
-      <View className="gap-2">
+      </TourTarget>
+      <TourTarget id="m-catform-icon" className="gap-2">
         <Text className="font-inter-semibold text-base text-gf-text">{t("mobile.icono")}</Text>
         <IconPicker value={icon} onChange={setIcon} />
-      </View>
+      </TourTarget>
       {allowSubcategory && (
         <View className="gap-3 rounded-2xl border border-gf-border p-3">
-          <View className="flex-row items-center justify-between gap-3">
+          <TourTarget id="m-catform-sub" className="flex-row items-center justify-between gap-3">
             <Text className="flex-1 font-inter-medium text-base text-gf-text">{t("mobile.crear.tambien.una.subcategoria")}</Text>
             <GfSwitch value={withSub} onValueChange={setWithSub} accessibilityLabel={t("mobile.crear.tambien.una.subcategoria")} />
-          </View>
+          </TourTarget>
+          <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.subform.alsoHint")}</Text>
           {withSub && (
             <>
-              <TextField label={t("mobile.nombre.de.la.subcategoria")} value={subName} onChangeText={setSubName} placeholder={t("mobile.restaurantes")} maxLength={40} autoCapitalize="sentences" />
-              <View className="gap-2">
-                <Text className="font-inter-medium text-sm text-gf-text-muted">{t("mobile.va.dentro.de")}</Text>
+              <TourTarget id="m-catform-subname"><TextField label={t("mobile.nombre.de.la.subcategoria")} value={subName} onChangeText={setSubName} placeholder={t("mobile.restaurantes")} maxLength={40} autoCapitalize="sentences" /></TourTarget>
+              <TourTarget id="m-catform-parent" className="gap-2">
+                <Text className="font-inter-semibold text-base text-gf-text">{t("mobile.subform.parentLabelNew")}</Text>
                 <ChipPicker items={parentItems} value={parent} onChange={setParent} moreAfter={99} />
-              </View>
+              </TourTarget>
               {subError && <Text className="font-inter text-sm text-red-500">{subError}</Text>}
             </>
           )}
         </View>
       )}
       <FormError message={formError} />
-      <GradientButton label={submitLabel} onPress={save} loading={saving} disabled={saving} />
+      <TourTarget id="m-catform-save"><GradientButton label={submitLabel} onPress={save} loading={saving} disabled={saving} /></TourTarget>
     </View>
   );
 }

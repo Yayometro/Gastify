@@ -11,7 +11,6 @@ import type { BudgetData } from "@/lib/features/budgetSlice";
 import type { WalletData } from "@/lib/features/walletSlice";
 import type { WalletAnalyzerSnapshotData } from "./WalletAnalyzerView";
 
-import { InfoTip } from "@/components/multiUsedComp/InfoTip";
 import { useT, useInfo, useWalletText } from "@/i18n/client";
 
 const EMPTY_ARRAY: never[] = [];
@@ -52,21 +51,22 @@ function WalletAnalyzerTeaser({ timePeriodFromFather, demoMode = false }: Wallet
 
   if (transactions.length === 0) return null;
 
+  // One title row: the summary's name, its "?" and its compass on the left, the way to the full analyzer on the right.
   return (
-    <div className="mb-4">
+    <div className="mb-4" data-tour="dash-analyzer">
       <WalletAnalyzerInsightsStrip
         insights={snapshot.insights}
         walletPrimaryCurrency={walletPrimaryCurrency}
         transactions={transactions}
         currentRange={snapshot.currentRange}
         title={t("analyzer.summaryTitle")}
+        tutorial="dashAnalyzer"
+        action={
+          <Link data-tour="dash-analyzer-link" href={demoMode ? "#demo-top" : "/dashboard/analyzer"} className="flex items-center gap-1 whitespace-nowrap text-sm font-bold text-purple-300 transition-colors hover:text-white">
+            {t("analyzer.seeFull")} <span aria-hidden="true">→</span>
+          </Link>
+        }
       />
-      <div className="mt-3 flex items-center justify-end gap-2">
-        <Link href={demoMode ? "#demo-top" : "/dashboard/analyzer"} className="flex items-center gap-1 text-sm font-bold text-purple-300 transition-colors hover:text-white">
-          {t("analyzer.seeFull")} <span aria-hidden="true">→</span>
-        </Link>
-        <InfoTip info={APP_INFO.an_lisis_del_periodo} />
-      </div>
     </div>
   );
 }

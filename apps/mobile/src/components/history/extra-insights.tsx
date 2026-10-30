@@ -5,6 +5,7 @@ import { Pressable, Text, View, useColorScheme } from 'react-native';
 import { DetailSheet } from '@/components/analyzer/detail-sheet';
 import { ChampionsSheet, SpendAnalysisSheet, type ChampionKind } from '@/components/analyzer/sheets';
 import { CategoryBadge } from '@/components/category-badge';
+import { TourTarget } from '@/components/tour/tour-target';
 import { Card } from '@/components/ui/card';
 import { Colors } from '@/constants/theme';
 import type { TransactionData } from '@gastify/core/features/transacctionsSlice';
@@ -33,8 +34,10 @@ export function HistoryExtraInsights({ movements, currency, end, compareEnd }: {
   const selected = subscriptions.find((item) => item.name === openSubscription);
   const tile = { backgroundColor: colors.accentSoft, borderWidth: 1, borderColor: colors.border } as const;
 
+  // The two cards stack with the screen's own gap, so the big expenses and the subscriptions never touch.
   return (
-    <>
+    <View className="gap-4">
+      <TourTarget id="m-his-big">
       <Card title={t("mobile.grandes.gastos.ultimos.12.meses")} info={APP_INFO.grandes_gastos_2}>
         {!patterns && <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.no.hay.gastos.registrados.en")}</Text>}
         {patterns && <>
@@ -54,9 +57,11 @@ export function HistoryExtraInsights({ movements, currency, end, compareEnd }: {
           </View>
         </>}
       </Card>
+      </TourTarget>
       <ChampionsSheet kind={kind} months={champions.months} currency={currency} onClose={() => setKind(null)} />
       <SpendAnalysisSheet patterns={patterns} visible={analysis} onClose={() => setAnalysis(false)} />
 
+      <TourTarget id="m-his-subs">
       <Card title={t("mobile.suscripciones.recurrentes")} info={APP_INFO.suscripciones_recurrentes}>
         {subscriptions.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.no.se.detectaron.pagos.recurrentes")}</Text>}
         {subscriptions.map((item) => <Pressable key={item.name} accessibilityRole="button" onPress={() => setOpenSubscription(item.name)} className="flex-row items-center gap-3 border-t border-gf-border py-2">
@@ -65,11 +70,12 @@ export function HistoryExtraInsights({ movements, currency, end, compareEnd }: {
           <Text className="font-inter-semibold text-sm text-gf-text">{money(item.amount)}</Text>
         </Pressable>)}
       </Card>
+      </TourTarget>
       <DetailSheet visible={Boolean(selected)} title={selected?.name ?? ''} subtitle={selected ? tNow("mobile.cargos.encontrados", { count: selected.occurrences.length, p1: selected.occurrences.length }) : undefined} onClose={() => setOpenSubscription(null)}>
         {selected?.isNew && <Text className="font-inter text-sm" style={{ color: colors.accent }}>{t("mobile.nuevo.en.este.periodo")}</Text>}
         {selected?.possibleDuplicateInMonth && <Text className="font-inter text-sm" style={{ color: colors.expense }}>{t("mobile.hay.un.posible.cargo.duplicado")}</Text>}
         {selected?.occurrences.map((occurrence, index) => <Pressable key={`${String(occurrence.date)}-${index}`} accessibilityRole="button" disabled={!occurrence._id} onPress={() => { setOpenSubscription(null); router.push({ pathname: '/movements/[id]', params: { id: String(occurrence._id), returnTo: '/more/history' } }); }} className="flex-row justify-between border-t border-gf-border py-2.5"><Text className="font-inter text-sm text-gf-text-muted">{new Date(occurrence.date).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })}</Text><Text className="font-inter-semibold text-sm text-gf-text">{money(occurrence.amount)} ›</Text></Pressable>)}
       </DetailSheet>
-    </>
+    </View>
   );
 }

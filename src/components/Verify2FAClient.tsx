@@ -394,6 +394,25 @@ function Verify2FAClient({ nextPath, reauth = false, reason = null, hasPasskey: 
   }
 
   const hasTotp = serverHasTotp ?? Boolean(session?.user?.twoFactorEnabled);
+
+  // The way out of this screen: whoever is signed in here may not be who the person wants to be (a test account, a shared
+  // computer). It leaves the session and goes to the sign-in page, whatever step of the check the screen is on.
+  async function leaveSession(): Promise<void> {
+    clearLoopGuard();
+    try {
+      await (authClient.signOut as unknown as () => Promise<unknown>)();
+    } finally {
+      window.location.assign("/login");
+    }
+  }
+  const signOutBlock = (
+    <div className="mt-2 flex flex-col items-center gap-1 border-t border-white/10 pt-3 w-full">
+      {session?.user?.email && <p className="text-[11px] text-gf-text-muted">{tr("auth.stepUp.signedAs", { p1: session.user.email })}</p>}
+      <button type="button" onClick={leaveSession} className="text-purple-300 text-xs hover:underline">
+        {tr("auth.stepUp.signOut")}
+      </button>
+    </div>
+  );
   const cardClasses = "verify-2fa-cont gf-glass-card flex flex-col w-[95%] sm:w-[550px] relative rounded-[40px] items-center justify-center p-6 sm:p-10 gap-4";
 
   if (loopBroken) {
@@ -414,6 +433,7 @@ function Verify2FAClient({ nextPath, reauth = false, reason = null, hasPasskey: 
         <p className="text-lg text-purple-200 text-center">
           {redirecting ? tr("auth.done.taking.you.to.your.wallet") : tr("auth.verifying.your.identity")}
         </p>
+        {!redirecting && signOutBlock}
       </div>
     );
   }
@@ -600,6 +620,7 @@ function Verify2FAClient({ nextPath, reauth = false, reason = null, hasPasskey: 
           </form>
         </>
       )}
+      {signOutBlock}
     </div>
   );
 }

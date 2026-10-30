@@ -1,5 +1,7 @@
 "use client";
 
+import TutorialTip from "@/components/tour/TutorialTip";
+import TitleWithHelp from "@/components/multiUsedComp/TitleWithHelp";
 import React, { useContext, useEffect, useMemo, useState } from "react";
 import { Spin, Tooltip } from "antd";
 import { useDispatch, useSelector } from "react-redux";
@@ -287,7 +289,8 @@ function BudgetEditForm({ mode, budget, onClose, onBack, initialType, inline = f
         name: budget?.draftName || "",
         goalAmount: "",
         savingAmount: "",
-        budgetType: budget?.draftBudgetType || BUDGET_TYPES.SPENDING,
+        // The type the window opened with (the "+" window's Presupuesto, Ahorro or Proyecto) wins over the draft's.
+        budgetType: initialType ?? (budget?.draftBudgetType || BUDGET_TYPES.SPENDING),
         category: draftCategories[0]?.category || "",
         subCategory: draftCategories[0]?.subCategory || "",
         period: "monthly",
@@ -303,7 +306,7 @@ function BudgetEditForm({ mode, budget, onClose, onBack, initialType, inline = f
         setItemSelected(null);
       }
     }
-  }, [mode, budget, setItemSelected, wallet]);
+  }, [mode, budget, initialType, setItemSelected, wallet]);
 
   const categoryConflicts = useMemo(() => form.budgetType === BUDGET_TYPES.SPENDING
     ? findCoverageConflicts(form.categories, ccBudgets, mode === "edition" ? budget?._id : null)
@@ -420,20 +423,20 @@ function BudgetEditForm({ mode, budget, onClose, onBack, initialType, inline = f
     <div className={inline ? "relative flex w-full flex-col" : "content absolute gf-glass-violet flex flex-col w-[94vw] max-w-[500px] max-h-[92vh] overflow-hidden rounded-3xl z-[1001] shadow-2xl"}>
       {isLoading && <div className="absolute inset-0 bg-gf-surface/70 backdrop-blur-sm flex justify-center items-center z-[1002]"><Spin size="large" /></div>}
       {!inline && (
-        <div className="relative pt-6 pb-5 px-4 text-center text-white shrink-0">
-          {onBack && <button type="button" onClick={onBack} className="absolute top-4 left-4 rounded-full gf-glass-card p-1.5 text-purple-100 hover:text-white transition-colors text-xs font-semibold">{t("budgets.back")}</button>}
-          <button type="button" onClick={onClose} className="absolute top-4 right-4 rounded-full gf-glass-card p-1.5 text-purple-100 hover:text-white transition-colors"><CategoIcon type="MdClose" siz={18} /></button>
-          <h1 className="text-2xl font-bold">{mode === "edition" ? tr("web.edit") : tr("web.create")} {isProject ? tr("web.project") : tr("web.budget")} 🪄</h1>
+        <div className="relative pt-6 pb-5 px-4 text-center text-gf-text shrink-0">
+          {onBack && <button type="button" onClick={onBack} className="absolute top-4 left-4 rounded-full gf-glass-card p-1.5 text-purple-100 hover:text-gf-text transition-colors text-xs font-semibold">{t("budgets.back")}</button>}
+          <button type="button" onClick={onClose} className="absolute top-4 right-4 rounded-full gf-glass-card p-1.5 text-purple-100 hover:text-gf-text transition-colors"><CategoIcon type="MdClose" siz={18} /></button>
+          <h1 className="text-2xl font-bold">{mode === "edition" ? tr("web.edit") : tr("web.create")} {isProject ? tr("web.project") : tr("web.budget")} 🪄<span aria-hidden="true" className="mx-2 inline-block h-5 w-px shrink-0 align-middle bg-purple-300/40" /><TutorialTip className="ml-0.5" tour="budForm" label={t("tour.budForm.name")} /></h1>
         </div>
       )}
       <div className={inline ? "w-full" : "flex-1 overflow-y-auto px-6 sm:px-8 pt-6 pb-8"}>
-        <form onSubmit={handleSubmit} className="form-trans-edit flex flex-col gap-3">
+        <form onSubmit={handleSubmit} data-tour="bud-form" className="form-trans-edit flex flex-col gap-3">
           <p className="label-tfp">{t("budgets.form.name")}</p>
-          <input type="text" name="name" value={form.name} onChange={handleChange} placeholder={isProject ? tr("web.e.g.japan.2027") : tr("web.budget.name")} required className="w-full" />
+          <input data-tour="bud-form-name" type="text" name="name" value={form.name} onChange={handleChange} placeholder={isProject ? tr("web.e.g.japan.2027") : tr("web.budget.name")} required className="w-full" />
           {mode === "creation" && Number(budget?.referenceSpent) > 0 && <p className="text-xs text-amber-400 bg-amber-500/15 border border-amber-200 rounded-xl px-3 py-2">{tr("budgets.project.alreadySpent")} <strong>{usdFormatChanger(budget?.referenceSpent)}</strong>{tr("budgets.project.linkedNote")}</p>}
 
           <p className="label-tfp mt-1">{t("budgets.form.type")}</p>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+          <div data-tour="bud-form-type" className="grid grid-cols-1 sm:grid-cols-3 gap-2">
             {typeOptions(t).map((option) => <button key={option.value} type="button" onClick={() => setForm((prev) => ({ ...prev, budgetType: option.value }))} className={`text-left rounded-2xl border p-3 transition-colors ${form.budgetType === option.value ? "border-purple-500 bg-gf-accent-soft-bg text-purple-300" : "border-gf-border bg-gf-surface text-gf-text-muted hover:border-purple-200"}`}>
               <UniversalCategoIcon type={option.icon} siz={18} />
               <p className="font-bold text-xs mt-1">{option.title}</p><p className="text-[10px] leading-tight mt-0.5">{option.copy}</p>
@@ -441,7 +444,7 @@ function BudgetEditForm({ mode, budget, onClose, onBack, initialType, inline = f
           </div>
 
           <p className="label-tfp mt-1">{isSaving ? tr("web.savings.target") : isProject ? tr("web.project.spending.limit") : tr("web.spending.limit")}</p>
-          <div className="flex items-stretch gap-2">
+          <div data-tour="bud-form-amount" className="flex items-stretch gap-2">
             <input type="number" min="0" name="goalAmount" value={form.goalAmount} onChange={handleChange} required className="flex-1 min-w-0" />
             <Tooltip title={t("budgets.form.currencyHelp")}>
               <select
@@ -461,15 +464,15 @@ function BudgetEditForm({ mode, budget, onClose, onBack, initialType, inline = f
 
           {isSaving && <>
             <p className="label-tfp mt-1">{t("budgets.saving.manualLabel")}</p>
-            <input type="number" min="0" name="savingAmount" value={form.savingAmount} onChange={handleChange} placeholder="0" className="w-full" />
-            <div className="flex items-center gap-1"><p className="label-tfp">{t("budgets.saving.linkBalances")}</p><Tooltip title={t("budgets.saving.linkedNote")}><span className="text-purple-500"><UniversalCategoIcon type="fa/FaRegQuestionCircle" siz={15} /></span></Tooltip></div>
-            <div className="flex flex-col gap-2">{ccAccounts.length ? ccAccounts.map((acc) => {
+            <input data-tour="bud-form-saving-manual" type="number" min="0" name="savingAmount" value={form.savingAmount} onChange={handleChange} placeholder="0" className="w-full" />
+            <TitleWithHelp as="p" title={t("budgets.saving.linkBalances")} info={{ title: t("budgets.saving.linkBalances"), text: t("budgets.saving.linkedNote") }} titleClassName="label-tfp" />
+            <div data-tour="bud-form-saving-link" className="flex flex-col gap-2">{ccAccounts.length ? ccAccounts.map((acc) => {
               const selected = form.linkedAccounts.includes(String(acc._id));
               return <button key={acc._id} type="button" onClick={() => toggleListValue("linkedAccounts", acc._id)} className={`flex justify-between rounded-xl border px-3 py-2 text-xs ${selected ? "bg-blue-600 border-blue-600 text-white" : "bg-gf-surface border-gf-border"}`}><span>{acc.name}</span><strong>{formatMoneyMajor(acc.amount || 0, acc.currency || walletPrimaryCurrency, { showCode: true })}</strong></button>;
             }) : <p className="text-xs text-gf-text-muted italic">{t("budgets.saving.noAccounts")}</p>}</div>
           </>}
 
-          {isProject && <div className="flex flex-col gap-3 bg-gf-surface border border-gf-border rounded-2xl p-4 mt-1">
+          {isProject && <div data-tour="bud-form-project" className="flex flex-col gap-3 bg-gf-surface border border-gf-border rounded-2xl p-4 mt-1">
             <div>
               <p className="label-tfp mb-1">{t("budgets.project.icon")}</p>
               <IconDisplayerMenu
@@ -477,6 +480,7 @@ function BudgetEditForm({ mode, budget, onClose, onBack, initialType, inline = f
                 idmIcon={(icon: string) => setForm((prev) => ({ ...prev, icon }))}
               />
             </div>
+            <div data-tour="bud-form-project-period" className="flex flex-col gap-3">
             <div><p className="font-bold text-sm text-purple-300">{t("budgets.project.window")}</p><p className="text-[11px] text-gf-text-muted">{t("budgets.project.windowHelp")}</p></div>
             <TimeRange
               startDateValue={localDateFromInput(form.eventStartDate)}
@@ -489,7 +493,8 @@ function BudgetEditForm({ mode, budget, onClose, onBack, initialType, inline = f
               rpResponse=""
               styles="w-full flex items-center justify-center gap-1 bg-gf-surface-2 border border-gf-border px-2 py-2 rounded-full"
             />
-            <div><p className="label-tfp">{t("budgets.project.tags")}</p><p className="text-[10px] text-gf-text-muted mb-2">{t("budgets.project.tagsHelp")}</p>
+            </div>
+            <div data-tour="bud-form-project-tags"><p className="label-tfp">{t("budgets.project.tags")}</p><p className="text-[10px] text-gf-text-muted mb-2">{t("budgets.project.tagsHelp")}</p>
               {availableTags.length ? <div className="flex flex-wrap gap-1.5">{availableTags.map((tag) => {
                 const selected = form.linkedTags.includes(String(tag._id));
                 return <button key={tag._id} type="button" onClick={() => toggleListValue("linkedTags", tag._id)} className={`rounded-full px-2.5 py-1 text-xs border ${selected ? "bg-purple-600 border-purple-600 text-white" : "bg-gf-surface-2 border-gf-border text-gf-text-muted"}`}>#{tag.name}</button>;
@@ -499,16 +504,16 @@ function BudgetEditForm({ mode, budget, onClose, onBack, initialType, inline = f
 
           {isSpending && <>
             <p className="label-tfp mt-1">{t("budgets.form.period")}</p>
-            <select name="period" value={form.period} onChange={handleChange} className="etm-selector bg-gf-surface"><option value="monthly">{t("budgets.period.monthly")}</option><option value="quarterly">{t("budgets.period.quarterly")}</option><option value="biannual">{t("budgets.period.biannual")}</option><option value="yearly">{t("budgets.period.yearly")}</option></select>
+            <select data-tour="bud-form-period" name="period" value={form.period} onChange={handleChange} className="etm-selector bg-gf-surface"><option value="monthly">{t("budgets.period.monthly")}</option><option value="quarterly">{t("budgets.period.quarterly")}</option><option value="biannual">{t("budgets.period.biannual")}</option><option value="yearly">{t("budgets.period.yearly")}</option></select>
             <p className="label-tfp mt-1">{t("budgets.categoriesCount", { p1: form.categories.length })}</p>
             {!!form.categories.length && <div className="flex flex-wrap gap-1.5">{form.categories.map((c, index) => <div key={`${c.category}:${c.subCategory}:${index}`} className="flex items-center gap-1 bg-gf-accent-soft-bg text-purple-300 rounded-full px-2.5 py-1 text-xs"><span>{c.name}</span><button type="button" onClick={() => setForm((prev) => ({ ...prev, categories: prev.categories.filter((_, i) => i !== index) }))}>×</button></div>)}</div>}
             {!!categoryConflicts.length && <div className="bg-amber-500/15 border border-amber-300 text-amber-400 rounded-2xl px-3 py-2 text-xs"><p className="font-bold">{t("budgets.coverage.exists")}</p><p>{t("budgets.coverage.alsoBy", { p1: (categoryConflicts as BudgetData[]).map((item) => item.name || tr("web.unnamed.budget")).join(", ") })}</p></div>}
-            <BtnSelectCategoryContext onClose={() => setIsCategoryPickerOpen((open) => !open)} />
+            <div data-tour="bud-form-categories" className="w-full"><BtnSelectCategoryContext onClose={() => setIsCategoryPickerOpen((open) => !open)} /></div>
             {isCategoryPickerOpen && <ModalCategoryContent inline close={() => setIsCategoryPickerOpen(false)} getSelected={handleCategory} />}
           </>}
 
-          {mode === "edition" && <button type="button" onClick={handleDelete} className="mt-2 w-full cursor-pointer gf-glass-button-danger text-white text-center rounded-full p-2">{t("budgets.deleteThis", { p1: isProject ? "project" : "budget" })}</button>}
-          <button type="submit" className="mt-3 cursor-pointer w-full gf-glass-button text-white text-center rounded-full p-2">{mode === "edition" ? tr("web.update") : tr("web.create")} {isProject ? tr("web.project") : tr("web.budget")}</button>
+          {mode === "edition" && <button type="button" data-tour="bud-form-delete" onClick={handleDelete} className="mt-2 w-full cursor-pointer gf-glass-button-danger text-white text-center rounded-full p-2">{t("budgets.deleteThis", { p1: isProject ? tr("web.project") : tr("web.budget") })}</button>}
+          <button data-tour={mode === "edition" ? "bud-form-update" : "bud-form-save"} type="submit" className="mt-3 cursor-pointer w-full gf-glass-button text-white text-center rounded-full p-2">{mode === "edition" ? tr("web.update") : tr("web.create")} {isProject ? tr("web.project") : tr("web.budget")}</button>
         </form>
       </div>
     </div>

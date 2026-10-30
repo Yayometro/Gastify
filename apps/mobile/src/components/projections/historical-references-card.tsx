@@ -16,6 +16,7 @@ import { dateText, parseDateText } from '@gastify/core/transactions/movementForm
 import { useT, useInfo, useLocale } from "@/i18n/client";
 import { tNow } from '@/i18n/now';
 
+import { TourPressable, TourTarget } from '@/components/tour/tour-target';
 type AnyRecord = Record<string, unknown>;
 type Kind = 'income' | 'expense';
 
@@ -96,8 +97,8 @@ export function HistoricalReferencesCard({ baseline, currency, onChanged }: { ba
 
   return (
     <Card
-      title={tr("mobile.referencias.historicas")}
-      info={APP_INFO.referencias_hist_ricas}>
+      tour="m-proj-baseline"
+      title={tr("mobile.referencias.historicas")}>
       <ChipPicker
         items={[{ id: 'income', label: tr("mobile.ingresos") }, { id: 'expense', label: tr("mobile.gastos") }]}
         value={kind}
@@ -109,7 +110,7 @@ export function HistoricalReferencesCard({ baseline, currency, onChanged }: { ba
         <View key={String(entry._id ?? entry.effectiveFrom)} className="flex-row items-center gap-3">
           <View className="flex-1">
             <Text className="font-inter-medium text-base text-gf-text">
-              {tr("mobile.desde.p1.p2", { p1: label(entry.effectiveFrom), p2: entry.effectiveTo ? tNow("mobile.hasta.p1", { p1: label(entry.effectiveTo) }) : ' (en curso)' })}
+              {tr("mobile.desde.p1.p2", { p1: label(entry.effectiveFrom), p2: entry.effectiveTo ? ` ${tNow("mobile.hasta.p1", { p1: label(entry.effectiveTo) })}` : ' (en curso)' })}
             </Text>
             <Text className="font-inter text-sm text-gf-text-muted">
               {tr("mobile.p1.al.mes", { p1: formatMoneyMajor(Number(entry.amount) || 0, String(entry.currency ?? currency)) })}
@@ -122,20 +123,20 @@ export function HistoricalReferencesCard({ baseline, currency, onChanged }: { ba
       ))}
 
       {!open ? (
-        <Pressable accessibilityRole="button" onPress={() => setOpen(true)} className="items-center rounded-full border border-gf-border py-3">
+        <TourPressable id="m-proj-baseline-new" accessibilityRole="button" onPress={() => setOpen(true)} className="items-center rounded-full border border-gf-border py-3">
           <Text className="font-inter-semibold text-base text-gf-text">{tr("mobile.agregar.referencia.de.p1", { p1: KIND_LABEL[kind].toLowerCase() })}</Text>
-        </Pressable>
+        </TourPressable>
       ) : (
         <View className="gap-3">
-          <DateField label={tr("mobile.desde.mes")} value={from} onChange={setFrom} />
-          <DateField label={tr("mobile.hasta.opcional")} value={to} onChange={setTo} />
-          <TextField label={tr("mobile.monto.mensual")} value={amount} onChangeText={(t) => setAmount(t.replace(/[^0-9.,]/g, ''))} placeholder="0.00" keyboardType="decimal-pad" />
-          <View className="gap-2">
+          <TourTarget id="m-proj-baseline-from"><DateField label={tr("mobile.desde.mes")} value={from} onChange={setFrom} /></TourTarget>
+          <TourTarget id="m-proj-baseline-to"><DateField label={tr("mobile.hasta.opcional")} value={to} onChange={setTo} /></TourTarget>
+          <TourTarget id="m-proj-baseline-amount"><TextField label={tr("mobile.monto.mensual")} value={amount} onChangeText={(t) => setAmount(t.replace(/[^0-9.,]/g, ''))} placeholder="0.00" keyboardType="decimal-pad" /></TourTarget>
+          <TourTarget id="m-proj-baseline-currency" className="gap-2">
             <Text className="font-inter-medium text-sm text-gf-text-muted">{tr("mobile.moneda")}</Text>
             <ChipPicker items={SUPPORTED_CURRENCIES.map((c) => ({ id: c, label: c }))} value={code} onChange={setCode} moreAfter={99} />
-          </View>
+          </TourTarget>
           <FormError message={error} />
-          <GradientButton label={tr("mobile.guardar.referencia")} onPress={save} loading={saving} disabled={saving} />
+          <TourTarget id="m-proj-baseline-save"><GradientButton label={tr("mobile.guardar.referencia")} onPress={save} loading={saving} disabled={saving} /></TourTarget>
           <Pressable accessibilityRole="button" onPress={() => setOpen(false)} className="items-center py-1">
             <Text className="font-inter-semibold text-sm text-gf-text-muted">{tr("mobile.cancelar")}</Text>
           </Pressable>

@@ -27,6 +27,9 @@ export interface CreateTransactionParams {
   merchantAmount?: number | string | null;
   merchantCurrency?: string | null;
   manualReportingAmount?: number | string | null;
+  // Only set by the recurring-expense catch-up: the rule and the occurrence day this charge stands for.
+  recurringId?: string | null;
+  recurringDueDate?: Date | null;
 }
 
 export interface CreateTransactionResult<T = Record<string, unknown>> {
@@ -54,6 +57,8 @@ export async function createTransaction({
   merchantAmount,
   merchantCurrency,
   manualReportingAmount,
+  recurringId,
+  recurringDueDate,
 }: CreateTransactionParams): Promise<CreateTransactionResult> {
   if (!user) throw new Error("No User ID found to create a new Transaction");
   if (!wallet)
@@ -115,6 +120,7 @@ export async function createTransaction({
     kind: isIncome ? "income" : "expense",
     direction: isIncome ? "credit" : "debit",
     money,
+    ...(recurringId ? { recurringId, recurringDueDate: recurringDueDate ?? parsedDate } : {}),
   });
   if (subCategory) {
     const findSubCategory = await SubCategory.findById(subCategory).lean();

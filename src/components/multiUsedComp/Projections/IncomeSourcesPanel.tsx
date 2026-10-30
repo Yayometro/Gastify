@@ -14,6 +14,7 @@ import type { IIncomeSource, IncomeSourceRecurrence } from "@/model/IncomeSource
 import type { IncomeSourceItem } from "@/hooks/useProjectionTable";
 
 import { InfoTip } from "@/components/multiUsedComp/InfoTip";
+import TutorialTip from "@/components/tour/TutorialTip";
 import { useT, useInfo } from "@/i18n/client";
 
 export type IncomeSourceLike = IIncomeSource | IncomeSourceItem;
@@ -160,16 +161,17 @@ function IncomeSourcesPanel({
       <div
         className="flex justify-between items-center cursor-pointer"
         onClick={() => setIsOpen(!isOpen)}
+        data-tour="proj-sources-header"
       >
         <h2 className="text-xl text-purple-300 font-normal">
-          {t("projections.sources.title")}{(incomeSources || []).length})<InfoTip info={APP_INFO.fuentes_de_ingreso} />
+          {t("projections.sources.title")}{(incomeSources || []).length})<span aria-hidden="true" className="mx-2 inline-block h-5 w-px shrink-0 align-middle bg-purple-300/40" /><TutorialTip className="ml-0.5" tour="projSources" label={t("tour.projSources.name")} />
         </h2>
         <CategoIcon type={isOpen ? "MdExpandLess" : "MdExpandMore"} siz={24} />
       </div>
       {isOpen && (
-        <div className="mt-3">
-          <ul className="flex flex-col gap-2 mb-4">
-            {(incomeSources || []).map((source) => (
+        <div className="mt-3" data-tour="proj-sources-body">
+          <ul className="flex flex-col gap-2 mb-4" data-tour={(incomeSources || []).length > 0 ? "proj-sources-list" : undefined}>
+            {(incomeSources || []).map((source, position) => (
               <li
                 key={source._id ? String(source._id) : undefined}
                 className="flex justify-between items-center bg-gf-surface rounded-2xl px-4 py-2"
@@ -180,7 +182,7 @@ function IncomeSourcesPanel({
                     {formatMoneyMajor(source.amount || 0, source.currency || defaultCurrency, { showCode: true })} · {RECURRENCE_LABELS[source.recurrence as string] ?? source.recurrence ?? t("web.custom")}
                   </p>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2" data-tour={position === 0 ? "proj-sources-actions" : undefined}>
                   <div className="cursor-pointer" onClick={() => startEdit(source)}>
                     <CategoIcon type="MdModeEdit" siz={20} />
                   </div>
@@ -197,8 +199,9 @@ function IncomeSourcesPanel({
           <form
             onSubmit={handleSubmit}
             className="form-trans-edit flex flex-col sm:flex-row gap-2 items-stretch sm:items-end bg-gf-surface rounded-2xl p-3"
+            data-tour="proj-sources-form"
           >
-            <div className="flex flex-col flex-1">
+            <div className="flex flex-col flex-1" data-tour="proj-sources-name">
               <p className="label-tfp mb-1">{t("projections.sources.name")}</p>
               <input
                 type="text"
@@ -209,7 +212,7 @@ function IncomeSourcesPanel({
                 required
               />
             </div>
-            <div className="flex flex-col">
+            <div className="flex flex-col" data-tour="proj-sources-amount">
               <p className="label-tfp mb-1">{t("projections.sources.amount")}</p>
               <input
                 type="number"
@@ -219,7 +222,7 @@ function IncomeSourcesPanel({
                 required
               />
             </div>
-            <div className="flex flex-col">
+            <div className="flex flex-col" data-tour="proj-sources-currency">
               <p className="label-tfp mb-1">{t("projections.sources.currency")}</p>
               <select
                 className="etm-selector"
@@ -234,7 +237,7 @@ function IncomeSourcesPanel({
                 ))}
               </select>
             </div>
-            <div className="flex flex-col">
+            <div className="flex flex-col" data-tour="proj-sources-recurrence">
               <p className="label-tfp mb-1">{t("projections.sources.recurrence")}</p>
               <select
                 className="etm-selector"
@@ -249,7 +252,7 @@ function IncomeSourcesPanel({
                 ))}
               </select>
             </div>
-            <div className="flex flex-col">
+            <div className="flex flex-col" data-tour="proj-sources-date">
               <p className="label-tfp mb-1">{t("projections.sources.firstDate")}</p>
               <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <MobileDateTimePicker
@@ -281,6 +284,7 @@ function IncomeSourcesPanel({
             <button
               type="submit"
               className="gf-glass-button text-white rounded-full px-4 py-2"
+              data-tour="proj-sources-submit"
             >
               {isLoading ? <Spin /> : editingId ? t("web.save") : t("web.add")}
             </button>

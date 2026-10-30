@@ -27,6 +27,7 @@ import type { AppDispatch, RootState } from "@/lib/store";
 import type { UserData } from "@/lib/features/userSlice";
 import { useT } from "@/i18n/client";
 
+import TutorialTip from "@/components/tour/TutorialTip";
 export interface FormCategoryState {
   id?: string;
   name?: string;
@@ -313,16 +314,23 @@ function EditCategoryModal({ ecmMode, ecmCategory, ecmClose, isInline = false }:
         <Spin size="large" />
       </div>
       {!isInline && (
-        <h1 className="text-center font-thin py-[20px] text-2xl min-[400px]:text-3xl sm:text-[50px] text-white shrink-0">
-          {ecmMode === "edition" ? `${t("web.edit")} "${ecmCategory?.name || t("web.category")}"` : t("web.create.new.category")} 🪄
-        </h1>
+        <div className="flex min-w-0 max-w-full items-center justify-center shrink-0 px-10 py-[20px]">
+          {/* A long title is cut with "...", its full text on hover; the divider and the tutorial stay in place. */}
+          <h1
+            title={ecmMode === "edition" ? `${t("web.edit")} "${ecmCategory?.name || t("web.category")}"` : t("web.create.new.category")}
+            className="min-w-0 truncate text-center font-thin text-xl min-[450px]:text-2xl text-gf-text">
+            {ecmMode === "edition" ? `${t("web.edit")} "${ecmCategory?.name || t("web.category")}"` : t("web.create.new.category")} 🪄
+          </h1>
+          <span aria-hidden="true" className="mx-2 inline-block h-5 w-px shrink-0 align-middle bg-purple-300/40" />
+          <span className="shrink-0"><TutorialTip className="ml-0.5" tour="catCreate" label={t("tour.catCreate.name")} /></span>
+        </div>
       )}
       <div
         className={`edit-cat-modal w-[100%] flex-1 min-h-0 flex flex-col gap-2 items-start justify-start ${!isInline ? 'rounded-t-[60px] pt-[30px]' : ''} overflow-y-auto`}
       >
         {!isInline && (
           <div
-            className="close-con absolute top-[0%] right-[0%] rounded-full gf-glass-card text-purple-100 hover:text-white transition-colors m-2 pulse-animation-short cursor-pointer p-2"
+            className="close-con absolute top-[0%] right-[0%] rounded-full gf-glass-card text-purple-100 hover:text-gf-text transition-colors m-2 pulse-animation-short cursor-pointer p-2"
             onClick={handleClose}
           >
             <CategoIcon type={"MdClose"} siz={20} />
@@ -331,26 +339,29 @@ function EditCategoryModal({ ecmMode, ecmCategory, ecmClose, isInline = false }:
         <div className="w-full h-full">
           <form
             onSubmit={handlerSubmit}
+            data-tour="cat-form"
             className={`w-[100%] h-full flex flex-col gap-2 items-start justify-start px-10 ${!isInline ? 'rounded-t-[60px] pt-[30px]' : 'pt-4'} pb-20`}
           >
+            <div className="flex w-full flex-col items-start gap-2" data-tour="cat-form-name">
             <p className="label-tfp ">{t("categories.form.name")}</p>
             <input
               type="text"
               name="name"
               className="w-full h-14 rounded-3xl gf-glass-inset px-3 text-gf-text"
-              value={formCategory.name || null}
+              value={formCategory.name || ""}
               onChange={handleChange}
               placeholder={t("categories.form.categoryName")}
             />
+            </div>
             <div className="w-full flex flex-col gap-4">
-              <div className="flex flex-col gap-2 w-full">
+              <div className="flex flex-col gap-2 w-full" data-tour="cat-form-color">
                 <p className="label-tfp ">{t("categories.form.color")}</p>
                 <CategoryColorPicker
                   value={typeof formCategory.color === "string" && formCategory.color ? formCategory.color : CATEGORY_COLORS[0]}
                   onChange={handleColorChange}
                 />
               </div>
-              <div className="flex flex-col gap-2 w-full">
+              <div className="flex flex-col gap-2 w-full" data-tour="cat-form-icon">
                 <p className="label-tfp ">{t("categories.form.icon")}</p>
                 <IconDisplayerMenu
                   idmValue={formCategory?.icon || ""}
@@ -358,7 +369,7 @@ function EditCategoryModal({ ecmMode, ecmCategory, ecmClose, isInline = false }:
                 />
               </div>
               {(ecmMode === "creation" || (ecmMode === "edition" && isSub)) && (
-                <div className="flex flex-col">
+                <div className="flex flex-col" data-tour="cat-form-sub">
                   <p className="label-tfp ">{t("categories.form.isSub")}</p>
                   <div className="flex items-center min-h-[64px]">
                     <ConfigProvider
@@ -389,6 +400,7 @@ function EditCategoryModal({ ecmMode, ecmCategory, ecmClose, isInline = false }:
                   className={`edm-cat-selector ${
                     !isSub ? "hidden" : "flex"
                   } flex-col gap-1 w-full mt-2`}
+                  data-tour="cat-form-father"
                 >
                   <p className="label-tfp !text-[12px] !text-purple-600">{t("categories.form.fatherSelected")}</p>
                   <div
@@ -421,6 +433,7 @@ function EditCategoryModal({ ecmMode, ecmCategory, ecmClose, isInline = false }:
               {ecmMode === "edition" && (
                 <button
                   type="button"
+                  data-tour="cat-form-remove"
                   className="w-full p-2 text-center gf-glass-button-danger text-white rounded-full mt-3 cursor-pointer"
                   onClick={handleRemove}
                 >
@@ -431,6 +444,7 @@ function EditCategoryModal({ ecmMode, ecmCategory, ecmClose, isInline = false }:
             <button
               className="w-full p-2 gf-glass-button text-white text-center rounded-full mt-3"
               type="submit"
+              data-tour="cat-form-submit"
             >
               {isLoading ? (
                 <Spin />

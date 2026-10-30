@@ -34,7 +34,7 @@ function ChargedElsewhereSection({
 }: ChargedElsewhereSectionProps): React.JSX.Element {
   const t = useT();
   return (
-    <div className="w-full flex flex-col gap-1">
+    <div className="w-full flex flex-col gap-1" data-tour="add-charged">
       <div className="flex items-center gap-2">
         <Switch checked={enabled} onChange={onToggle} size="small" />
         <p className="label-tfp !mb-0">{t("shared.charged.otherCurrency")}</p>

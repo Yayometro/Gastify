@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
 
 import { AmbientBackground } from '@/components/ambient-background';
+import { InSheetContext, useTourHost } from '@/components/tour/tour-layer';
 import { Colors } from '@/constants/theme';
 import { useT } from "@/i18n/client";
 
@@ -20,6 +21,7 @@ export function BottomSheet({ visible, onClose, children, maxHeight = '88%', dis
   const insets = useSafeAreaInsets();
   const wide = width >= 768;
   const [mounted, setMounted] = useState(visible);
+  const tour = useTourHost(mounted);
   // The keyboard rises over the window: lift it by the keyboard's height so the field being typed in stays visible.
   const [keyboard, setKeyboard] = useState(0);
   useEffect(() => {
@@ -72,10 +74,13 @@ export function BottomSheet({ visible, onClose, children, maxHeight = '88%', dis
             {dark && Platform.OS === 'ios' && <BlurView intensity={30} tint="dark" style={StyleSheet.absoluteFill} />}
             {ambient && <AmbientBackground baseOpacity={dark ? 0.84 : 1} />}
             {!ambient && dark && <View pointerEvents="none" style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(20,11,38,0.84)' }]} />}
-            <View style={fill ? { flex: 1 } : { flexShrink: 1 }}>{children}</View>
+            <InSheetContext.Provider value={true}>
+              <View style={fill ? { flex: 1 } : { flexShrink: 1 }}>{children}</View>
+            </InSheetContext.Provider>
             <View pointerEvents="none" style={[StyleSheet.absoluteFill, radius, { borderWidth: 1, borderColor: dark ? 'rgba(255,255,255,0.12)' : 'rgba(27,16,61,0.08)' }]} />
           </View>
         </Animated.View>
+        {tour.draws ? tour.overlay : null}
       </View>
     </Modal>
   );

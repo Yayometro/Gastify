@@ -1,5 +1,5 @@
 import type { ReactElement } from 'react';
-import { Pressable, Text, View, useColorScheme, useWindowDimensions } from 'react-native';
+import { Text, View, useColorScheme, useWindowDimensions } from 'react-native';
 
 import { Card } from '@/components/ui/card';
 import { Colors } from '@/constants/theme';
@@ -10,6 +10,7 @@ import { formatMoneyMajor } from '@gastify/core/money/currencies';
 import { useT, useInfo } from "@/i18n/client";
 import { tNow } from '@/i18n/now';
 
+import { TourPressable } from '@/components/tour/tour-target';
 // On a tablet each reading is its own glass tile (as the web's highlights are), with room for a longer subtext; on the phone
 // it is plain text in two columns.
 function Fact({ label, value, detail, tone, tile, compact }: { label: string; value: string; detail?: string; tone?: string; tile?: boolean; compact?: boolean }) {
@@ -51,18 +52,19 @@ export function InsightsWidget({ insights, currency, onOpenAnalyzer }: { insight
 
   return (
     <Card
+      tour="m-home-insights"
       title={t("mobile.analisis.del.periodo")}
       onTitlePress={onOpenAnalyzer}
-      action={<Pressable accessibilityRole="link" onPress={onOpenAnalyzer} hitSlop={8}><Text className="font-inter-semibold text-xs" style={{ color: colors.accent }}>{t("mobile.ver.analisis.completo")}</Text></Pressable>}
+      action={<TourPressable id="m-home-insights-link" accessibilityRole="link" onPress={onOpenAnalyzer} hitSlop={8}><Text className="font-inter-semibold text-xs" style={{ color: colors.accent }}>{t("mobile.ver.analisis.completo")}</Text></TourPressable>}
       info={APP_INFO.an_lisis_del_periodo}>
-      <Pressable accessibilityRole="button" accessibilityLabel={t("mobile.abrir.el.analizador.de.cartera")} onPress={onOpenAnalyzer} className={tablet ? 'gap-3' : 'gap-2'}>
+      <TourPressable id="m-home-insights-cards" accessibilityRole="button" accessibilityLabel={t("mobile.abrir.el.analizador.de.cartera")} onPress={onOpenAnalyzer} className={tablet ? 'gap-3' : 'gap-2'}>
         {rows.map((row, rowIndex) => (
           // Each row shares the width equally, so tiles in a row match in size and an unpaired last tile fills the row.
           <View key={rowIndex} className={`flex-row ${tablet ? 'gap-3' : 'gap-2'}`}>
             {row.map((fact, index) => <View key={index} className="flex-1 flex-row">{fact}</View>)}
           </View>
         ))}
-      </Pressable>
+      </TourPressable>
     </Card>
   );
 }

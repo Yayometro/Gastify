@@ -55,6 +55,9 @@ export interface ITransaction extends mongoose.Document {
     transferGroupId?: string | null;
     transferDirection?: TransactionTransferDirection | null | string;
     schemaVersion?: number;
+    // Set when a recurring expense created this charge: the rule and the occurrence day it stands for (one charge per day).
+    recurringId?: mongoose.Types.ObjectId | string | null;
+    recurringDueDate?: Date | null;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -123,8 +126,16 @@ const transactionsSchema = new Schema<ITransaction>({
     transferGroupId: { type: String, default: null },
     transferDirection: { type: String, enum: ["out", "in"], default: null },
     schemaVersion: { type: Number, default: 1 },
+    recurringId: { type: mongoose.Schema.Types.ObjectId, ref: "RecurringExpense", default: null },
+    recurringDueDate: { type: Date, default: null },
 
 }, {timestamps: true})
+
+// One charge per occurrence of a recurring expense (the catch-up can run twice without duplicating).
+transactionsSchema.index(
+    { user: 1, recurringId: 1, recurringDueDate: 1 },
+    { unique: true, partialFilterExpression: { recurringId: { $type: "objectId" } } }
+)
 
 // Backward-compatibility safety net: kind/direction/money are required by
 // the schema (the multi-currency end state), but write routes are migrated

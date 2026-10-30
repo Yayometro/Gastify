@@ -1,4 +1,6 @@
 "use client";
+import TutorialTip from "@/components/tour/TutorialTip";
+import type { WalletAnalyzerWeeklySpending } from "@gastify/core/transformers/walletAnalyzer";
 import type { TranslateFn } from "@gastify/core/i18n/translate";
 
 import React, { useMemo, useState } from "react";
@@ -15,13 +17,15 @@ import ModalContentTopMonthItem from "@/components/modals/contents/modalForTopMo
 import UniversalCategoIcon from "../UniversalCategoIcon";
 
 import { InfoTip } from "@/components/multiUsedComp/InfoTip";
+import TitleWithHelp from "@/components/multiUsedComp/TitleWithHelp";
 import WalletAnalyzerTrendChart from "./WalletAnalyzerTrendChart";
-import WalletAnalyzerWeekdayChart from "./WalletAnalyzerWeekdayChart";
+import WeekdayPatternCardBody from "./WeekdayPatternCardBody";
 import InsightDetailModal from "./InsightDetailModal";
 import WalletAnalyzerInsightsStrip from "./WalletAnalyzerInsightsStrip";
 import WalletAnalyzerProjectionCard from "./WalletAnalyzerProjectionCard";
 import MonthlyChampionsModal from "./MonthlyChampionsModal";
 import WeekdaySpendingDetailModal from "./WeekdaySpendingDetailModal";
+import AccountsAnalysisSection from "./AccountsAnalysisSection";
 import type { TransactionData } from "@/lib/features/transacctionsSlice";
 import type { WalletAnalyzerTrendItem } from "./WalletAnalyzer";
 import { useT, useInfo, useWalletText } from "@/i18n/client";
@@ -262,7 +266,9 @@ export interface WalletAnalyzerWeekdayWeek {
 export interface WalletAnalyzerWeekdayDailyBreakdown {
   dayName: string;
   dayOfMonth: number;
+  date: Date;
   total: number;
+  count: number;
   [key: string]: unknown;
 }
 
@@ -270,6 +276,7 @@ export interface WalletAnalyzerWeekdaySpendingData {
   days: WalletAnalyzerWeekdayDay[];
   insight: string;
   weeks?: WalletAnalyzerWeekdayWeek[];
+  weekly: WalletAnalyzerWeeklySpending;
   dailyBreakdown?: WalletAnalyzerWeekdayDailyBreakdown[];
   weekdayAvg?: number;
   weekendAvg?: number;
@@ -598,9 +605,9 @@ function WalletAnalyzerView({
 
   return (
     <div className="wallet-analyzer-container w-full flex flex-col gap-4">
-      <div className="flex flex-col items-center gap-2">
-        <h1 className="wallet-analyzer-title text-2xl text-center font-bold text-gf-text">{tr("analyzer.title")}</h1>
-        <div className="flex items-center gap-1.5 bg-gf-surface border border-gf-border rounded-full px-1.5 shadow-sm" style={{ height: 32 }}>
+      <div className="flex flex-col items-center gap-2" data-tour="ana-month">
+        <h1 className="wallet-analyzer-title text-2xl text-center font-bold text-gf-text">{tr("analyzer.title")}<span aria-hidden="true" className="mx-2 inline-block h-5 w-px shrink-0 align-middle bg-purple-300/40" /><TutorialTip className="ml-0.5" tour="analyzer" label={tr("navbar.analyzer")} /></h1>
+        <div className="flex items-center gap-2"><div className="flex items-center gap-1.5 bg-gf-surface border border-gf-border rounded-full px-1.5 shadow-sm" style={{ height: 32 }} data-tour="ana-month-pill">
           <button
             type="button"
             onClick={onPrevMonth}
@@ -651,14 +658,19 @@ function WalletAnalyzerView({
             ›
           </button>
         </div>
+        
+        </div>
       </div>
 
-      <WalletAnalyzerInsightsStrip
-        insights={insights}
-        walletPrimaryCurrency={walletPrimaryCurrency}
-        transactions={transactions}
-        currentRange={currentRange}
-      />
+      <div data-tour="ana-insights">
+        <WalletAnalyzerInsightsStrip
+          tutorial="anaInsights"
+          insights={insights}
+          walletPrimaryCurrency={walletPrimaryCurrency}
+          transactions={transactions}
+          currentRange={currentRange}
+        />
+      </div>
 
       <WalletAnalyzerProjectionCard
         comparison={projectionComparison}
@@ -667,16 +679,16 @@ function WalletAnalyzerView({
 
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         {/* Month vs month */}
-        <div className="md:col-span-2 gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5">
-          <p className="text-[15px] font-extrabold text-gf-text">{tr("analyzer.compare.vs", { p1: referenceMonthLabel, p2: previousMonthLabel })}</p>
+        <div className="md:col-span-2 gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5" data-tour="ana-compare">
+          <div className="flex items-center gap-1.5"><p className="text-[15px] font-extrabold text-gf-text">{tr("analyzer.compare.vs", { p1: referenceMonthLabel, p2: previousMonthLabel })}</p><span aria-hidden="true" className="mx-2 inline-block h-5 w-px shrink-0 align-middle bg-purple-300/40" /><TutorialTip tour="anaCompare" label={tr("tour.anaCompare.name")} /></div>
           <p className="text-xs text-gf-text-muted mb-3">{tr("analyzer.monthCompare")}</p>
-          <table className="w-full text-[13px]">
+          <table className="w-full text-[13px]" data-tour="ana-compare-table">
             <thead>
               <tr className="text-[10.5px] uppercase tracking-wide text-gf-text-muted">
                 <th className="text-left font-bold pb-2"></th>
                 <th className="text-right font-bold pb-2 text-gf-text-muted">{previousMonthLabel.split(" ")[0]}</th>
                 <th className="text-right font-bold pb-2">{referenceMonthLabel.split(" ")[0]}</th>
-                <th className="text-right font-bold pb-2">{tr("analyzer.change")}</th>
+                <th className="text-right font-bold pb-2" data-tour="ana-compare-change">{tr("analyzer.change")}</th>
               </tr>
             </thead>
             <tbody>
@@ -739,8 +751,8 @@ function WalletAnalyzerView({
         </div>
 
         {/* Trend */}
-        <div className="md:col-span-3 gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5">
-          <div className="flex items-center gap-1.5"><p className="text-[15px] font-extrabold text-gf-text">{tr("analyzer.trend6")}</p><InfoTip info={APP_INFO.tendencia_2} /></div>
+        <div className="md:col-span-3 gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5" data-tour="ana-trend">
+          <div className="flex items-center gap-1.5"><p className="text-[15px] font-extrabold text-gf-text">{tr("analyzer.trend6")}</p><span aria-hidden="true" className="mx-2 inline-block h-5 w-px shrink-0 align-middle bg-purple-300/40" /><InfoTip info={APP_INFO.tendencia_2} /><TutorialTip tour="anaTrend" label={tr("tour.anaTrend.name")} /></div>
           <p className="text-xs text-gf-text-muted mb-3">{tr("analyzer.trend6.help")}</p>
           <div
             onClick={() =>
@@ -766,9 +778,10 @@ function WalletAnalyzerView({
               }
             }}
             className="grid grid-cols-3 gap-3 mb-4 cursor-pointer group"
+            data-tour="ana-trend-avg"
           >
             <div className="rounded-xl bg-green-500/15 px-3.5 py-2.5 transition-shadow group-hover:shadow-md">
-              <div className="flex items-center gap-1"><p className="text-[11px] font-bold uppercase tracking-wide text-green-400/70">{tr("analyzer.monthlyAvg.incomes")}</p><InfoTip info={APP_INFO.promedio_mensual_2(monthlyAverages.monthsCount ?? 6)} /></div>
+              <TitleWithHelp as="p" title={tr("analyzer.monthlyAvg.incomes")} info={APP_INFO.promedio_mensual_2(monthlyAverages.monthsCount ?? 6)} titleClassName="text-[11px] font-bold uppercase tracking-wide text-green-400/70" />
               <p className="text-lg font-extrabold text-green-400">{formatMoneyMajor(monthlyAverages.avgIncome, walletPrimaryCurrency)}</p>
             </div>
             <div className="rounded-xl bg-red-500/15 px-3.5 py-2.5 transition-shadow group-hover:shadow-md">
@@ -780,20 +793,22 @@ function WalletAnalyzerView({
               <p className="text-lg font-extrabold text-purple-300">{Math.round(monthlyAverages.avgTransactionCount)}</p>
             </div>
           </div>
-          <WalletAnalyzerTrendChart
-            trend={trend}
-            walletPrimaryCurrency={walletPrimaryCurrency}
-            onSelectMonth={(month: unknown) =>
-              setActiveInsight({ icon: "📅", tone: "info", title: (month as { label?: string })?.label, type: "trend_month", data: month })
-            }
-          />
+          <div data-tour="ana-trend-chart">
+            <WalletAnalyzerTrendChart
+              trend={trend}
+              walletPrimaryCurrency={walletPrimaryCurrency}
+              onSelectMonth={(month: unknown) =>
+                setActiveInsight({ icon: "📅", tone: "info", title: (month as { label?: string })?.label, type: "trend_month", data: month })
+              }
+            />
+          </div>
         </div>
       </div>
 
       {/* Item-count control - governs both Top categories and Top transactions below */}
-      <div className="flex items-center justify-between px-1 flex-wrap gap-2">
-        <div className="flex items-center gap-1.5"><p className="text-xs font-semibold text-gf-text-muted">{tr("analyzer.topItems")}</p><InfoTip info={APP_INFO.analyzer(topN)} /></div>
-        <div className="flex items-center gap-1 bg-gf-surface border border-gf-border rounded-full p-1 shadow-sm">
+      <div className="flex items-center justify-between px-1 flex-wrap gap-2" data-tour="ana-topn">
+        <div className="flex items-center gap-1.5"><p className="text-xs font-semibold text-gf-text-muted">{tr("analyzer.topItems")}</p><span aria-hidden="true" className="mx-2 inline-block h-5 w-px shrink-0 align-middle bg-purple-300/40" /><TutorialTip tour="anaTop" label={tr("tour.anaTop.name")} /></div>
+        <div className="flex items-center gap-1 bg-gf-surface border border-gf-border rounded-full p-1 shadow-sm" data-tour="ana-topn-buttons">
           {[3, 6, 12, 24].map((n) => (
             <button
               key={n}
@@ -810,7 +825,7 @@ function WalletAnalyzerView({
       </div>
 
       {/* Top categories - previous month left, current month right, mirroring top transactions */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4" data-tour="ana-topcat">
         <div className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5">
           <p className="text-[10.5px] font-bold uppercase tracking-wide text-purple-300">{tr("analyzer.topCategories", { p1: topN })}</p>
           <p className="text-[15px] font-extrabold text-gf-text mb-2">{previousMonthLabel}</p>
@@ -848,7 +863,7 @@ function WalletAnalyzerView({
       </div>
 
       {/* Top transactions - previous month left, current month right */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4" data-tour="ana-toptx">
         <div className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5">
           <p className="text-[10.5px] font-bold uppercase tracking-wide text-purple-300">{tr("analyzer.topTransactions", { p1: topN })}</p>
           <p className="text-[15px] font-extrabold text-gf-text mb-2">{previousMonthLabel}</p>
@@ -888,18 +903,19 @@ function WalletAnalyzerView({
       </div>
 
       {/* Budgets */}
-      <div className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5">
-        <div className="flex items-center gap-1.5"><p className="text-[15px] font-extrabold text-gf-text">{tr("analyzer.budgets.title")}</p><InfoTip info={APP_INFO.presupuestos_del_analizador} /></div>
-        <div className="flex items-start gap-1.5 mb-3"><p className="text-xs text-gf-text-muted">{tr("analyzer.budgetsMonth.help")}</p><InfoTip info={APP_INFO.cumplimiento_del_presupuesto} className="mt-px" /></div>
+      <div className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5" data-tour="ana-budgets">
+        <div className="flex items-center gap-1.5"><p className="text-[15px] font-extrabold text-gf-text">{tr("analyzer.budgets.title")}</p><span aria-hidden="true" className="mx-2 inline-block h-5 w-px shrink-0 align-middle bg-purple-300/40" /><InfoTip info={{ title: APP_INFO.presupuestos_del_analizador.title, text: `${APP_INFO.presupuestos_del_analizador.text} ${APP_INFO.cumplimiento_del_presupuesto.text}` }} /><TutorialTip tour="anaBudgets" label={tr("tour.anaBudgets.name")} /></div>
+        <div className="flex items-start gap-1.5 mb-3"><p className="text-xs text-gf-text-muted">{tr("analyzer.budgetsMonth.help")}</p></div>
         {budgetRows.length === 0 ? (
           <p className="text-xs text-gf-text-muted">{tr("analyzer.budgets.none")}</p>
         ) : (
           <div className="flex flex-col">
-            {budgetRows.map((b) => {
+            {budgetRows.map((b, position) => {
               const ratio = b.limit > 0 ? b.spent / b.limit : 0;
               return (
                 <div
                   key={b.budgetId}
+                  data-tour={position === 0 ? "ana-budgets-row" : undefined}
                   onClick={() =>
                     setActiveInsight({
                       icon: b.status === "over" ? "⚠️" : "📊",
@@ -944,10 +960,10 @@ function WalletAnalyzerView({
 
       {/* Biggest spend patterns */}
       {biggestSpendPatterns && (
-        <div className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5">
-          <div className="flex items-center gap-1.5"><p className="text-[15px] font-extrabold text-gf-text">{tr("analyzer.big.lastMonths", { p1: biggestSpendPatterns.monthsBack })}</p><InfoTip info={APP_INFO.grandes_gastos_2} /></div>
+        <div className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5" data-tour="ana-big">
+          <div className="flex items-center gap-1.5"><p className="text-[15px] font-extrabold text-gf-text">{tr("analyzer.big.lastMonths", { p1: biggestSpendPatterns.monthsBack })}</p><span aria-hidden="true" className="mx-2 inline-block h-5 w-px shrink-0 align-middle bg-purple-300/40" /><InfoTip info={APP_INFO.grandes_gastos_2} /><TutorialTip tour="anaBig" label={tr("tour.anaBig.name")} /></div>
           <p className="text-xs text-gf-text-muted mb-3">{tr("analyzer.big.help2")}</p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4" data-tour="ana-big-cards">
             <div
               onClick={() => setChampionsModalKind("transaction")}
               role="button"
@@ -1003,8 +1019,8 @@ function WalletAnalyzerView({
           </div>
           <p className="text-[11px] text-gf-text-muted -mt-2 mb-2">{tr("analyzer.tapCard")}</p>
 
-          <div className="rounded-xl bg-gf-accent-soft-bg p-3.5">
-            <div className="mb-1.5 flex items-center gap-1"><p className="text-[11px] font-bold uppercase tracking-wide text-purple-300">{tr("analyzer.analysis")}</p><InfoTip info={APP_INFO.de_d_nde_sale_este_an_lisis} /></div>
+          <div className="rounded-xl bg-gf-accent-soft-bg p-3.5" data-tour="ana-big-analysis">
+            <TitleWithHelp as="p" title={tr("analyzer.analysis")} info={APP_INFO.de_d_nde_sale_este_an_lisis} titleClassName="text-[11px] font-bold uppercase tracking-wide text-purple-300" className="mb-1.5" />
             <ul className="list-disc pl-4 space-y-1 text-[12.5px] text-gf-text-muted leading-relaxed">
               {buildSpendPatternAnalysis(biggestSpendPatterns, tr).map((bullet, i) => (
                 <li key={i}>{bullet}</li>
@@ -1016,13 +1032,13 @@ function WalletAnalyzerView({
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Subscriptions */}
-        <div className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5">
-          <div className="flex items-center gap-1.5"><p className="text-[15px] font-extrabold text-gf-text">{tr("analyzer.subscriptions")}</p><InfoTip info={APP_INFO.suscripciones_recurrentes} /></div>
-          <div className="flex items-start gap-1.5 mb-3"><p className="text-xs text-gf-text-muted">{tr("analyzer.subscriptions.help")}</p><InfoTip info={APP_INFO.pagos_recurrentes} className="mt-px" /></div>
+        <div className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5" data-tour="ana-subs">
+          <div className="flex items-center gap-1.5"><p className="text-[15px] font-extrabold text-gf-text">{tr("analyzer.subscriptions")}</p><span aria-hidden="true" className="mx-2 inline-block h-5 w-px shrink-0 align-middle bg-purple-300/40" /><InfoTip info={APP_INFO.analizador_suscripciones} /><TutorialTip tour="anaSubs" label={tr("tour.anaSubs.name")} /></div>
+          <div className="flex items-start gap-1.5 mb-3"><p className="text-xs text-gf-text-muted">{tr("analyzer.subscriptions.help")}</p></div>
           {subscriptions.length === 0 ? (
             <p className="text-xs text-gf-text-muted">{tr("analyzer.subscriptions.none")}</p>
           ) : (
-            <div className="flex flex-col">
+            <div className="flex flex-col" data-tour="ana-subs-list">
               {subscriptions.map((s) => (
                 <div
                   key={s.name}
@@ -1059,15 +1075,15 @@ function WalletAnalyzerView({
         </div>
 
         {/* FX exposure */}
-        <div className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5">
-          <div className="flex items-center gap-1.5"><p className="text-[15px] font-extrabold text-gf-text">{tr("analyzer.fx.title")}</p><InfoTip info={APP_INFO.exposici_n_multimoneda} /></div>
+        <div className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5" data-tour="ana-fx">
+          <div className="flex items-center gap-1.5"><p className="text-[15px] font-extrabold text-gf-text">{tr("analyzer.fx.title")}</p><span aria-hidden="true" className="mx-2 inline-block h-5 w-px shrink-0 align-middle bg-purple-300/40" /><InfoTip info={APP_INFO.exposici_n_multimoneda} /><TutorialTip tour="anaFx" label={tr("tour.anaFx.name")} /></div>
           <p className="text-xs text-gf-text-muted mb-3">{tr("analyzer.fx.help")}</p>
           {fxExposure.loading ? (
             <p className="text-xs text-gf-text-muted">{tr("analyzer.fx.loading")}</p>
           ) : fxExposure.rows.length === 0 ? (
             <p className="text-xs text-gf-text-muted">{tr("analyzer.fx.allSame", { p1: walletPrimaryCurrency })}</p>
           ) : (
-            <table className="w-full text-[13px]">
+            <table className="w-full text-[13px]" data-tour="ana-fx-table">
               <thead>
                 <tr className="text-[10.5px] uppercase tracking-wide text-gf-text-muted">
                   <th className="text-left font-bold pb-2">{tr("analyzer.fx.currency")}</th>
@@ -1106,13 +1122,14 @@ function WalletAnalyzerView({
           }
         }}
         className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5 cursor-pointer hover:shadow-md transition-shadow"
+        data-tour="ana-pace"
       >
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1.5"><p className="text-[15px] font-extrabold text-gf-text">{tr("analyzer.pace.title")}</p><InfoTip info={APP_INFO.ritmo_de_gasto} /></div>
+          <div className="flex items-center gap-1.5"><p className="text-[15px] font-extrabold text-gf-text">{tr("analyzer.pace.title")}</p><span aria-hidden="true" className="mx-2 inline-block h-5 w-px shrink-0 align-middle bg-purple-300/40" /><InfoTip info={APP_INFO.ritmo_de_gasto} /><TutorialTip tour="anaPace" label={tr("tour.anaPace.name")} /></div>
           <span className="text-[11px] font-semibold text-purple-600">{tr("analyzer.seeDetail")}</span>
         </div>
         <p className="text-xs text-gf-text-muted mb-3">{tr("analyzer.pace.monthHelp")}</p>
-        <div className="h-2.5 rounded-full bg-gf-surface-2 overflow-hidden">
+        <div className="h-2.5 rounded-full bg-gf-surface-2 overflow-hidden" data-tour="ana-pace-bar">
           <div className="h-full rounded-full bg-purple-500" style={{ width: `${pacePct}%` }} />
         </div>
         <p className="text-xs text-gf-text-muted mt-2">
@@ -1134,15 +1151,18 @@ function WalletAnalyzerView({
           if (e.key === "Enter" || e.key === " ") setWeekdayDetailOpen(true);
         }}
         className="gf-glass-card border border-gf-border rounded-[32px] shadow-sm p-5 cursor-pointer hover:shadow-md transition-shadow"
+        data-tour="ana-weekday"
       >
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1.5"><p className="text-[15px] font-extrabold text-gf-text">{tr("analyzer.weekday.title")}</p><InfoTip info={APP_INFO.patr_n_semanal} /></div>
+          <div className="flex items-center gap-1.5"><p className="text-[15px] font-extrabold text-gf-text">{tr("analyzer.weekday.title")}</p><span aria-hidden="true" className="mx-2 inline-block h-5 w-px shrink-0 align-middle bg-purple-300/40" /><InfoTip info={APP_INFO.analizador_patron_por_dia} /><TutorialTip tour="anaWeekday" label={tr("tour.anaWeekday.name")} /></div>
   <span className="text-[11px] font-semibold text-purple-600">{tr("analyzer.seeDetail")}</span>
         </div>
-        <div className="flex items-start gap-1.5 mb-3"><p className="text-xs text-gf-text-muted">{tr("analyzer.dailyAvgThisMonth")}</p><InfoTip info={APP_INFO.c_mo_se_calcula} className="mt-px" /></div>
-        <WalletAnalyzerWeekdayChart days={weekdaySpending.days} walletPrimaryCurrency={walletPrimaryCurrency} />
+        <div className="flex items-start gap-1.5 mb-3"><p className="text-xs text-gf-text-muted">{tr("analyzer.dailyAvgThisMonth")}</p></div>
+        <WeekdayPatternCardBody weekly={weekdaySpending.weekly} days={weekdaySpending.days} daily={weekdaySpending.dailyBreakdown ?? []} walletPrimaryCurrency={walletPrimaryCurrency} />
         <p className="text-xs text-gf-text-muted mt-3">{weekdaySpending.insight}</p>
       </div>
+
+      <AccountsAnalysisSection range={currentRange} primary={walletPrimaryCurrency} fxRows={fxExposure?.rows} />
 
       {close && <BasicModal close={handleClose} renderContent={modalContent} />}
       <InsightDetailModal insight={activeInsight} onClose={() => setActiveInsight(null)} walletPrimaryCurrency={walletPrimaryCurrency} />

@@ -4,6 +4,8 @@ import React, { useMemo, useState } from "react";
 import dayjs from "dayjs";
 import { useDispatch, useSelector } from "react-redux";
 import BasicModal from "@/components/modals/basicModal/BasicModal";
+import TutorialTip from "@/components/tour/TutorialTip";
+import { IoSearchOutline } from "react-icons/io5";
 import SelectCategories from "@/components/categories/SelectCategoryProvider/SelectCategories";
 import CategoIcon from "@/components/multiUsedComp/CategoIcon";
 import UniversalCategoIcon from "@/components/multiUsedComp/UniversalCategoIcon";
@@ -166,11 +168,11 @@ export default function ProjectBudgetDetailModal({
         close={onClose}
         renderContent={
           <div className="content absolute gf-glass-violet flex flex-col w-[94vw] max-w-[720px] max-h-[92vh] overflow-hidden rounded-3xl z-[1001] shadow-2xl">
-            <div className="relative px-6 pt-6 pb-5 text-white shrink-0">
+            <div data-tour="bud-pdet-header" className="relative px-6 pt-6 pb-5 text-gf-text shrink-0">
               <button
                 type="button"
                 onClick={onClose}
-                className="absolute top-4 right-4 rounded-full gf-glass-card p-1.5 text-purple-100 hover:text-white transition-colors"
+                className="absolute top-4 right-4 rounded-full gf-glass-card p-1.5 text-purple-100 hover:text-gf-text transition-colors"
               >
                 <CategoIcon type="MdClose" siz={18} />
               </button>
@@ -182,13 +184,17 @@ export default function ProjectBudgetDetailModal({
                   <p className="text-xs text-purple-200 font-bold uppercase tracking-wide">
                     {t("budgets.projectSubtitle", { p1: budgetCurrency })}
                   </p>
-                  <h2 className="text-2xl font-bold">{budget.name}</h2>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h2 className="text-2xl font-bold">{budget.name}</h2>
+                    <span aria-hidden="true" className="mx-2 inline-block h-5 w-px shrink-0 align-middle bg-purple-300/40" />
+                    <TutorialTip tour="budProjectDetail" label={budget.name} />
+                  </div>
                 </div>
               </div>
               <p className="text-xs text-purple-100 mt-1">{t("budgets.datesEditable", { p1: range })}</p>
             </div>
             <div className="bg-gf-surface-2 rounded-t-[38px] px-5 sm:px-7 py-6 overflow-y-auto flex-1">
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-4">
+              <div data-tour="bud-pdet-cards" className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-4">
                 <div className="bg-gf-surface border border-gf-border rounded-2xl p-3">
                   <p className="text-[10px] text-gf-text-muted uppercase">{t("budgets.spent")}</p>
                   <p className="text-lg font-bold text-purple-300">{usdFormatChanger(spent)}</p>
@@ -199,16 +205,16 @@ export default function ProjectBudgetDetailModal({
                 </div>
                 <div
                   className={`col-span-2 sm:col-span-1 border rounded-2xl p-3 ${
-                    spent > goal ? "bg-red-500/15 border-red-200" : "bg-emerald-500/15 border-emerald-200"
+                    spent > goal ? "bg-red-500/15 gf-status-bad border-red-200" : "bg-emerald-500/15 gf-status-good border-emerald-200"
                   }`}
                 >
                   <p className="text-[10px] text-gf-text-muted uppercase">{spent > goal ? tr("web.over") : tr("web.available")}</p>
                   <p className="text-lg font-bold">{usdFormatChanger(Math.abs(goal - spent))}</p>
                 </div>
               </div>
-              <div className="w-full h-3 bg-gf-surface-2 rounded-full overflow-hidden">
+              <div data-tour="bud-pdet-bar" className="w-full h-3 bg-gf-surface-2 rounded-full overflow-hidden">
                 <div
-                  className={`h-full ${ratio > 1 ? "bg-red-500" : "bg-purple-600"}`}
+                  className={`h-full ${ratio > 1 ? "bg-red-500" : "bg-purple-600"} ${ratio >= 0.03 ? "gf-bar-energy" : ""} ${ratio > 1 ? "gf-bar-energy-fast" : ""}`}
                   style={{ width: `${Math.min(Math.max(ratio * 100, 0), 100)}%` }}
                 />
               </div>
@@ -217,7 +223,7 @@ export default function ProjectBudgetDetailModal({
               </p>
 
               {!!budget.linkedTags?.length && (
-                <div className="mt-4">
+                <div data-tour="bud-pdet-tags" className="mt-4">
                   <p className="text-[10px] uppercase tracking-wide text-gf-text-muted mb-1">{t("budgets.suggestionTags")}</p>
                   <div className="flex flex-wrap gap-1.5">
                     {budget.linkedTags.map((tag) => {
@@ -242,6 +248,7 @@ export default function ProjectBudgetDetailModal({
               {!readOnly && <div className="flex flex-wrap gap-2 mt-5">
                 <button
                   type="button"
+                  data-tour="bud-pdet-edit"
                   onClick={() => onEdit(budget)}
                   className="rounded-full gf-glass-button text-white text-xs font-bold px-4 py-2"
                 >
@@ -249,6 +256,7 @@ export default function ProjectBudgetDetailModal({
                 </button>
                 <button
                   type="button"
+                  data-tour="bud-pdet-add"
                   onClick={() => setShowAddExisting((value) => !value)}
                   className="rounded-full border border-purple-300 text-purple-300 text-xs font-bold px-4 py-2"
                 >
@@ -256,6 +264,7 @@ export default function ProjectBudgetDetailModal({
                 </button>
                 <button
                   type="button"
+                  data-tour="bud-pdet-create"
                   onClick={() => setShowCreate(true)}
                   className="rounded-full border border-purple-300 text-purple-300 text-xs font-bold px-4 py-2"
                 >
@@ -264,25 +273,33 @@ export default function ProjectBudgetDetailModal({
               </div>}
 
               {!readOnly && showAddExisting && (
-                <div className="mt-4 bg-gf-accent-soft-bg border border-gf-border rounded-2xl p-3">
-                  <input
-                    type="search"
-                    value={query}
-                    onChange={(event) => setQuery(event.target.value)}
-                    placeholder={t("budgets.project.searchExpenses")}
-                    className="w-full mb-2"
-                  />
+                <div data-tour="bud-pdet-add-panel" className="mt-4 bg-gf-accent-soft-bg border border-gf-border rounded-2xl p-3">
+                  <div className="relative w-full mb-2">
+                    <IoSearchOutline
+                      size={15}
+                      className="absolute left-3 top-1/2 -translate-y-1/2 text-gf-text-muted pointer-events-none"
+                    />
+                    <input
+                      data-tour="bud-pdet-search"
+                      type="text"
+                      value={query}
+                      onChange={(event) => setQuery(event.target.value)}
+                      placeholder={t("budgets.project.searchExpenses")}
+                      className="w-full pl-8 pr-3 py-1.5 text-xs text-gf-text gf-glass-inset rounded-2xl outline-none border-0 focus:ring-1 focus:ring-purple-400 transition-colors"
+                    />
+                  </div>
                   {!!tagIds.length && (
-                    <p className="text-[10px] text-purple-300 mb-2">{t("budgets.project.tagFirst")}</p>
+                    <p data-tour="bud-pdet-tagfirst" className="text-[10px] text-purple-300 mb-2">{t("budgets.project.tagFirst")}</p>
                   )}
-                  <div className="flex flex-col gap-2 max-h-56 overflow-y-auto">
+                  <div data-tour="bud-pdet-candidates" className="flex flex-col gap-2 max-h-56 overflow-y-auto">
                     {candidates.length ? (
-                      candidates.map((transaction) => {
+                      candidates.map((transaction, index) => {
                         const suggested = tagIds.some((id) => transactionTags(transaction).includes(id));
                         return (
                           <button
                             key={transaction._id}
                             type="button"
+                            data-tour={index === 0 ? "bud-pdet-candidate" : undefined}
                             onClick={() => linkMovement(transaction._id, true)}
                             className="flex items-center justify-between gap-3 bg-gf-surface rounded-xl border border-gf-border px-3 py-2 text-left"
                           >
@@ -307,13 +324,13 @@ export default function ProjectBudgetDetailModal({
               )}
 
               <div className="mt-5">
-                <div className="flex items-center justify-between mb-2">
+                <div data-tour="bud-pdet-linked" className="flex items-center justify-between mb-2">
                   <h3 className="font-bold text-purple-300">{t("budgets.project.linked")}</h3>
                   <span className="text-xs text-gf-text-muted">{linked.length}</span>
                 </div>
                 <div className="flex flex-col gap-2">
                   {linked.length ? (
-                    linked.map((transaction) => (
+                    linked.map((transaction, index) => (
                       <div
                         key={transaction._id}
                         className="flex items-center justify-between gap-2 bg-gf-surface border border-gf-border rounded-2xl px-3 py-2"
@@ -328,6 +345,7 @@ export default function ProjectBudgetDetailModal({
                         {!readOnly && <button
                           type="button"
                           title={t("budgets.movement.edit")}
+                          data-tour={index === 0 ? "bud-pdet-linked-edit" : undefined}
                           onClick={() => setEditingMovement(transaction)}
                           className="text-gf-text-muted hover:text-purple-600"
                         >
@@ -336,6 +354,7 @@ export default function ProjectBudgetDetailModal({
                         {!readOnly && <button
                           type="button"
                           title={t("budgets.project.remove")}
+                          data-tour={index === 0 ? "bud-pdet-linked-unlink" : undefined}
                           onClick={() => linkMovement(transaction._id, false)}
                           className="text-gf-text-muted hover:text-red-400"
                         >

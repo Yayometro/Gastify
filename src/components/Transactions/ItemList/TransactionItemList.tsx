@@ -1,5 +1,5 @@
 "use client";
-import { shortDate } from "@gastify/core/i18n/dates";
+import { shortDateOrEmpty } from "@gastify/core/i18n/dates";
 
 import React from "react";
 import CategoIcon from "@/components/multiUsedComp/CategoIcon";
@@ -80,6 +80,8 @@ export interface TransactionItemListProps {
   selectable?: boolean;
   selected?: boolean;
   onSelect?: (id?: string) => void;
+  // The guided tutorial's anchor (data-tour) for the edit and delete buttons, when a screen points at them.
+  actionsTour?: string;
 }
 
 function TransactionItemList({
@@ -90,6 +92,7 @@ function TransactionItemList({
   selectable,
   selected,
   onSelect,
+  actionsTour,
 }: TransactionItemListProps): React.JSX.Element {
   const t = useT();
   const locale = useLocale();
@@ -103,6 +106,8 @@ function TransactionItemList({
   const merchant = movement.displayMoney?.merchant;
   const showEquivalent = Boolean(native && primary && native.currency !== primary.currency);
   const hasFxDetail = Boolean(merchant) || showEquivalent;
+  // The rate's date can be missing (the demo's sample movements have none): then the line shows no date instead of failing.
+  const rateDateLabel = shortDateOrEmpty(primary?.effectiveDate, locale);
   const amountLabel = native
     ? formatMoneyMinor(native.amountMinor, native.currency)
     : formatInPrimaryCurrency(movement.amount as number);
@@ -115,7 +120,7 @@ function TransactionItemList({
         <>
           <div>{t("movements.row.reported", { p1: primary.currency, p2: formatMoneyMinor(primary.amountMinor, primary.currency) })}</div>
           <div>{t("movements.row.rate", { p1: primary.rate, p2: primary.source })}</div>
-          <div>{shortDate(new Date(primary.effectiveDate as string | number | Date), locale)} — {primary.estimated ? t("web.estimated") : t("web.exact")}{primary.stale ? t("web.stale") : ""}</div>
+          <div>{rateDateLabel ? `${rateDateLabel} — ` : ""}{primary.estimated ? t("web.estimated") : t("web.exact")}{primary.stale ? t("web.stale") : ""}</div>
         </>
       ) : (
         <div>{t("movements.row.rateUnavailable")}</div>
@@ -203,7 +208,7 @@ function TransactionItemList({
             {dayjs(movement.date || movement.createdAt).format("DD/MM/YYYY")}
           </div>
         </div>
-        <div className="btns flex justify-between gap-2">
+        <div data-tour={actionsTour} className="btns flex justify-between gap-2">
           {handleDelete && (
             <button
               onClick={() => handleDelete(movement._id)}

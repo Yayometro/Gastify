@@ -43,6 +43,7 @@ import { getPrimaryAmount } from '@gastify/core/transformers/transactionsChange'
 import { useT, useInfo, useLocale } from "@/i18n/client";
 import { tNow } from '@/i18n/now';
 
+import { TourTarget } from '@/components/tour/tour-target';
 function Delta({ current, previous, invert = false }: { current: number; previous: number; invert?: boolean }) {
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
@@ -112,7 +113,7 @@ export default function HistoryScreen() {
 
   return (
     <Screen title={t("mobile.historial")} subtitle={labelA} backLabel={t("mobile.mas")} onBack={() => router.back()} titleInfo={HISTORY_INFO}>
-      <Card title={t("mobile.periodo")} info={APP_INFO.periodo}>
+      <Card tour="m-his-period" title={t("mobile.periodo")}>
         {tablet ? (
           <PeriodBar
             preset={preset}
@@ -138,10 +139,10 @@ export default function HistoryScreen() {
           )}
           </>
         )}
-        <View className="flex-row items-center justify-between gap-3 border-t border-gf-border pt-3">
+        <TourTarget id="m-his-compare" className="flex-row items-center justify-between gap-3 border-t border-gf-border pt-3">
           <Text className="flex-1 font-inter-medium text-base text-gf-text">{t("mobile.comparar.con.otro.periodo")}</Text>
           <GfSwitch value={compareOn} onValueChange={setCompareOn} accessibilityLabel={t("mobile.comparar.con.otro.periodo")} />
-        </View>
+        </TourTarget>
         {compareOn && (
           <>
             <ChipPicker items={COMPARE_PRESETS.map((p) => ({ id: p.value, label: t(p.label) }))} value={comparePreset} onChange={(id) => setComparePreset(id as ComparePreset)} moreAfter={99} />
@@ -160,7 +161,7 @@ export default function HistoryScreen() {
       {tablet ? (
         <View className="flex-row items-stretch gap-4">
           <PairedColumn>
-      <Card title={t("mobile.resumen")} info={APP_INFO.resumen}>
+      <Card tour="m-his-summary" title={t("mobile.resumen")} info={APP_INFO.resumen}>
         {[
           { label: t("mobile.ingresos"), av: a.totals.incomes, bv: b?.totals.incomes, color: colors.income, invert: false },
           { label: t("mobile.gastos"), av: a.totals.spending, bv: b?.totals.spending, color: colors.expense, invert: true },
@@ -186,7 +187,7 @@ export default function HistoryScreen() {
       </Card>
           </PairedColumn>
           <PairedColumn>
-      <Card title={t("mobile.datos.del.periodo")} info={APP_INFO.datos_del_periodo}>
+      <Card tour="m-his-facts" title={t("mobile.datos.del.periodo")} info={APP_INFO.datos_del_periodo}>
         <View className="flex-row flex-wrap gap-3">
           {periodFacts(t, a, cell).map((fact, index) => ({ ...fact, versus: b ? periodFacts(t, b, cell)[index].value : null })).map((tile) => (
             <View key={tile.label} className="gap-1 rounded-2xl p-4" style={{ flexBasis: '47%', flexGrow: 1, backgroundColor: 'rgba(255,255,255,0.08)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.12)' }}>
@@ -201,7 +202,7 @@ export default function HistoryScreen() {
           </PairedColumn>
         </View>
       ) : (
-      <Card title={t("mobile.resumen")} info={APP_INFO.resumen_2}>
+      <Card tour="m-his-summary" title={t("mobile.resumen")} info={APP_INFO.resumen_2}>
         {[
           { label: t("mobile.ingresos"), av: a.totals.incomes, bv: b?.totals.incomes, color: colors.income, invert: false },
           { label: t("mobile.gastos"), av: a.totals.spending, bv: b?.totals.spending, color: colors.expense, invert: true },
@@ -227,11 +228,12 @@ export default function HistoryScreen() {
       </Card>
       )}
 
-      <MonthByMonth summary={a} compareSummary={b} currency={currency} movements={transactions} />
+      <TourTarget id="m-his-months"><MonthByMonth summary={a} compareSummary={b} currency={currency} movements={transactions} /></TourTarget>
 
       {wide ? (
         <View className="flex-row items-stretch gap-4">
           <PairedColumn>
+      <TourTarget id="m-his-categories">
       <OwnPeriodCategories
         kind="spending"
         title={t("mobile.gastos.por.categoria")}
@@ -241,6 +243,7 @@ export default function HistoryScreen() {
         compareSummary={b}
         currency={currency}
       />
+      </TourTarget>
           </PairedColumn>
           <PairedColumn>
       <OwnPeriodCategories
@@ -256,6 +259,7 @@ export default function HistoryScreen() {
         </View>
       ) : (
         <>
+      <TourTarget id="m-his-spending">
       <OwnPeriodCategories
         kind="spending"
         title={t("mobile.gastos.por.categoria")}
@@ -265,7 +269,9 @@ export default function HistoryScreen() {
         compareSummary={b}
         currency={currency}
       />
+      </TourTarget>
 
+      <TourTarget id="m-his-incomes">
       <OwnPeriodCategories
         kind="incomes"
         title={t("mobile.ingresos.por.categoria")}
@@ -275,16 +281,17 @@ export default function HistoryScreen() {
         compareSummary={b}
         currency={currency}
       />
+      </TourTarget>
         </>
       )}
 
       <HistoryExtraInsights movements={transactions} currency={currency} end={rangeA.end} compareEnd={b ? rangeB.end : undefined} />
 
-      <BudgetsComparative start={rangeA.start} end={rangeA.end} compareStart={compareOn ? rangeB.start : undefined} compareEnd={compareOn ? rangeB.end : undefined} />
+      <TourTarget id="m-his-budgets"><BudgetsComparative start={rangeA.start} end={rangeA.end} compareStart={compareOn ? rangeB.start : undefined} compareEnd={compareOn ? rangeB.end : undefined} /></TourTarget>
 
-      <ProjectionsTeaser />
+      <TourTarget id="m-his-projections"><ProjectionsTeaser /></TourTarget>
 
-      <TopRanking movements={transactions} currency={currency} defaultPreset="last3" returnTo="/more/history" showComparison />
+      <TopRanking movements={transactions} currency={currency} defaultPreset="last3" returnTo="/more/history" showComparison withInfo={false} />
     </Screen>
   );
 }

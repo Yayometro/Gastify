@@ -5,10 +5,12 @@ import {
   IoArrowBackOutline,
   IoArrowForwardOutline,
   IoBulbOutline,
+  IoCompassOutline,
   IoChevronDownOutline,
   IoChevronUpOutline,
 } from "react-icons/io5";
 import { useT } from "@/i18n/client";
+import { useTour } from "@/components/tour/TourProvider";
 import type { DemoSection } from "@/app/demo/DemoWorkspace";
 
 type GuideSection = Exclude<DemoSection, "dashboard">;
@@ -26,6 +28,7 @@ const guideSections: Record<GuideSection, { title: string; steps: readonly [stri
 
 export default function DemoFeatureGuide({ section }: { section: GuideSection }): React.JSX.Element {
   const t = useT();
+  const tour = useTour();
   const [stepIndex, setStepIndex] = useState(0);
   const [expanded, setExpanded] = useState(true);
   const guide = guideSections[section];
@@ -44,15 +47,29 @@ export default function DemoFeatureGuide({ section }: { section: GuideSection })
           </div>
           <div className="mt-1 flex items-center justify-between gap-2">
             <h2 className="text-sm font-semibold text-white sm:text-base">{t(guide.title)}</h2>
-            <button
-              type="button"
-              aria-expanded={expanded}
-              onClick={() => setExpanded((current) => !current)}
-              className="inline-flex shrink-0 items-center gap-1 rounded-lg px-2 py-1 text-[10px] font-medium text-purple-100/80 transition hover:bg-white/5 hover:text-white"
-            >
-              {expanded ? t("shared.demo.guide.hide") : t("shared.demo.guide.show")}
-              {expanded ? <IoChevronUpOutline aria-hidden="true" /> : <IoChevronDownOutline aria-hidden="true" />}
-            </button>
+            <div className="flex shrink-0 items-center gap-1">
+              {/* The spotlight tour of this page (the card's three steps stay as they are). */}
+              {tour.available && (
+                <button
+                  type="button"
+                  onClick={tour.startPage}
+                  aria-label={t("tour.demoGuide.startLabel")}
+                  className="inline-flex items-center gap-1 rounded-lg border border-purple-200/25 bg-purple-300/10 px-2 py-1 text-[10px] font-semibold text-purple-50 transition hover:bg-purple-300/20"
+                >
+                  <IoCompassOutline aria-hidden="true" />
+                  {t("tour.demoGuide.start")}
+                </button>
+              )}
+              <button
+                type="button"
+                aria-expanded={expanded}
+                onClick={() => setExpanded((current) => !current)}
+                className="inline-flex shrink-0 items-center gap-1 rounded-lg px-2 py-1 text-[10px] font-medium text-purple-100/80 transition hover:bg-white/5 hover:text-white"
+              >
+                {expanded ? t("shared.demo.guide.hide") : t("shared.demo.guide.show")}
+                {expanded ? <IoChevronUpOutline aria-hidden="true" /> : <IoChevronDownOutline aria-hidden="true" />}
+              </button>
+            </div>
           </div>
 
           {expanded && (

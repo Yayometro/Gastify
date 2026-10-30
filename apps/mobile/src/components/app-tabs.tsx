@@ -10,6 +10,8 @@ import { ToolsFab } from '@/components/tools/tools-fab';
 import { Colors } from '@/constants/theme';
 import { useBudgetAlerts } from '@/hooks/use-budget-alerts';
 import { useLoadAppData } from '@/hooks/use-load-app-data';
+import { useRecurringSync } from '@/hooks/use-recurring-sync';
+import { RecurringPendingSheet } from '@/components/recurring/pending-sheet';
 import { useT } from '@/i18n/client';
 
 const ICON_SIZE = 25;
@@ -33,6 +35,7 @@ export default function AppTabs() {
   // Only rendered for a signed-in, unlocked session (see AuthGate): the data loads start here, once.
   useLoadAppData();
   useBudgetAlerts();
+  useRecurringSync();
   const scheme = useColorScheme();
   const isDark = scheme === 'dark';
   // Wide screens (iPad, landscape) get the web's left column instead of the floating bar.
@@ -117,6 +120,7 @@ export default function AppTabs() {
       <View style={{ flex: 1 }}>
         {tabs}
         <ToolsFab />
+        <RecurringPendingSheet />
       </View>
     );
   }
@@ -125,6 +129,7 @@ export default function AppTabs() {
       <SideNav />
       <View style={{ flex: 1 }}>{tabs}</View>
       <ToolsFab />
+      <RecurringPendingSheet />
     </View>
   );
 }

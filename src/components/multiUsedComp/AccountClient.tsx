@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import TutorialTip from "@/components/tour/TutorialTip";
+import React, { useEffect, useMemo, useState } from "react";
 
 import { InfoTip } from "@/components/multiUsedComp/InfoTip";
 import { useSearchParams } from "next/navigation";
@@ -16,29 +17,22 @@ import SelecterFilter, { type SelecterPeriod } from "@/components/Filters/select
 import EditAccountModal, { type EditAccountModalMode } from "./EditAccountModal";
 import PrimaryCurrencySelector from "./PrimaryCurrencySelector";
 
-import ResumeTabsTrans from "./ResumeTabsTrans";
-import DisplayerCategoryTreemap from "./DisplayerCategoryTreemap";
+import CategoryBreakdownCard from "./CategoryBreakdownCard";
+import TopElementsContainer from "./TopElementsContainer";
+import Movements from "./Movements";
 
 import {
   generate_timeperiod_ranges_array_for_dashboard,
   getLastDayOfMonth,
   getDateInYearMonthDay,
 } from "@gastify/core/time/timeFunctions";
-import { getTransactionsFromTimeRange } from "@/helpers/transformers/transactionsChange";
 
 import { fetchUser, type UserData } from "@/lib/features/userSlice";
 import { fetchWallet, type WalletData } from "@/lib/features/walletSlice";
 import { fetchAccounts, type AccountData } from "@/lib/features/accountsSlice";
-import { fetchTrans } from "@/lib/features/transacctionsSlice";
+import { fetchTrans, type TransactionData } from "@/lib/features/transacctionsSlice";
 import type { RootState, AppDispatch } from "@/lib/store";
 import { useT, useInfo } from "@/i18n/client";
-
-// Typed bridge components for unmigrated JS components
-
-const TypedDisplayerCategoryTreemap = DisplayerCategoryTreemap as React.ComponentType<{
-  dccpIncomes?: unknown;
-  dccoBills?: unknown;
-}>;
 
 export interface AccountClientProps {
   acSession?: string;
@@ -98,6 +92,11 @@ function AccountClient({ acSession, readOnly = false }: AccountClientProps): Rea
   const treemapTimePeriodsForSelecter = generate_timeperiod_ranges_array_for_dashboard(
     today.getFullYear()
   ) as SelecterPeriod[];
+  // The movements of the account on screen: the summary and the top read this one list (the list reads the account by its id).
+  const accountMovements = useMemo(
+    () => (finalAccounts[carruselCurrent]?.allTransactionsList || []) as unknown as TransactionData[],
+    [finalAccounts, carruselCurrent]
+  );
   const searchParams = useSearchParams();
   const targetAccountId = searchParams.get("accountId");
   // Redux
@@ -264,10 +263,11 @@ function AccountClient({ acSession, readOnly = false }: AccountClientProps): Rea
                 (`${nameGeneral} `)
               }
               {" "}{t("accounts.title")}
+              <span aria-hidden="true" className="mx-2 inline-block h-5 w-px shrink-0 align-middle bg-purple-300/40" /><TutorialTip className="ml-0.5" tour="accounts" label={t("navbar.accounts")} />
             </h1>
           </div>
-          <div className="filters flex items-center justify-center gap-2">
-            <div className="gf-glass-card text-gf-text w-fit text-[10px] font-light flex items-center justify-center rounded-2xl px-[4px] sm:font-base sm:font-extralight active:border-0 hover:border-0 outline-none active:outline-none ring-offset-0 relative min-[400px]:py-[2px] min-[640px]:py-[4px]">
+          <div className="filters flex items-center justify-center gap-2" data-tour="acc-filters">
+            <div data-tour="acc-period-select" className="gf-glass-card text-gf-text w-fit text-[10px] font-light flex items-center justify-center rounded-2xl px-[4px] sm:font-base sm:font-extralight active:border-0 hover:border-0 outline-none active:outline-none ring-offset-0 relative min-[400px]:py-[2px] min-[640px]:py-[4px]">
               <select
                 className="bg-transparent appearance-none w-full pr-4"
                 name="DateSelector"
@@ -285,23 +285,18 @@ function AccountClient({ acSession, readOnly = false }: AccountClientProps): Rea
                 <CategoIcon type={"MdOutlineArrowDownward"} siz={12} />
               </div>
             </div>
-            <TimeRange rpDate={handleRangeDate} startDateValue={startDate} endDateValue={endDate} />
-            <Tooltip title={t("accounts.dateTip")}>
-              <div className="text-white w-[10px]">
-                <UniversalCategoIcon
-                  type={`${"fa/FaRegQuestionCircle"}`}
-                  siz={15}
-                />
-              </div>
-            </Tooltip>
+            <div data-tour="acc-period-range"><TimeRange rpDate={handleRangeDate} startDateValue={startDate} endDateValue={endDate} /></div>
+            
+            <span aria-hidden="true" className="mx-2 inline-block h-5 w-px shrink-0 align-middle bg-purple-300/40" /><TutorialTip tour="accPeriod" label={t("tour.accPeriod.name")} />
           </div>
-          <div className="filters flex items-center justify-center pt-2">
+          <div className="filters flex items-center justify-center pt-2" data-tour={!readOnly ? "acc-currency" : undefined}>
             {!readOnly && <PrimaryCurrencySelector pcsWallet={walletData} />}
           </div>
           <div className="content-profile-cont w-full h-full content-wallet-glass text-center items-center mt-[10px] sm:mt-[20px] rounded-t-[100px] rounded-b-2xl px-2">
             <h1 className="3xl w-full "></h1>
-            <div className="account-multi-cc-container w-full py-4">
+            <div className="account-multi-cc-container w-full py-4" data-tour="acc-cards">
                 <MultiCreditCard
+                  tutorial="accCards"
                   acc={accountData}
                   user={userData}
                   trans={transactionData}
@@ -323,7 +318,7 @@ function AccountClient({ acSession, readOnly = false }: AccountClientProps): Rea
                     {!readOnly && <EditAccountModal eamMode={onEdition} eamAccount={finalAccounts[carruselCurrent] || null} eamWallet={walletData} eamClose={e => setOnEdition(e)}
                     />
                     }
-                  <div className="w-full flex justify-center items-center gap-3">
+                  <div className="w-full flex justify-center items-center gap-3" data-tour="acc-detail">
                     <button
                       type="button"
                       aria-label={t("accounts.prev")}
@@ -359,11 +354,13 @@ function AccountClient({ acSession, readOnly = false }: AccountClientProps): Rea
                         siz={26}
                       />
                     </button>
+                    <span aria-hidden="true" className="mx-2 inline-block h-5 w-px shrink-0 align-middle bg-purple-300/40" /><TutorialTip tour="accDetail" label={t("tour.accDetail.name")} />
                   </div>
-                  {!readOnly && <div className="w-full flex justify-center items-center gap-2 mb-6">
+                  {!readOnly && <div className="w-full flex justify-center items-center gap-2 mb-6" data-tour="acc-actions">
                     <div
                         className="w-[200px] flex gap-2 justify-center items-center gf-glass-button rounded-3xl cursor-pointer"
                         onClick={() => setOnEdition("edition")}
+                        data-tour="acc-edit"
                     >
                         <p className="text-white">{t("accounts.edit")}</p>
                         <div className=" flex justify-center items-center">
@@ -373,6 +370,7 @@ function AccountClient({ acSession, readOnly = false }: AccountClientProps): Rea
                     <div
                         className="w-[200px] flex gap-2 justify-center items-center gf-glass-button rounded-3xl cursor-pointer"
                         onClick={() => setOnEdition("creation")}
+                        data-tour="acc-new"
                     >
                         <p className="text-white">{t("accounts.new")}</p>
                         <div className=" flex justify-center items-center">
@@ -380,25 +378,13 @@ function AccountClient({ acSession, readOnly = false }: AccountClientProps): Rea
                         </div>
                     </div>
                   </div>}
-                  <div className="sub-resume-transactions-cont-tabs w-full h-full">
-                    {
-                      finalAccounts.length <= 0 ? (
-                        <Skeleton active />
-                      ) : (
-                        <ResumeTabsTrans
-                          rttTrans={
-                            finalAccounts[carruselCurrent]?.allTransactionsList
-                          }
-                        />
-                      )
-                    }
-                  </div>
-                  <div className="ac-TransactionsDetails w-full h-full mt-10">
-                    <h1 className=" font-bold text-2xl sm:text-3xl">
-                      {t("accounts.movements.title")}
-                      <InfoTip info={APP_INFO.movimientos_de_la_cuenta} />
-                    </h1>
-                    <div className="filters flex flex-col justify-center items-center mb-2">
+                  <div className="ac-summary-block w-full mt-10" data-tour="acc-summary">
+                    <div className="flex items-center justify-center gap-2 mb-2">
+                      <h1 className="font-bold text-2xl sm:text-3xl">{t("accounts.summary.title")}</h1>
+                      <span aria-hidden="true" className="mx-2 inline-block h-5 w-px shrink-0 align-middle bg-purple-300/40" />
+                      <TutorialTip tour="accSummary" label={t("tour.accSummary.name")} />
+                    </div>
+                    <div className="filters flex flex-col justify-center items-center mb-2" data-tour="acc-summary-filters">
                       <span className="text-xs">
                         {t("accounts.from")}{" "}
                         <b>{treemapTimePeriod[0] ? getDateInYearMonthDay(treemapTimePeriod[0]) : t("web.no.time.selected")}</b>
@@ -406,11 +392,7 @@ function AccountClient({ acSession, readOnly = false }: AccountClientProps): Rea
                         <b>{treemapTimePeriod[1] ? getDateInYearMonthDay(treemapTimePeriod[1]) : t("web.no.time.selected")}</b>
                       </span>
                       <div className="filters w-full h-full flex items-center justify-center flex-wrap gap-2">
-                        <Tooltip title={t("accounts.dateTip2")}>
-                          <div className="text-gf-text w-[10px]">
-                            <UniversalCategoIcon type="fa/FaRegQuestionCircle" siz={15} />
-                          </div>
-                        </Tooltip>
+                        
                         <SelecterFilter
                           getValue={getTreemapValueFromSelecter}
                           periodFromFather={treemapTimePeriodsForSelecter[0]}
@@ -420,26 +402,22 @@ function AccountClient({ acSession, readOnly = false }: AccountClientProps): Rea
                         <TimeRange rpDate={handleTreemapRangeDate} />
                       </div>
                     </div>
-                    {!finalAccounts[carruselCurrent]?.billsList ? (
-                      <Skeleton active/>
-                      ) : !finalAccounts[carruselCurrent]?.incomesList ? (
-                      <Skeleton active/>
-                    ) : (
-                      <div className="w-full h-full">
-                        <TypedDisplayerCategoryTreemap
-                          dccpIncomes={getTransactionsFromTimeRange(
-                            finalAccounts[carruselCurrent]?.incomesList || [],
-                            treemapTimePeriod[0],
-                            treemapTimePeriod[1]
-                          )}
-                          dccoBills={getTransactionsFromTimeRange(
-                            finalAccounts[carruselCurrent]?.billsList || [],
-                            treemapTimePeriod[0],
-                            treemapTimePeriod[1]
-                          )}
-                        />
+                    <CategoryBreakdownCard timePeriod={treemapTimePeriod} transactions={accountMovements} hideTitle />
+                  </div>
+                  <div className="w-full mt-10" data-tour="acc-top">
+                    <TopElementsContainer transactions={accountMovements} timePeriodFromFather={treemapTimePeriod} demoMode={readOnly} />
+                  </div>
+                  <div className="w-full mt-10" data-tour="acc-list">
+                    <div className="flex items-center justify-center gap-2 mb-3">
+                      <h1 className="font-bold text-2xl sm:text-3xl" data-tour="acc-movements-title">{t("accounts.movements.title")}</h1>
+                      <span aria-hidden="true" className="mx-2 inline-block h-5 w-px shrink-0 align-middle bg-purple-300/40" />
+                      <TutorialTip tour="accList" label={t("tour.accList.name")} />
+                    </div>
+                    <div className="relative h-[640px] w-full">
+                      <div className="gf-glass-card absolute inset-0 flex flex-col rounded-[32px] p-5">
+                        <Movements embedded accountId={finalAccounts[carruselCurrent]?._id} mail={acSession} readOnly={readOnly} />
                       </div>
-                    )}
+                    </div>
                   </div>
                 </div>
               )}

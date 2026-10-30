@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/lib/store";
 import type { WalletData } from "@/lib/features/walletSlice";
-import { InfoTip } from "./InfoTip";
+import TitleWithHelp from "./TitleWithHelp";
 
 import { formatMoneyMajor } from "@gastify/core/money/currencies";
 import { getPrimaryAmount } from "@gastify/core/transformers/transactionsChange";
@@ -34,8 +34,7 @@ function LatestMovementsCard(): React.JSX.Element {
     <section className="gf-glass-card w-full rounded-[32px] border border-gf-border p-5">
       <div className="mb-3 flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <h2 className="text-[15px] font-extrabold text-gf-text">{t("movements.latest.title")}</h2>
-          <InfoTip info={APP_INFO.ltimos_movimientos_2} />
+          <TitleWithHelp as="h2" title={t("movements.latest.title")} info={APP_INFO.ltimos_movimientos_2} titleClassName="text-[15px] font-extrabold text-gf-text" />
         </div>
         <Link href="/dashboard/movements" className="text-sm font-bold text-purple-300 transition-colors hover:text-white">
           {t("movements.latest.all")}

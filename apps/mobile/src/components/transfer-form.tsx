@@ -5,6 +5,7 @@ import { ChipPicker, type ChipItem } from '@/components/chip-picker';
 import { DateField } from '@/components/date-field';
 import { FormError } from '@/components/auth/auth-layout';
 import { GradientButton } from '@/components/ui/gradient-button';
+import { TourTarget } from '@/components/tour/tour-target';
 import { TextField } from '@/components/ui/text-field';
 import { useCatalog } from '@/hooks/use-catalog';
 import { messageOf } from '@/lib/write';
@@ -54,31 +55,31 @@ export function TransferForm({ onSubmit }: { onSubmit: (body: Record<string, unk
 
   return (
     <View className="gap-4">
-      <View className="gap-2">
+      <TourTarget id="m-transferform-source" className="gap-2">
         <Text className="font-inter-medium text-sm text-gf-text-muted">{t("mobile.desde")}</Text>
         <ChipPicker items={items} value={values.sourceAccountId} onChange={(id) => set('sourceAccountId', id)} emptyText={t("mobile.primero.crea.dos.cuentas.en.mas.cuentas")} />
         {errors.sourceAccountId && <Text className="font-inter text-sm text-red-500">{t(errors.sourceAccountId)}</Text>}
-      </View>
-      <View className="gap-2">
+      </TourTarget>
+      <TourTarget id="m-transferform-dest" className="gap-2">
         <Text className="font-inter-medium text-sm text-gf-text-muted">{t("mobile.hacia")}</Text>
         <ChipPicker items={items} value={values.destinationAccountId} onChange={(id) => set('destinationAccountId', id)} />
         {errors.destinationAccountId && <Text className="font-inter text-sm text-red-500">{t(errors.destinationAccountId)}</Text>}
-      </View>
+      </TourTarget>
       <View className="gap-2">
-        <TextField label={source ? t("mobile.transfer.sourceAmountWith", { p1: source }) : t("mobile.transfer.sourceAmount")} value={values.sourceAmount} onChangeText={(text) => set('sourceAmount', text.replace(/[^0-9.,]/g, ''))} placeholder="0.00" keyboardType="decimal-pad" />
+        <TourTarget id="m-transferform-amount"><TextField label={source ? t("mobile.transfer.sourceAmountWith", { p1: source }) : t("mobile.transfer.sourceAmount")} value={values.sourceAmount} onChangeText={(text) => set('sourceAmount', text.replace(/[^0-9.,]/g, ''))} placeholder="0.00" keyboardType="decimal-pad" /></TourTarget>
         {errors.sourceAmount && <Text className="font-inter text-sm text-red-500">{t(errors.sourceAmount)}</Text>}
       </View>
       {crossCurrency && (
         <View className="gap-2">
-          <TextField label={destination ? t("mobile.transfer.destAmountWith", { p1: destination }) : t("mobile.transfer.destAmount")} value={values.destinationAmount} onChangeText={(text) => set('destinationAmount', text.replace(/[^0-9.,]/g, ''))} placeholder="0.00" keyboardType="decimal-pad" />
+          <TourTarget id="m-transferform-amount-dest"><TextField label={destination ? t("mobile.transfer.destAmountWith", { p1: destination }) : t("mobile.transfer.destAmount")} value={values.destinationAmount} onChangeText={(text) => set('destinationAmount', text.replace(/[^0-9.,]/g, ''))} placeholder="0.00" keyboardType="decimal-pad" /></TourTarget>
           {errors.destinationAmount && <Text className="font-inter text-sm text-red-500">{t(errors.destinationAmount)}</Text>}
         </View>
       )}
-      <DateField label={t("mobile.fecha")} value={values.date} onChange={(day) => set('date', day)} />
+      <TourTarget id="m-transferform-date"><DateField label={t("mobile.fecha")} value={values.date} onChange={(day) => set('date', day)} /></TourTarget>
       {errors.date && <Text className="font-inter text-sm text-red-500">{t(errors.date)}</Text>}
-      <TextField label={t("mobile.nombre.opcional")} value={values.name} onChangeText={(text) => set('name', text)} placeholder={t("mobile.pago.de.tarjeta")} maxLength={80} />
+      <TourTarget id="m-transferform-name"><TextField label={t("mobile.nombre.opcional")} value={values.name} onChangeText={(text) => set('name', text)} placeholder={t("mobile.pago.de.tarjeta")} maxLength={80} /></TourTarget>
       <FormError message={formError} />
-      <GradientButton label={crossCurrency ? t("movements.bulk.changeCurrency") : t("mobile.transferir")} onPress={submit} loading={submitting} disabled={submitting} />
+      <TourTarget id="m-transferform-save"><GradientButton label={crossCurrency ? t("movements.bulk.changeCurrency") : t("mobile.transferir")} onPress={submit} loading={submitting} disabled={submitting} /></TourTarget>
     </View>
   );
 }

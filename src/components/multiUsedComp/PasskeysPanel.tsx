@@ -8,6 +8,7 @@ import runNotify from "@/helpers/gastifyNotifier";
 import { redirectIfStepUpRequired } from "@/lib/auth/stepUpRedirect";
 import CategoIcon from "./CategoIcon";
 
+import TutorialTip from "@/components/tour/TutorialTip";
 import { InfoTip } from "@/components/multiUsedComp/InfoTip";
 import { useT, useInfo } from "@/i18n/client";
 
@@ -82,21 +83,22 @@ function PasskeysPanel(): React.JSX.Element {
   };
 
   return (
-    <div className="passkeys-panel w-full bg-gf-accent-soft-bg rounded-3xl p-4 mb-4">
+    <div className="passkeys-panel w-full bg-gf-accent-soft-bg rounded-3xl p-4 mb-4" data-tour="prof-passkeys">
       <div
+        data-tour="prof-passkeys-header"
         className="flex justify-between items-center cursor-pointer"
         onClick={() => setIsOpen(!isOpen)}
       >
-        <span className="inline-flex items-center gap-1.5"><h2 className="text-xl text-purple-300 font-normal">{t("auth.passkeys.title")}</h2><InfoTip info={APP_INFO.passkeys} /></span>
+        <span className="inline-flex items-center gap-1.5"><h2 className="text-xl text-purple-300 font-normal">{t("auth.passkeys.title")}</h2><span aria-hidden="true" className="mx-2 inline-block h-5 w-px shrink-0 align-middle bg-purple-300/40" /><InfoTip info={APP_INFO.passkeys} /><TutorialTip tour="profPasskeys" label={t("auth.passkeys.title")} /></span>
         <TypedCategoIcon type={isOpen ? "MdExpandLess" : "MdExpandMore"} siz={24} />
       </div>
       {isOpen && (
-        <div className="mt-3">
+        <div className="mt-3" data-tour="prof-passkeys-body">
           <p className="text-xs text-gf-text-muted mb-3">
             {t("auth.passkey.explain")}
           </p>
 
-          <ul className="flex flex-col gap-2 mb-4">
+          <ul className="flex flex-col gap-2 mb-4" data-tour="prof-passkeys-list">
             {isPending ? (
               <li className="text-xs text-gf-text-muted italic">{t("auth.loading")}</li>
             ) : !passkeys || passkeys.length === 0 ? (
@@ -126,6 +128,7 @@ function PasskeysPanel(): React.JSX.Element {
 
           <form
             onSubmit={handleAdd}
+            data-tour="prof-passkeys-form"
             className="form-trans-edit flex flex-col sm:flex-row gap-2 items-stretch sm:items-end bg-gf-surface rounded-2xl p-3"
           >
             <div className="flex flex-col flex-1">

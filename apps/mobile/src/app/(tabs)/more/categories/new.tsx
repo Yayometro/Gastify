@@ -16,7 +16,7 @@ export default function NewCategoryScreen() {
   const toast = useToast();
   const categories = useSelector((state: RootState) => state.categoriesReducer.data.user ?? []);
   return (
-    <Screen title={t("mobile.nueva.categoria")} backLabel={t("mobile.categorias")} onBack={() => router.back()}>
+    <Screen tutorial="m-catform" title={t("mobile.nueva.categoria")} backLabel={t("mobile.categorias")} onBack={() => router.back()}>
       <CategoryForm
         submitLabel={t("mobile.crear.categoria")}
         allowSubcategory

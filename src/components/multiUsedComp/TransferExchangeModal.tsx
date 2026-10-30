@@ -194,7 +194,7 @@ function TransferExchangeModal(): React.JSX.Element {
       <div className="w-full h-full flex justify-center items-center">
         <form
           onSubmit={handleSubmit}
-          className="form-trans-edit w-[100%] h-full flex flex-col gap-2 items-start justify-start px-10 rounded-[60px] pt-[30px] pb-20 min-[600px]:w-[500px] min-[820px]:w-[770px] min-[1200px]:w-[800px]"
+          className="form-trans-edit flex w-full max-w-[800px] flex-col gap-2 items-start justify-start pb-4"
         >
           <h1 className="text-xl min-[450px]:text-2xl font-light text-center w-full">
             {isCrossCurrency ? t("web.currency.exchange") : t("web.transfer.between.accounts")}
@@ -203,13 +203,14 @@ function TransferExchangeModal(): React.JSX.Element {
           <input
             type="text"
             name="name"
+            data-tour="trf-name"
             value={form.name}
             onChange={handleChange}
             placeholder={isCrossCurrency ? t("web.currency.exchange") : t("web.transfer.between.accounts")}
           />
 
           <p className="label-tfp">{t("movements.transfer.from")}</p>
-          <div className="etm-selector bg-gf-surface text-gf-text w-full flex items-center justify-center px-[4px] py-[2px]">
+          <div data-tour="trf-from" className="etm-selector bg-gf-surface text-gf-text w-full flex items-center justify-center px-[4px] py-[2px]">
             <select
               className="bg-transparent appearance-none w-full pr-4"
               name="sourceAccountId"
@@ -229,13 +230,14 @@ function TransferExchangeModal(): React.JSX.Element {
             type="number"
             step="0.01"
             name="sourceAmount"
+            data-tour="trf-amount"
             value={form.sourceAmount}
             onChange={handleChange}
             placeholder={t("movements.columns.amount")}
           />
 
           <p className="label-tfp">{t("movements.transfer.to")}</p>
-          <div className="etm-selector bg-gf-surface text-gf-text w-full flex items-center justify-center px-[4px] py-[2px]">
+          <div data-tour="trf-to" className="etm-selector bg-gf-surface text-gf-text w-full flex items-center justify-center px-[4px] py-[2px]">
             <select
               className="bg-transparent appearance-none w-full pr-4"
               name="destinationAccountId"
@@ -262,13 +264,14 @@ function TransferExchangeModal(): React.JSX.Element {
             type="number"
             step="0.01"
             name="destinationAmount"
+            data-tour="trf-received"
             value={form.destinationAmount}
             onChange={handleChange}
             placeholder={t("movements.transfer.received")}
           />
 
           <p className="label-tfp">{t("movements.columns.date")}</p>
-          <div className="date-container w-full h-[100px]">
+          <div data-tour="trf-date" className="date-container w-full h-[100px]">
             <LocalizationProvider dateAdapter={AdapterDayjs}>
               <DemoContainer components={["MobileDateTimePicker"]}>
                 <DemoItem label="">
@@ -291,6 +294,7 @@ function TransferExchangeModal(): React.JSX.Element {
           </div>
 
           <button
+            data-tour="trf-submit"
             className="w-full p-2 gf-glass-button text-white text-center rounded-full mt-3"
             type="submit"
           >

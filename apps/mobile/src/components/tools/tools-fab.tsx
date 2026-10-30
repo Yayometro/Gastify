@@ -5,22 +5,31 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Animated, PanResponder, Platform, Pressable, ScrollView, Text, View, useColorScheme, useWindowDimensions } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { InfoTip, type InfoText } from '@/components/info-tip';
 import { Categorizer } from '@/components/tools/categorizer';
 import { BottomSheet } from '@/components/ui/bottom-sheet';
+import { HelpSep } from '@/components/ui/help-sep';
 import { SIDE_NAV_WIDTH } from '@/components/side-nav';
+import { TourPressable, TourTarget } from '@/components/tour/tour-target';
+import { TutorialTip } from '@/components/tour/tutorial-tip';
 import { BottomTabInset, Colors } from '@/constants/theme';
-import { useT } from "@/i18n/client";
+import { useInfo, useT } from "@/i18n/client";
+import type { InfoData } from '@gastify/core/info/catalog';
 import type { TranslateFn } from "@gastify/core/i18n/translate";
+import type { MobileComponentTourId } from '@gastify/core/tour/mobileSteps';
 
-type Tool = { id: string; label: string; title: string; about: string; render: () => React.JSX.Element };
+// A tool's own help ("?") and its tutorial (the compass), both optional.
+type Tool = { id: string; label: string; title: string; about: string; info?: InfoText; tour?: MobileComponentTourId; render: () => React.JSX.Element };
 
 // Array-driven, like the web's: a new tool is one more entry here, and the tabs appear once there are two.
-const TOOLS = (t: TranslateFn): Tool[] => ([
+const TOOLS = (t: TranslateFn, info: InfoData['APP_INFO']): Tool[] => ([
   {
     id: 'uncategorized',
     label: t("mobile.sin.categoria"),
     title: t("mobile.transaction.categorizer"),
     about: t("mobile.busca.tus.movimientos.sin.categoria.y.sugiere.una.segun.las."),
+    info: info.categorizador,
+    tour: 'm-categorizer',
     render: () => <Categorizer />,
   },
 ]);
@@ -191,24 +200,39 @@ export function ToolsFab() {
 // does the visible "Categorizar" button of the Movements screen.
 export function ToolsSheet({ visible, onClose }: { visible: boolean; onClose: () => void }) {
   const t = useT();
+  const { APP_INFO } = useInfo();
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
-  const [active, setActive] = useState(TOOLS(t)[0].id);
-  const current = TOOLS(t).find((tool) => tool.id === active) ?? TOOLS(t)[0];
+  const tools = TOOLS(t, APP_INFO);
+  const [active, setActive] = useState(tools[0].id);
+  const current = tools.find((tool) => tool.id === active) ?? tools[0];
   return (
       <BottomSheet visible={visible} onClose={onClose} maxHeight="90%">
             <SafeAreaView edges={['bottom']} style={{ flexShrink: 1 }}>
-              <View className="items-center px-6 pb-2 pt-5">
-                <Pressable accessibilityRole="button" accessibilityLabel={t("mobile.cerrar")} onPress={onClose} hitSlop={10} style={{ position: 'absolute', right: 20, top: 18 }}>
+              <View className="gap-1 px-6 pb-2 pt-5">
+                <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{t("mobile.tools")}</Text>
+                {/* The tool's title, with its "?" and its tutorial's compass right after it, like every screen's title. */}
+                <TourTarget id={current.tour ? `${current.tour}-head` : undefined} className="flex-row items-center gap-3 pr-10">
+                  <Text numberOfLines={2} className="shrink font-inter-bold text-xl text-gf-text">{current.title}</Text>
+                  {current.info || current.tour ? (
+                    <>
+                      <HelpSep />
+                      <View className="flex-row items-center gap-0.5">
+                        {current.info ? <InfoTip info={current.info} /> : null}
+                        {current.tour ? <TutorialTip tour={current.tour} label={current.title} pointer={false} /> : null}
+                      </View>
+                    </>
+                  ) : null}
+                </TourTarget>
+                <Text className="pt-1 font-inter text-xs text-gf-text-muted">{current.about}</Text>
+                {/* Last in the header, so it is on top of the title row: the touch lands on the X, not on the row behind it. */}
+                <TourPressable id={current.tour ? `${current.tour}-close` : undefined} accessibilityRole="button" accessibilityLabel={t("mobile.cerrar")} onPress={onClose} hitSlop={10} style={{ position: 'absolute', right: 20, top: 18 }}>
                   <Ionicons name="close" size={26} color={colors.text} />
-                </Pressable>
-                <Text className="font-inter-bold text-2xl text-gf-text">{t("mobile.tools")}</Text>
-                <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{current.title}</Text>
-                <Text className="pt-1 text-center font-inter text-xs text-gf-text-muted">{current.about}</Text>
+                </TourPressable>
               </View>
-              {TOOLS(t).length > 1 && (
+              {tools.length > 1 && (
                 <View className="flex-row justify-center gap-2 pb-2">
-                  {TOOLS(t).map((tool) => (
+                  {tools.map((tool) => (
                     <Pressable
                       key={tool.id}
                       accessibilityRole="button"

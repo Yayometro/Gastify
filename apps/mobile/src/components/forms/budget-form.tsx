@@ -7,6 +7,7 @@ import { FormError } from '@/components/auth/auth-layout';
 import { IconPicker } from '@/components/icon-picker';
 import { GradientButton } from '@/components/ui/gradient-button';
 import { TextField } from '@/components/ui/text-field';
+import { TourTarget } from '@/components/tour/tour-target';
 import { useCatalog } from '@/hooks/use-catalog';
 import { messageOf } from '@/lib/write';
 import { ACCOUNT_CURRENCIES } from '@gastify/core/accounts/accountForm';
@@ -64,41 +65,41 @@ export function BudgetForm({
 
   return (
     <View className="gap-4">
-      <View className="gap-2">
+      <TourTarget id="m-budform-name" className="gap-2">
         <TextField label={t("mobile.nombre")} value={values.name} onChangeText={(text) => set('name', text)} placeholder={values.kind === 'project' ? t("mobile.viaje.a.oaxaca") : values.kind === 'saving' ? t("mobile.fondo.de.emergencia") : t("mobile.comida")} maxLength={60} autoCapitalize="sentences" />
         {error(errors.name)}
-      </View>
+      </TourTarget>
 
       <View className="gap-2">
         <Text className="font-inter-medium text-sm text-gf-text-muted">{t("mobile.moneda.de.la.meta")}</Text>
-        <ChipPicker items={ACCOUNT_CURRENCIES.map((code) => ({ id: code, label: code }))} value={values.currency} onChange={(code) => set('currency', code)} moreAfter={99} />
-        <TextField label={t("mobile.forms.goalLabel", { p1: values.currency })} value={values.goalAmount} onChangeText={(text) => set('goalAmount', text.replace(/[^0-9.,]/g, ''))} placeholder="0.00" keyboardType="decimal-pad" />
+        <TourTarget id="m-budform-currency"><ChipPicker items={ACCOUNT_CURRENCIES.map((code) => ({ id: code, label: code }))} value={values.currency} onChange={(code) => set('currency', code)} moreAfter={99} /></TourTarget>
+        <TourTarget id="m-budform-goal"><TextField label={t("mobile.forms.goalLabel", { p1: values.currency })} value={values.goalAmount} onChangeText={(text) => set('goalAmount', text.replace(/[^0-9.,]/g, ''))} placeholder="0.00" keyboardType="decimal-pad" /></TourTarget>
         {error(errors.goalAmount)}
       </View>
 
       {values.kind === 'spending' && (
         <>
-          <View className="gap-2">
+          <TourTarget id="m-budform-period" className="gap-2">
             <Text className="font-inter-medium text-sm text-gf-text-muted">{t("mobile.periodo")}</Text>
             <ChipPicker items={BUDGET_PERIODS.map((period) => ({ id: period.value, label: t(period.label) }))} value={values.period} onChange={(value) => set('period', value)} moreAfter={99} />
-          </View>
-          <View className="gap-2">
+          </TourTarget>
+          <TourTarget id="m-budform-categories" className="gap-2">
             <Text className="font-inter-medium text-sm text-gf-text-muted">{t("mobile.categorias.que.cubre")}</Text>
             <MultiChipPicker items={categoryItems} values={values.categoryIds} onToggle={(itemId) => toggle('categoryIds', itemId)} title={t("mobile.categorias.del.presupuesto")} />
             {error(errors.categoryIds)}
-          </View>
+          </TourTarget>
         </>
       )}
 
       {values.kind === 'saving' && (
         <>
-          <View className="gap-2">
+          <TourTarget id="m-budform-accounts" className="gap-2">
             <Text className="font-inter-medium text-sm text-gf-text-muted">{t("mobile.cuentas.que.lo.alimentan.opcional")}</Text>
             <MultiChipPicker items={accountItems} values={values.linkedAccountIds} onToggle={(itemId) => toggle('linkedAccountIds', itemId)} title={t("mobile.cuentas.ligadas")} emptyText={t("mobile.todavia.no.tienes.cuentas")} />
-          </View>
+          </TourTarget>
           {values.linkedAccountIds.length === 0 && (
             <View className="gap-2">
-              <TextField label={t("mobile.forms.savedSoFar", { p1: values.currency })} value={values.savingAmount} onChangeText={(text) => set('savingAmount', text)} placeholder="0.00" keyboardType="numbers-and-punctuation" />
+              <TourTarget id="m-budform-saved"><TextField label={t("mobile.forms.savedSoFar", { p1: values.currency })} value={values.savingAmount} onChangeText={(text) => set('savingAmount', text)} placeholder="0.00" keyboardType="numbers-and-punctuation" /></TourTarget>
               {error(errors.savingAmount)}
             </View>
           )}
@@ -107,20 +108,20 @@ export function BudgetForm({
 
       {values.kind === 'project' && (
         <>
-          <DateField label={t("mobile.empieza")} value={values.startDate} onChange={(day) => set('startDate', day)} />
-          <View className="gap-2">
+          <TourTarget id="m-budform-start"><DateField label={t("mobile.empieza")} value={values.startDate} onChange={(day) => set('startDate', day)} /></TourTarget>
+          <TourTarget id="m-budform-end" className="gap-2">
             <DateField label={t("mobile.termina")} value={values.endDate} onChange={(day) => set('endDate', day)} />
             {error(errors.endDate)}
-          </View>
-          <View className="gap-2">
+          </TourTarget>
+          <TourTarget id="m-budform-icon" className="gap-2">
             <Text className="font-inter-semibold text-base text-gf-text">{t("mobile.icono")}</Text>
             <IconPicker value={values.icon} onChange={(icon) => set('icon', icon)} />
-          </View>
+          </TourTarget>
         </>
       )}
 
       <FormError message={formError} />
-      <GradientButton label={submitLabel} onPress={save} loading={saving} disabled={saving} />
+      <TourTarget id="m-budform-save"><GradientButton label={submitLabel} onPress={save} loading={saving} disabled={saving} /></TourTarget>
       {onDelete && (
         <Pressable accessibilityRole="button" disabled={saving} onPress={onDelete} className="items-center py-2">
           <Text className="font-inter-semibold text-base text-red-500">{t("mobile.borrar.p1", { p1: tNow(TITLE_KEYS[values.kind]) })}</Text>

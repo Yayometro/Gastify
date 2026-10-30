@@ -25,6 +25,7 @@ import type { TransactionLike } from '@gastify/core/transformers/transactionsCha
 import { useT, useInfo } from "@/i18n/client";
 import { tNow } from '@/i18n/now';
 
+import { TourTarget } from '@/components/tour/tour-target';
 type Kind = 'spending' | 'incomes';
 
 // Gastos / Ingresos of the period: the total, a donut of how it splits across categories (tap a slice to
@@ -141,12 +142,12 @@ export function SummaryWidget({
 
   const filters = (
     <>
-      <CompactTimeFilter preset={preset} onPreset={setPreset} month={month} onMonth={setMonth} latest={now} customFrom={customFrom} onCustomFrom={setCustomFrom} customTo={customTo} onCustomTo={setCustomTo} includeDashboard />
-      <Segmented options={[{ value: 'spending', label: t("mobile.gastos") }, { value: 'incomes', label: t("mobile.ingresos") }]} value={kind} onChange={setKind} />
+      <TourTarget id="m-home-breakdown-time"><CompactTimeFilter preset={preset} onPreset={setPreset} month={month} onMonth={setMonth} latest={now} customFrom={customFrom} onCustomFrom={setCustomFrom} customTo={customTo} onCustomTo={setCustomTo} includeDashboard /></TourTarget>
+      <TourTarget id="m-home-breakdown-kind"><Segmented options={[{ value: 'spending', label: t("mobile.gastos") }, { value: 'incomes', label: t("mobile.ingresos") }]} value={kind} onChange={setKind} /></TourTarget>
     </>
   );
   const totalText = <Text className="text-center font-inter-bold text-3xl" style={{ color: kind === 'spending' ? colors.expense : colors.income }}>{formatMoneyMajor(total, currency)}</Text>;
-  const chartPicker = categories.length > 0 ? <Segmented options={[{ value: 'ring', label: t("mobile.anillo") }, { value: 'bubbles', label: t("mobile.burbujas") }, { value: 'treemap', label: t("mobile.mapa") }]} value={chart} onChange={setChart} /> : null;
+  const chartPicker = categories.length > 0 ? <TourTarget id="m-home-breakdown-chart-type"><Segmented options={[{ value: 'ring', label: t("mobile.anillo") }, { value: 'bubbles', label: t("mobile.burbujas") }, { value: 'treemap', label: t("mobile.mapa") }]} value={chart} onChange={setChart} /></TourTarget> : null;
   const MAX_ROWS = 15;
   const seeMore = (
     <Pressable accessibilityRole="button" onPress={() => setDetailOpen(true)} className="items-center rounded-full py-3" style={{ backgroundColor: colors.accentSoft }}>
@@ -166,7 +167,7 @@ export function SummaryWidget({
   );
 
   return (
-    <Card title={t("mobile.resumen.de.transacciones")} info={APP_INFO.resumen_de_transacciones}>
+    <Card tour="m-home-breakdown" title={t("mobile.resumen.de.transacciones")} info={APP_INFO.resumen_de_transacciones}>
       {categories.length === 0 ? (
         <>
           {filters}
@@ -182,7 +183,7 @@ export function SummaryWidget({
             {chartBlock()}
           </View>
           <View style={{ flex: 2 }} className="gap-3">
-            {table(MAX_ROWS)}
+            <TourTarget id="m-home-breakdown-table">{table(MAX_ROWS)}</TourTarget>
             {allRows.length > MAX_ROWS && !zoomed && seeMore}
           </View>
         </View>
@@ -193,8 +194,8 @@ export function SummaryWidget({
           {totalText}
           {backRow}
           {chartBlock()}
-          {table(5)}
-          {seeMore}
+          <TourTarget id="m-home-breakdown-table">{table(5)}</TourTarget>
+          <TourTarget id="m-home-breakdown-more">{seeMore}</TourTarget>
         </>
       )}
       {sheet}

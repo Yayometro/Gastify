@@ -1,9 +1,10 @@
 import { Tabs, router, usePathname } from 'expo-router';
 import { useT } from '@/i18n/client';
 import { Fragment, type ComponentProps, type ReactNode } from 'react';
-import { Platform, Pressable, StyleSheet, useColorScheme, useWindowDimensions, View } from 'react-native';
+import { Platform, StyleSheet, useColorScheme, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { TourPressable } from '@/components/tour/tour-target';
 import { GlassSurface } from '@/components/ui/glass';
 import { Colors } from '@/constants/theme';
 import { NAV_ICON } from '@/lib/nav-icons';
@@ -13,7 +14,8 @@ type TabBarProps = Parameters<NonNullable<ComponentProps<typeof Tabs>['tabBar']>
 
 const BAR_HEIGHT = 64;
 // From this width (the largest iPhones) the bar also holds Proyecciones and the Analizador.
-const WIDE_BAR_MIN_WIDTH = 428;
+// From this width the bar also carries Proyecciones and Analizador, so "Más" does not list them again.
+export const WIDE_BAR_MIN_WIDTH = 428;
 
 // Where each tab opens: a second tap on a tab already open goes back to this page, scrolls up and refreshes.
 const LANDING: Record<string, string> = { index: '/', movements: '/movements', budgets: '/budgets', more: '/more' };
@@ -47,8 +49,9 @@ export function FloatingTabBar({ state, descriptors, emitter, navigateToTab }: T
     const item = EXTRA[key];
     const active = onExtra(key);
     return (
-      <Pressable
+      <TourPressable
         key={key}
+        id={`m-tab-${key}`}
         accessibilityRole="button"
         accessibilityLabel={item.label}
         accessibilityState={{ selected: active }}
@@ -58,7 +61,7 @@ export function FloatingTabBar({ state, descriptors, emitter, navigateToTab }: T
           <View style={[styles.pill, isDark ? styles.pillDark : { backgroundColor: colors.accentSoft }, { opacity: active ? 1 : 0 }]} />
           {item.glyph(active ? activeColor : inactive)}
         </View>
-      </Pressable>
+      </TourPressable>
     );
   };
 
@@ -105,9 +108,9 @@ export function FloatingTabBar({ state, descriptors, emitter, navigateToTab }: T
 
             return (
               <Fragment key={route.key}>
-                <Pressable accessibilityRole="button" accessibilityLabel={options.tabBarAccessibilityLabel ?? options.title} accessibilityState={{ selected: focused }} onPress={onPress} style={styles.item}>
+                <TourPressable id={route.name === 'index' ? 'm-tab-home' : `m-tab-${route.name}`} accessibilityRole="button" accessibilityLabel={options.tabBarAccessibilityLabel ?? options.title} accessibilityState={{ selected: focused }} onPress={onPress} style={styles.item}>
                   {options.tabBarIcon?.({ focused, color: focused ? activeColor : inactive, size: 24 }) as ReactNode}
-                </Pressable>
+                </TourPressable>
                 {wideBar && route.name === 'movements' && extra('projections')}
                 {wideBar && route.name === 'budgets' && extra('analyzer')}
               </Fragment>

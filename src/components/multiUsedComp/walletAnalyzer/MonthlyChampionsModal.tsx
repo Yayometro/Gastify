@@ -1,4 +1,5 @@
 "use client";
+import TutorialTip from "@/components/tour/TutorialTip";
 import React from "react";
 import { Modal } from "antd";
 import { formatMoneyMajor } from "@gastify/core/money/currencies";
@@ -79,9 +80,9 @@ function MonthlyChampionsModal({
       footer={null}
       className="gf-antd-modal-glass"
       zIndex={20000}
-      title={<span className="text-purple-300 font-semibold text-base">{t(TITLES[kind])}</span>}
+      title={<span className="inline-flex items-center text-purple-300 font-semibold text-base">{t(TITLES[kind])}<span aria-hidden="true" className="mx-2 inline-block h-5 w-px shrink-0 align-middle bg-purple-300/40" /><TutorialTip tour="anaChampions" label={t(TITLES[kind])} /></span>}
     >
-      <div className="flex flex-col max-h-[420px] overflow-y-auto pr-1">
+      <div data-tour="champ-list" className="flex flex-col max-h-[420px] overflow-y-auto pr-1">
         {rows.map(({ entry, champion }) => (
           <div
             key={entry.label}

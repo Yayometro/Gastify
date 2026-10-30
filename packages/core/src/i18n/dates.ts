@@ -58,6 +58,13 @@ export function shortDate(date: Date, locale: Locale, twoDigitDay = false): stri
   return formatterFor(locale, { day: twoDigitDay ? "2-digit" : "numeric", month: "short", year: "numeric" }).format(date);
 }
 
+// The same as shortDate for a value that may be missing or invalid (a rate whose date is unknown): "" instead of an error.
+export function shortDateOrEmpty(value: Date | string | number | null | undefined, locale: Locale): string {
+  if (value === null || value === undefined || value === "") return "";
+  const date = value instanceof Date ? value : new Date(value);
+  return Number.isNaN(date.getTime()) ? "" : shortDate(date, locale);
+}
+
 // "27 oct 2026, 10:30": a moment, not just a day, in the language. Used where a notice says when it appeared.
 export function dateTimeLabel(date: Date, locale: Locale): string {
   return formatterFor(locale, { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }).format(date);

@@ -275,6 +275,11 @@ const web = {
   "web.estimated": "estimado",
   "web.exact": "exacto",
   "web.hola.p1": "Hola, {p1}",
+  "web.bankPicker.main": "Principales",
+  "web.bankPicker.other": "Otros bancos y digitales",
+  "web.bankPicker.seeAll": "Ver todos ({p1}) ›",
+  "web.bankPicker.seeLess": "Ver menos ‹",
+  "web.bankPicker.none": "Ningún banco coincide con «{p1}».",
 } as const;
 
 export default web;

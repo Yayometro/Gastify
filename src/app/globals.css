@@ -1116,3 +1116,105 @@ box-shadow: -1px 0px 20px 5px rgba(142, 142, 142, 0.7);
   from { transform: translateY(0); }
   to { transform: translateY(calc(var(--speed) * -3000px)); }
 }
+
+/* Light-theme legibility for the accent and status colours. The Tailwind shades
+   below were picked for the dark canvas (purple-200 on near-black, green-400, red-400)
+   and wash out on the light surfaces. Remapped ONLY under the light theme, so the dark
+   theme keeps the original shades. Values give >= 4.5:1 text contrast on the light
+   surfaces (#ffffff, #f1ecf9, #f4f2fa); the purple uses the app's own accent token. */
+:root[data-theme="light"] .text-purple-100,
+:root[data-theme="light"] .text-purple-200,
+:root[data-theme="light"] .text-purple-300,
+:root[data-theme="light"] .text-purple-400,
+:root[data-theme="light"] .text-purple-500 { color: var(--gf-accent-soft-text); }
+:root[data-theme="light"] .text-green-300,
+:root[data-theme="light"] .text-green-400,
+:root[data-theme="light"] .text-green-500 { color: #166534; }
+:root[data-theme="light"] .text-emerald-400,
+:root[data-theme="light"] .text-emerald-500 { color: #065f46; }
+:root[data-theme="light"] .text-red-300,
+:root[data-theme="light"] .text-red-400,
+:root[data-theme="light"] .text-red-500 { color: #b91c1c; }
+:root[data-theme="light"] .text-rose-300,
+:root[data-theme="light"] .text-rose-400 { color: #be123c; }
+:root[data-theme="light"] .text-amber-300,
+:root[data-theme="light"] .text-amber-400,
+:root[data-theme="light"] .text-yellow-300,
+:root[data-theme="light"] .text-yellow-400 { color: #92400e; }
+:root[data-theme="light"] .text-orange-300,
+:root[data-theme="light"] .text-orange-400 { color: #9a3412; }
+:root[data-theme="light"] .text-blue-100,
+:root[data-theme="light"] .text-blue-200,
+:root[data-theme="light"] .text-blue-300,
+:root[data-theme="light"] .text-blue-400 { color: #1d4ed8; }
+/* Accent text placed on a solid purple header (table headers and the like use
+   bg-purple-600) must stay light; the accent remap above would make it invisible. */
+:root[data-theme="light"] .bg-purple-600 .text-purple-100,
+:root[data-theme="light"] .bg-purple-600 .text-purple-200,
+:root[data-theme="light"] .bg-purple-600 .text-purple-300 { color: #ffffff; }
+/* Opacity variants (text-purple-200/85 and the like) carry their own alpha, which
+   also drops the contrast on light surfaces. The same light-only remap applies. */
+:root[data-theme="light"] [class*="text-purple-100/"],
+:root[data-theme="light"] [class*="text-purple-200/"],
+:root[data-theme="light"] [class*="text-purple-300/"],
+:root[data-theme="light"] [class*="text-purple-400/"] { color: var(--gf-accent-soft-text); }
+:root[data-theme="light"] [class*="text-blue-100/"],
+:root[data-theme="light"] [class*="text-blue-200/"],
+:root[data-theme="light"] [class*="text-blue-300/"] { color: #1d4ed8; }
+:root[data-theme="light"] [class*="text-green-300/"],
+:root[data-theme="light"] [class*="text-green-400/"] { color: #166534; }
+:root[data-theme="light"] [class*="text-red-300/"],
+:root[data-theme="light"] [class*="text-red-400/"] { color: #b91c1c; }
+:root[data-theme="light"] [class*="text-amber-300/"],
+:root[data-theme="light"] [class*="text-amber-400/"] { color: #92400e; }
+:root[data-theme="light"] .border-purple-300,
+:root[data-theme="light"] .border-purple-400 { border-color: #9333ea; }
+
+/* White-at-70% notes on the dark glass (account number safety note) keep their look in
+   dark; on the light surfaces they become the muted text colour. Light theme only. */
+:root[data-theme="light"] .text-white\/70 { color: var(--gf-text-muted); }
+
+/* Dark translucent black overlays (table zebra rows in the info windows) turn into
+   grey on the light surfaces and push the accent text below 4.5:1. Light theme only. */
+:root[data-theme="light"] .bg-black\/20 { background-color: rgba(27, 16, 61, 0.05); }
+
+/* Status tints (a good or bad figure in a card). The dark-theme tint is 15% of the
+   status colour; on the light surfaces that reads teal/salmon and the muted text on it
+   drops below 4.5:1, so the light tint is lighter. Dark theme unchanged. */
+:root[data-theme="light"] .gf-status-good { background-color: rgba(16, 185, 129, 0.1); }
+:root[data-theme="light"] .gf-status-bad { background-color: rgba(239, 68, 68, 0.1); }
+
+/* antd date pickers keep their default grey calendar icon (rgba 0,0,0,.25), which is
+   nearly invisible on the light glass inputs. Light theme only. */
+:root[data-theme="light"] .ant-picker .ant-picker-suffix,
+:root[data-theme="light"] .ant-picker .anticon { color: var(--gf-text-muted); }
+
+/* The antd "glass" windows stay inside the screen and scroll INSIDE (not the page behind them). */
+.gf-antd-modal-glass.ant-modal { top: 32px; padding-bottom: 32px; }
+.gf-antd-modal-glass .ant-modal-body { max-height: calc(100vh - 150px); overflow-y: auto; }
+/* A tutorial opened from inside a modal: its dimming layer has to sit above every modal, or the highlight cannot be told apart. */
+.driver-overlay { z-index: 40000 !important; }
+
+/* "Energy" that runs left to right over the filled part of a budget bar. Only transform is animated; the filled part clips it.
+   Still when the person asks for less motion. A bar that is over its limit runs a little faster. */
+.gf-bar-energy { position: relative; overflow: hidden; }
+.gf-bar-energy::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 30%;
+  background: linear-gradient(105deg, transparent 0%, rgba(255, 255, 255, 0.34) 50%, transparent 100%);
+  transform: translateX(-130%);
+  animation: gf-bar-energy 2.8s ease-in-out infinite;
+  pointer-events: none;
+}
+.gf-bar-energy-fast::after { animation-duration: 2s; }
+@keyframes gf-bar-energy {
+  0% { transform: translateX(-130%); }
+  60%, 100% { transform: translateX(400%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gf-bar-energy::after { animation: none; display: none; }
+}

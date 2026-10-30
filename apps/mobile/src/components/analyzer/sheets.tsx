@@ -1,3 +1,4 @@
+import { WeeklyBarsList, SpendCalendarGrid } from '@/components/analyzer/weekday-extras';
 import { router } from 'expo-router';
 import type { ReactNode } from 'react';
 import { Pressable, Text, View, useColorScheme } from 'react-native';
@@ -68,8 +69,21 @@ export function InsightSheet({ insight, currency, onClose }: { insight: WalletAn
       explanation = <Explain>{t("mobile.promedio.de.los.ultimos.p1", { p1: d.monthlyTotals?.length || 6, p2: money(d.average) })}</Explain>;
       rows = [...(d.monthlyTotals ?? []).map((m: D) => <Row key={m.label} label={m.label} right={money(m.amount)} />), <Row key="now" label={t("mobile.este.mes")} right={money(d.current)} bold />];
       break;
+    case 'new_category':
+      explanation = <Explain>{t("analyzer.newCategory.explain", { p1: d.name, p2: d.firstSeen ? shortDate(new Date(d.firstSeen), currentLocale(), true) : '—' })}</Explain>;
+      rows = [
+        ...(d.sample ?? []).map((o: D, i: number) => <Row key={i} label={`${shortDate(new Date(o.date), currentLocale(), true)} · ${o.name ?? ''}`} right={money(o.amount)} />),
+        ...((d.count ?? 0) > (d.sample?.length ?? 0) ? [<Row key="more" label={t("analyzer.newCategory.more", { p1: (d.count ?? 0) - (d.sample?.length ?? 0) })} right="" />] : []),
+      ];
+      break;
     case 'subscription':
-      explanation = <Explain>{t("mobile.detectada.porque.el.mismo.nombre", { p1: d.categoryName })}</Explain>;
+      explanation = (
+        <Explain>
+          {t("mobile.detectada.porque.el.mismo.nombre", { p1: d.categoryName })}
+          {d.priceChange ? ` ${t("analyzer.subscriptions.priceChange", { p1: money(d.priceChange.from), p2: money(d.priceChange.to) })}` : ''}
+          {d.firstSeen ? ` ${t("analyzer.subscriptions.firstSeen", { p1: shortDate(new Date(d.firstSeen), currentLocale(), true) })}` : ''}
+        </Explain>
+      );
       rows = (d.occurrences ?? []).map((o: D, i: number) => <Row key={i} label={shortDate(new Date(o.date), currentLocale(), true)} right={money(o.amount)} />);
       break;
     case 'monthly_average':
@@ -163,6 +177,7 @@ export function ChampionsSheet({ kind, months, currency, onClose }: { kind: Cham
       title={kind ? championTitle(kind) : ''}
       info={APP_INFO.l_deres_por_mes}
       onClose={onClose}>
+      {rows.length > 0 && <Explain>{t("mobile.sortedByAmount")}</Explain>}
       {rows.map(({ entry, champion }) => (
         <Pressable
           key={entry.label}
@@ -206,7 +221,6 @@ export function WeekdaySheet({ data, visible, currency, onClose }: { data: Walle
   const t = useT();
   const colors = Colors[useColorScheme() === 'dark' ? 'dark' : 'light'];
   const money = (value: number) => formatMoneyMajor(value, currency);
-  const best = data ? [...(data.weeks ?? [])].sort((a, b) => b.total - a.total)[0] : undefined;
   const max = Math.max(1, ...(data?.dailyBreakdown ?? []).map((day) => day.total));
   return (
     <DetailSheet
@@ -214,17 +228,18 @@ export function WeekdaySheet({ data, visible, currency, onClose }: { data: Walle
       title={t("mobile.patrones.por.dia.de.la")}
       info={APP_INFO.c_mo_se_calcula}
       onClose={onClose}>
-      {best && (
-        <View className="gap-0.5 rounded-2xl p-3" style={{ backgroundColor: colors.accentSoft }}>
-          <Text className="font-inter-semibold text-xs uppercase text-gf-text-muted">{t("mobile.semana.con.mas.gasto")}</Text>
-          <Text className="font-inter-bold text-lg text-gf-text">{localMonthLabel(best.label)} — {money(best.total)}</Text>
-          <Text className="font-inter text-xs text-gf-text-muted">{t("mobile.p1.transacciones", { p1: best.count })}</Text>
-        </View>
-      )}
       {data && (
         <Explain>
           {t("mobile.p1.se.suma.el.gasto", { p1: data.insight, p2: money(data.weekdayAvg), p3: money(data.weekendAvg) })}
         </Explain>
+      )}
+      {data && (
+        <>
+          <Text className="font-inter-semibold text-xs uppercase text-gf-text-muted">{t("analyzer.weekly.title")}</Text>
+          <WeeklyBarsList weekly={data.weekly} currency={currency} />
+          <Text className="font-inter-semibold text-xs uppercase text-gf-text-muted">{t("analyzer.calendar.title")}</Text>
+          <SpendCalendarGrid days={(data.dailyBreakdown ?? []).map((day) => ({ date: new Date(day.date), total: day.total, count: day.count }))} currency={currency} />
+        </>
       )}
       <Text className="font-inter-semibold text-xs uppercase text-gf-text-muted">{t("mobile.detalle.dia.por.dia")}</Text>
       {(data?.dailyBreakdown ?? []).map((day) => (

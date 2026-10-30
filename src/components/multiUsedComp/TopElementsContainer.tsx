@@ -23,6 +23,7 @@ import {
 } from "@gastify/core/time/timeFunctions";
 import TopRankColumn, { type RankRowItem } from "./top3/topRankColumn/TopRankColumn";
 import TopElementContainerView from "./TopElementContainerView";
+import type { TransactionData } from "@/lib/features/transacctionsSlice";
 import type { RootState, AppDispatch } from "@/lib/store";
 import type { TabsTogglerComponentItem } from "./TabsComponents/TabsToggler";
 import { useT } from "@/i18n/client";
@@ -34,6 +35,8 @@ export interface TopElementsContainerProps {
   /** Avoid starting the authentication session request on the public, fictional dashboard. */
   demoMode?: boolean;
   email?: string | null;
+  // The movements to rank. The account page passes its own account's; when absent, every movement from the store.
+  transactions?: TransactionData[];
 }
 
 export interface TotalTransactionsLocalState {
@@ -82,7 +85,7 @@ function biggestTransactions<T extends ContainerTransactionItem>(list: T[], coun
   return [...list].sort((a, b) => getPrimaryAmount(b) - getPrimaryAmount(a)).slice(0, count);
 }
 
-function TopElementsContainerData({ timePeriodFromFather, email }: TopElementsContainerProps): React.JSX.Element {
+function TopElementsContainerData({ timePeriodFromFather, email, transactions }: TopElementsContainerProps): React.JSX.Element {
   const t = useT();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [elementsToDisplay, setElementsToDisplay] = useState<number>(6);
@@ -106,6 +109,7 @@ function TopElementsContainerData({ timePeriodFromFather, email }: TopElementsCo
   const dispatch = useDispatch<AppDispatch>();
   const ccUser = useSelector((state: RootState) => state.userReducer);
   const ccTransacciones = useSelector((state: RootState) => state.transacctionsReducer);
+  const sourceTransactions = transactions ?? ccTransacciones.data;
   const walletPrimaryCurrency = useSelector((state: RootState) => state.walletReducer?.data?.primaryCurrency) || "MXN";
 
   // USE EFFECTS:
@@ -123,11 +127,12 @@ function TopElementsContainerData({ timePeriodFromFather, email }: TopElementsCo
     if (ccTransacciones.status == "succeeded") {
       setIsLoading(false);
     }
-    if (ccTransacciones.data && ccTransacciones.data.length >= 1) {
+    // A list passed in is ranked even when it is empty (so an account with no movements clears the previous one's rows).
+    if (sourceTransactions && (transactions || sourceTransactions.length >= 1)) {
       // Order by time and by the amount
       const transactionsOrdered = orderByHighestValue(
         getTransactionsFromTimeRange(
-          ccTransacciones.data as unknown as ContainerTransactionItem[],
+          sourceTransactions as unknown as ContainerTransactionItem[],
           timePeriod[0] as unknown as Date,
           timePeriod[1] as unknown as Date
         )
@@ -168,7 +173,7 @@ function TopElementsContainerData({ timePeriodFromFather, email }: TopElementsCo
       setTransactionCategories({ incomes: finalIncomesCategories, bills: finalBillsCategories });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ccUser, ccTransacciones, timePeriod, elementsToDisplay]);
+  }, [ccUser, ccTransacciones, sourceTransactions, timePeriod, elementsToDisplay]);
 
   // Sync father period only if user hasn't manually selected one yet
   useEffect(() => {
@@ -263,16 +268,16 @@ function TopElementsContainerData({ timePeriodFromFather, email }: TopElementsCo
   );
 }
 
-function SessionBackedTopElementsContainer({ timePeriodFromFather }: TopElementsContainerProps): React.JSX.Element {
+function SessionBackedTopElementsContainer({ timePeriodFromFather, transactions }: TopElementsContainerProps): React.JSX.Element {
   const { email } = useGetUserSession();
-  return <TopElementsContainerData timePeriodFromFather={timePeriodFromFather} email={email} />;
+  return <TopElementsContainerData timePeriodFromFather={timePeriodFromFather} email={email} transactions={transactions} />;
 }
 
 function TopElementsContainer(props: TopElementsContainerProps): React.JSX.Element {
   if (props.demoMode) {
-    return <TopElementsContainerData timePeriodFromFather={props.timePeriodFromFather} email={null} />;
+    return <TopElementsContainerData timePeriodFromFather={props.timePeriodFromFather} email={null} transactions={props.transactions} />;
   }
-  return <SessionBackedTopElementsContainer timePeriodFromFather={props.timePeriodFromFather} />;
+  return <SessionBackedTopElementsContainer timePeriodFromFather={props.timePeriodFromFather} transactions={props.transactions} />;
 }
 
 export default TopElementsContainer;

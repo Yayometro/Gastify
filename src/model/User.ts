@@ -1,4 +1,5 @@
 import mongoose, {Schema} from 'mongoose'
+import type { Onboarding } from '@gastify/core/tour/onboarding'
 
 export interface IUser extends mongoose.Document {
     fullName?: string;
@@ -7,6 +8,8 @@ export interface IUser extends mongoose.Document {
     phone?: number;
     language?: "es" | "en" | null;
     country?: string | null;
+    // What the account remembers about the guided tutorial. Absent on an account from before the tutorial.
+    onboarding?: Onboarding | null;
     wallet: mongoose.Types.ObjectId;
     apiTokens: {
         name: string;
@@ -27,6 +30,22 @@ const userSchema = new Schema<IUser>({
     // mode drops any field the schema does not know). null means automatic: the language follows the country.
     language: {type: String, enum: ["es", "en", null], default: null},
     country: {type: String, default: null},
+    // The guided tutorial: how many sessions the account has opened, whether it is still pending, and the last card shown (to
+    // resume). `default: undefined` on purpose: an account created before the tutorial has no record, and that is how the app
+    // recognises it (it tells it about the tutorial once). New accounts get a record when their data is created
+    // (src/lib/auth/provisionNewUserData.ts). Declared here because Mongoose drops fields the schema does not know.
+    onboarding: {
+        type: new Schema({
+            sessions: {type: Number, default: 0},
+            lastSessionId: {type: String, default: null},
+            tutorial: {type: String, enum: ["pending", "done", "dismissed"], default: "pending"},
+            progress: {
+                type: new Schema({tour: {type: String}, step: {type: String}}, {_id: false}),
+                default: null,
+            },
+        }, {_id: false}),
+        default: undefined,
+    },
     wallet: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Wallet",

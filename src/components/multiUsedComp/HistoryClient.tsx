@@ -1,5 +1,6 @@
 "use client";
 
+import TutorialTip from "@/components/tour/TutorialTip";
 import HistoryGate from "./loaders/HistoryGate";
 import React, { useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -81,6 +82,9 @@ function HistoryClient({ email, readOnly = false, demoBudgets, demoRatesToMxn }:
   // was before periodState existed.
   const walletAnalyzerPeriodState = usePeriodComparison();
   const projectionsPeriodState = usePeriodComparison();
+  // Categories and budgets each compare their own two periods: changing one never moves the other.
+  const categoriesPeriodState = usePeriodComparison();
+  const budgetsPeriodState = usePeriodComparison();
   const setWalletAnalyzerCompareEnabled = walletAnalyzerPeriodState.setCompareEnabled;
 
   useEffect(() => {
@@ -120,26 +124,26 @@ function HistoryClient({ email, readOnly = false, demoBudgets, demoRatesToMxn }:
         </div>
         <div className="w-full profile-img py-4 text-center text-white">
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-thin">
-            {t("history.title")}<InfoTip info={HISTORY_INFO} />
+            {t("history.title")}<span aria-hidden="true" className="mx-2 inline-block h-5 w-px shrink-0 align-middle bg-purple-300/40" /><InfoTip info={HISTORY_INFO} /><TutorialTip className="ml-0.5" tour="history" label={t("navbar.history")} />
           </h1>
         </div>
         <div className="content-profile-cont w-full h-full content-wallet-glass text-center items-center mt-[10px] sm:mt-[20px] rounded-t-[100px] rounded-b-2xl px-2 pt-6 pb-[80px]">
-          <HistoryGate className="history-client-cont w-full h-fulls flex flex-col justify-center items-center pb-4" starts={[periodState.timePeriod[0], periodState.compareEnabled ? periodState.comparePeriod[0] : null]}>
+          <HistoryGate tour="his-periods" className="history-client-cont w-full h-fulls flex flex-col justify-center items-center pb-4" starts={[periodState.timePeriod[0], periodState.compareEnabled ? periodState.comparePeriod[0] : null]}>
             <TypedTabsTogglerMontlyController periodState={periodState} />
           </HistoryGate>
-          <HistoryGate className="w-full h-fulls pb-6 historical-wallet-analyzer" starts={[walletAnalyzerPeriodState.timePeriod[0], walletAnalyzerPeriodState.compareEnabled ? walletAnalyzerPeriodState.comparePeriod[0] : null]}>
+          <HistoryGate tour="his-analyzer" className="w-full h-fulls pb-6 historical-wallet-analyzer" starts={[walletAnalyzerPeriodState.timePeriod[0], walletAnalyzerPeriodState.compareEnabled ? walletAnalyzerPeriodState.comparePeriod[0] : null]}>
             <TypedHistoricalWalletAnalyzer periodState={walletAnalyzerPeriodState} readOnly={readOnly} email={email} demoBudgets={demoBudgets} demoRatesToMxn={demoRatesToMxn} />
           </HistoryGate>
-          <HistoryGate className="w-full h-fulls pb-6 historical-projections-table" starts={[projectionsPeriodState.timePeriod[0], projectionsPeriodState.compareEnabled ? projectionsPeriodState.comparePeriod[0] : null]}>
+          <HistoryGate tour="his-projections" className="w-full h-fulls pb-6 historical-projections-table" starts={[projectionsPeriodState.timePeriod[0], projectionsPeriodState.compareEnabled ? projectionsPeriodState.comparePeriod[0] : null]}>
             <TypedHistoricalProjectionsTable periodState={projectionsPeriodState} readOnly={readOnly} email={email} demoRatesToMxn={demoRatesToMxn} />
           </HistoryGate>
-          <HistoryGate className="w-full h-fulls pb-6 historical-comparative-categories" starts={[periodState.timePeriod[0], periodState.compareEnabled ? periodState.comparePeriod[0] : null]}>
-            <TypedHistoricalComparativeCategories periodState={periodState} />
+          <HistoryGate tour="his-categories" className="w-full h-fulls pb-6 historical-comparative-categories" starts={[categoriesPeriodState.timePeriod[0], categoriesPeriodState.compareEnabled ? categoriesPeriodState.comparePeriod[0] : null]}>
+            <TypedHistoricalComparativeCategories periodState={categoriesPeriodState} />
           </HistoryGate>
-          <HistoryGate className="w-full h-fulls pb-6 historical-budgets-comparative" starts={[periodState.timePeriod[0], periodState.compareEnabled ? periodState.comparePeriod[0] : null]}>
-            <TypedHistoricalBudgetsComparative periodState={periodState} readOnly={readOnly} email={email} demoBudgets={demoBudgets} />
+          <HistoryGate tour="his-budgets" className="w-full h-fulls pb-6 historical-budgets-comparative" starts={[budgetsPeriodState.timePeriod[0], budgetsPeriodState.compareEnabled ? budgetsPeriodState.comparePeriod[0] : null]}>
+            <TypedHistoricalBudgetsComparative periodState={budgetsPeriodState} readOnly={readOnly} email={email} demoBudgets={demoBudgets} />
           </HistoryGate>
-          <HistoryGate className="w-full h-fulls historical-transactions-container" starts={[periodState.timePeriod[0], periodState.compareEnabled ? periodState.comparePeriod[0] : null]}>
+          <HistoryGate tour="his-movements" className="w-full h-fulls historical-transactions-container" starts={[periodState.timePeriod[0], periodState.compareEnabled ? periodState.comparePeriod[0] : null]}>
             <HistoricalMovementsController periodState={periodState} />
           </HistoryGate>
         </div>

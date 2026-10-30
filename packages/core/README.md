@@ -21,6 +21,7 @@ How it is wired (stage 1, deliberately simple, not an npm workspace yet):
 | `time/` | periods, ranges and date helpers for the dashboard and charts | `src/helpers/timeFunctions` |
 | `order/` | sorting helpers | `src/helpers/orderFunctions` |
 | `transactions/` | recent/history window, history-ready rule, the Mongo date filter | `src/lib/transactions` |
+| `tour/` | the guided tutorial: the steps of each page, the rules for what the account remembers and what opens by itself | new |
 
 Next candidates (see `.mds/MOBILE_REACT_NATIVE_PLAN.md`, phase 1): `helpers/transformers`, the Redux slices and
 `helpers/fetcher.ts` once they take the base URL and the auth headers as parameters, the Fluent icon manifest.

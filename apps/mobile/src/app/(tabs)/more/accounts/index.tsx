@@ -25,6 +25,7 @@ import type { AppDispatch } from '@/store';
 
 import { useT, useInfo } from "@/i18n/client";
 
+import { TourPressable, TourTarget } from '@/components/tour/tour-target';
 // Every account with its balance in its own currency and the total in the primary one. Tap one to
 // edit it; the arrows change the order the accounts are listed in (the web's order, saved on the server).
 export default function AccountsScreen() {
@@ -74,11 +75,11 @@ export default function AccountsScreen() {
 
   return (
     <Screen title={t("mobile.cuentas")} backLabel={t("mobile.mas")} onBack={() => router.back()} refreshing={refreshing} onRefresh={refresh}>
-      <Pressable accessibilityRole="button" onPress={() => router.push('/more/accounts/new')} className="items-center rounded-3xl bg-gf-surface p-4">
+      <TourPressable id="m-acc-new" accessibilityRole="button" onPress={() => router.push('/more/accounts/new')} className="items-center rounded-3xl bg-gf-surface p-4">
         <Text className="font-inter-semibold text-base" style={{ color: colors.accent }}>
           {t("mobile.nueva.cuenta")}
         </Text>
-      </Pressable>
+      </TourPressable>
 
       {error && <Text className="font-inter text-sm text-red-500">{error}</Text>}
       {accountsState.status === 'failed' && <Text className="font-inter text-sm text-red-500">{t("mobile.no.pudimos.cargar.tus.cuentas")}</Text>}
@@ -88,7 +89,7 @@ export default function AccountsScreen() {
       )}
 
       {accounts.length > 0 && (
-        <Card title={t("mobile.total")} info={APP_INFO.total}>
+        <Card tour="m-acc-total" title={t("mobile.total")} info={APP_INFO.total}>
           <Text className="font-inter-bold text-3xl text-gf-text">{formatMoneyMajor(total.total, currency)}</Text>
           {Object.entries(byCurrency)
             .filter(([code]) => code !== currency)
@@ -109,7 +110,7 @@ export default function AccountsScreen() {
       <View className="flex-row flex-wrap gap-4">
       {accounts.map((account, index) => (
         <View key={idOf(account) || String(index)} className="flex-row items-center gap-3" style={tablet ? { flexBasis: '47%', flexGrow: 1 } : { width: '100%' }}>
-          <View className="flex-1">
+          <TourTarget id={index === 0 ? 'm-acc-card' : undefined} style={{ flex: 1 }}>
             <AccountCard
               account={account}
               primary={currency}
@@ -118,15 +119,15 @@ export default function AccountsScreen() {
               width={undefined}
               onPress={() => router.push({ pathname: '/more/accounts/[id]', params: { id: idOf(account) } })}
             />
-          </View>
-          <View className="gap-1">
+          </TourTarget>
+          <TourTarget id={index === 0 ? 'm-acc-reorder' : undefined} style={{ gap: 4 }}>
             <Pressable accessibilityRole="button" accessibilityLabel={t("mobile.subir.cuenta")} disabled={index === 0} onPress={() => move(index, -1)} hitSlop={6}>
               <Text className="font-inter-bold text-base" style={{ color: index === 0 ? colors.border : colors.accent }}>▲</Text>
             </Pressable>
             <Pressable accessibilityRole="button" accessibilityLabel={t("mobile.bajar.cuenta")} disabled={index === accounts.length - 1} onPress={() => move(index, 1)} hitSlop={6}>
               <Text className="font-inter-bold text-base" style={{ color: index === accounts.length - 1 ? colors.border : colors.accent }}>▼</Text>
             </Pressable>
-          </View>
+          </TourTarget>
         </View>
       ))}
       </View>

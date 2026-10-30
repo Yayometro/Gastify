@@ -1,9 +1,10 @@
 "use client";
+import TutorialTip from "@/components/tour/TutorialTip";
+import type { ComponentTourId } from "@gastify/core/tour/tourSteps";
 import React, { useEffect, useState } from "react";
 import "@/components/styles/animations.css";
 import CreditCard from "./CreditCard";
 
-import { InfoTip } from "@/components/multiUsedComp/InfoTip";
 import randomColor from "randomcolor";
 import { Skeleton } from "antd";
 import {
@@ -56,6 +57,8 @@ export interface MultiCreditCardProps {
   timePeriod?: [Date, Date] | null;
   readOnly?: boolean;
   demoRatesToMxn?: Record<string, number>;
+  // The tutorial the compass next to the title starts: the dashboard's by default, the accounts page passes its own.
+  tutorial?: ComponentTourId;
 }
 
 function SortableCard({ account, children, disabled = false }: SortableCardProps): React.JSX.Element {
@@ -85,6 +88,7 @@ function MultiCreditCard({
   mail,
   timePeriod,
   readOnly = false,
+  tutorial = "dashAccounts",
   demoRatesToMxn,
 }: MultiCreditCardProps): React.JSX.Element {
   const { APP_INFO } = useInfo();
@@ -156,12 +160,13 @@ function MultiCreditCard({
   return (
     <div className="gf-glass-card w-full overflow-x-hidden flex flex-col rounded-[32px] py-2">
       <div className="header text-center">
-        <h1 className="movement-title text-gf-text text-2xl text-center font-bold py-4">
+        <h1 data-tour="dash-accounts-title" className="movement-title text-gf-text text-2xl text-center font-bold py-4">
           {t("dashboard.accountsResume")}
-          <InfoTip info={APP_INFO.total} />
+          <span aria-hidden="true" className="mx-2 inline-block h-5 w-px shrink-0 align-middle bg-purple-300/40" />
+          <TutorialTip className="ml-0.5" tour={tutorial} label={t(`tour.${tutorial}.name`)} />
         </h1>
       </div>
-      <div className="scrollbar-thin flex flex-row items-stretch gap-5 px-5 pb-6 overflow-x-auto">
+      <div data-tour="dash-accounts-cards" className="scrollbar-thin flex flex-row items-stretch gap-5 px-5 pb-6 overflow-x-auto">
         {accounts && accounts.length > 0 ? (
           <DndContext sensors={readOnly ? [] : sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             <SortableContext items={accounts.map((a) => a._id)} strategy={horizontalListSortingStrategy}>

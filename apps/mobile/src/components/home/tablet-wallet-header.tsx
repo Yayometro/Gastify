@@ -1,11 +1,13 @@
-import { Text, View, useColorScheme } from 'react-native';
+import { router } from 'expo-router';
+import { Text, View, useColorScheme, Pressable } from 'react-native';
 import { Image } from 'expo-image';
 import { NotificationsBell } from '@/components/notifications-bell';
 
-const WORDMARK_WHITE = require('../../../assets/images/brand/gastify-wordmark-white.png');
-const WORDMARK_BLACK = require('../../../assets/images/brand/gastify-wordmark-black.png');
 
 import { InfoTip, type InfoText } from '@/components/info-tip';
+import { GastifyWordmark } from '@/components/brand/gastify-wordmark';
+import { TutorialTip } from '@/components/tour/tutorial-tip';
+import { HelpSep } from '@/components/ui/help-sep';
 import { Colors } from '@/constants/theme';
 
 import type { AccountData } from '@gastify/core/features/accountsSlice';
@@ -70,6 +72,8 @@ function DeltaRow({ label, current, previous, color, currency }: { label: string
 
 export function TabletWalletHeader({
   name,
+  image,
+  monthLabel,
   accounts,
   totals,
   previous,
@@ -77,6 +81,8 @@ export function TabletWalletHeader({
   rangeText,
 }: {
   name?: string;
+  image?: string | null;
+  monthLabel: string;
   accounts: AccountData[];
   totals: MonthTotals;
   previous: MonthTotals;
@@ -86,19 +92,35 @@ export function TabletWalletHeader({
   const { HERO_INFO } = useInfo();
   const t = useT();
   const dark = useColorScheme() === 'dark';
+  const colors = Colors[dark ? 'dark' : 'light'];
+  const initial = (name ?? '').trim().charAt(0).toUpperCase() || '?';
   const money = (value: number) => formatMoneyMajor(value, currency);
   const sorted = [...accounts].sort((a, b) => (Number(b.amount) || 0) - (Number(a.amount) || 0));
   return (
     <View className="gap-6 pb-1 pt-2">
       <View className="flex-row items-center gap-4">
         {/* The wordmark, at the far left of the header: white on the dark theme, black on the light one. */}
-        <Image source={dark ? WORDMARK_WHITE : WORDMARK_BLACK} style={{ width: 115, height: 40 }} contentFit="contain" accessibilityLabel="Gastify" />
-        <View className="flex-1 items-center">
-          <Text className="font-inter-bold text-5xl text-gf-text">{name ? tNow("mobile.hola.p1", { p1: name.split(' ')[0] }) : t("shared.start")}</Text>
+        <GastifyWordmark dark={dark} width={124} />
+        <HelpSep />
+        <View className="flex-1">
+          <Text className="font-inter-bold text-4xl text-gf-text" numberOfLines={1}>{name ? tNow("mobile.hola.p1", { p1: name.split(' ')[0] }) : t("shared.start")}</Text>
         </View>
-        {/* The notifications bell, at the far right. Its box is as wide as the logo, so the greeting sits exactly in the middle. */}
-        <View style={{ width: 115, alignItems: 'flex-end' }}>
+        {/* At the far right, as on the web: the month in a pill, the bell, the page's tutorial and the profile's photo. */}
+        <View className="flex-row items-center gap-3">
+          <View className="rounded-full px-4 py-2" style={{ backgroundColor: colors.accentSoft, borderWidth: 1, borderColor: colors.border }}>
+            <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{monthLabel}</Text>
+          </View>
+          <HelpSep />
           <NotificationsBell size={44} />
+          <HelpSep />
+          <TutorialTip label={t("shared.start")} size={24} />
+          <Pressable accessibilityRole="button" accessibilityLabel={t("mobile.perfil")} onPress={() => router.navigate('/more/profile')} hitSlop={6} className="h-11 w-11 items-center justify-center overflow-hidden rounded-full" style={{ backgroundColor: colors.accentSoft }}>
+            {image ? (
+              <Image source={{ uri: image }} style={{ width: 44, height: 44 }} contentFit="cover" alt={t("mobile.tu.foto.de.perfil")} />
+            ) : (
+              <Text className="font-inter-bold text-base" style={{ color: colors.accent }}>{initial}</Text>
+            )}
+          </Pressable>
         </View>
       </View>
       <View className="flex-row items-stretch gap-4">

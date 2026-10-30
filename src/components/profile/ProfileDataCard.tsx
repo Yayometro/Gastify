@@ -7,6 +7,7 @@ import { updateUser, type UserData } from "@/lib/features/userSlice";
 import type { AppDispatch } from "@/lib/store";
 import { useT } from "@/i18n/client";
 import { PROFILE_NAME_MAX, buildProfileBody, phoneDigits, profileToValues, validateProfile, type ProfileErrors, type ProfileValues } from "@gastify/core/profile/profileForm";
+import TutorialTip from "@/components/tour/TutorialTip";
 import { ProfileCard, ProfileField, PrimaryButton, errorMessage, saveAccount } from "./ProfileParts";
 
 // The name and the phone, as on the phone: the same checks, and the phone is saved as digits.
@@ -42,11 +43,12 @@ export default function ProfileDataCard({ user }: { user: UserData }) {
   };
 
   return (
-    <ProfileCard title={t("profile.data.title")}>
+    <ProfileCard title={t("profile.data.title")} tour="prof-data" help={<><span aria-hidden="true" className="mx-2 inline-block h-5 w-px shrink-0 align-middle bg-purple-300/40" /><TutorialTip tour="profData" label={t("profile.data.title")} /></>}>
       <div className="flex flex-col gap-3">
         <div className="flex flex-col gap-1.5">
           <ProfileField
             label={t("profile.data.name")}
+            data-tour="prof-data-name"
             value={values.fullName}
             maxLength={PROFILE_NAME_MAX}
             autoComplete="name"
@@ -57,6 +59,7 @@ export default function ProfileDataCard({ user }: { user: UserData }) {
         <div className="flex flex-col gap-1.5">
           <ProfileField
             label={t("profile.data.phone")}
+            data-tour="prof-data-phone"
             value={values.phone}
             inputMode="tel"
             autoComplete="tel"
@@ -67,7 +70,7 @@ export default function ProfileDataCard({ user }: { user: UserData }) {
         </div>
       </div>
       <div className="flex justify-end">
-        <PrimaryButton label={t("profile.data.save")} busy={busy} disabled={unchanged} onClick={save} />
+        <PrimaryButton data-tour="prof-data-save" label={t("profile.data.save")} busy={busy} disabled={unchanged} onClick={save} />
       </div>
     </ProfileCard>
   );

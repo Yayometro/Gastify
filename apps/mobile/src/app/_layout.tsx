@@ -10,6 +10,7 @@ import '@/global.css';
 import { AmbientBackground, DARK_BASE } from '@/components/ambient-background';
 import { AuthGate } from '@/components/auth/auth-gate';
 import { ToastProvider } from '@/components/toast';
+import { TourProvider } from '@/components/tour/tour-provider';
 import { I18nProvider } from '@/i18n/client';
 import { Colors } from '@/constants/theme';
 import { applyThemeMode, loadThemeMode } from '@/lib/theme-mode';
@@ -56,12 +57,15 @@ export default function RootLayout() {
         <ThemeProvider value={theme}>
           <ToastProvider>
             <AuthGate>
-              {/* The tabs are one screen of this stack; notifications is a screen above them, so it opens and closes on top of the
-                  page the person was on (as a tab, it bounced back to Inicio). */}
-              <Stack screenOptions={{ headerShown: false }}>
-                <Stack.Screen name="(tabs)" />
-                <Stack.Screen name="notifications" />
-              </Stack>
+              {/* The tutorial sits above the whole app: it draws its dark layer over the stack and the bar. */}
+              <TourProvider>
+                {/* The tabs are one screen of this stack; notifications is a screen above them, so it opens and closes on top of the
+                    page the person was on (as a tab, it bounced back to Inicio). */}
+                <Stack screenOptions={{ headerShown: false }}>
+                  <Stack.Screen name="(tabs)" />
+                  <Stack.Screen name="notifications" />
+                </Stack>
+              </TourProvider>
             </AuthGate>
           </ToastProvider>
         </ThemeProvider>

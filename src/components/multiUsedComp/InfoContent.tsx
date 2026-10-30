@@ -19,7 +19,7 @@ const WORD_COLORS: Record<string, string> = {
 function Rich({ text, muted = true, className = "" }: { text: string; muted?: boolean; className?: string }) {
   const parts = text.split(/(\bverde\b|\brojo\b|\bnaranja\b|\bazul\b|[▲▼▬])/gi);
   return (
-    <span className={`${muted ? "text-purple-100/85" : "text-white"} ${className}`}>
+    <span className={`${muted ? "text-purple-100/85" : "text-gf-text"} ${className}`}>
       {parts.map((part, index) => {
         const color = WORD_COLORS[part.toLowerCase()];
         return color ? (
@@ -37,7 +37,7 @@ function Rich({ text, muted = true, className = "" }: { text: string; muted?: bo
 function Box({ children, strong = false }: { children: React.ReactNode; strong?: boolean }) {
   return (
     <span
-      className={`inline-flex items-center rounded-xl px-3 py-1.5 text-sm ${strong ? "bg-purple-500/35 border border-purple-200/45 font-semibold text-white" : "bg-white/10 border border-white/15 font-medium text-white"}`}
+      className={`inline-flex items-center rounded-xl px-3 py-1.5 text-sm ${strong ? "bg-purple-500/35 border border-purple-200/45 font-semibold text-gf-text" : "bg-white/10 border border-white/15 font-medium text-gf-text"}`}
     >
       {children}
     </span>
@@ -50,10 +50,10 @@ function Equation({ left, right }: { left: string; right: string }) {
   return (
     <div className="flex flex-wrap items-center gap-2">
       <Box strong>{left}</Box>
-      <span className="text-lg font-bold text-white">=</span>
+      <span className="text-lg font-bold text-gf-text">=</span>
       {pieces.map((piece, index) =>
         index % 2 === 1 ? (
-          <span key={index} className="text-lg font-bold text-white">
+          <span key={index} className="text-lg font-bold text-gf-text">
             {piece}
           </span>
         ) : (
@@ -72,7 +72,7 @@ function Table({ head, rows }: { head?: string[]; rows: string[][] }) {
           <thead className="bg-purple-500/25">
             <tr>
               {head.map((cell, index) => (
-                <th key={index} className="px-3 py-2 text-left text-xs font-semibold uppercase text-white">
+                <th key={index} className="px-3 py-2 text-left text-xs font-semibold uppercase text-gf-text">
                   {cell}
                 </th>
               ))}
@@ -83,7 +83,7 @@ function Table({ head, rows }: { head?: string[]; rows: string[][] }) {
           {rows.map((row, rowIndex) => (
             <tr key={rowIndex} className={rowIndex % 2 === 0 ? "bg-black/20" : "bg-white/5"}>
               {row.map((cell, index) => (
-                <td key={index} className={`px-3 py-2 align-top ${index === 0 ? "w-32 font-semibold text-white" : ""}`}>
+                <td key={index} className={`px-3 py-2 align-top ${index === 0 ? "w-32 font-semibold text-gf-text" : ""}`}>
                   <Rich text={cell} muted={index !== 0} />
                 </td>
               ))}
@@ -116,7 +116,7 @@ function Block({ block }: { block: InfoBlock }) {
     case "definition":
       return (
         <div className="flex flex-col gap-0.5">
-          <p className="text-sm font-semibold text-white">{block.term}</p>
+          <p className="text-sm font-semibold text-gf-text">{block.term}</p>
           <p className="text-sm"><Rich text={block.text} /></p>
         </div>
       );
@@ -128,7 +128,7 @@ function Block({ block }: { block: InfoBlock }) {
           {block.items.map((item) => (
             <div key={item.label} className="flex items-center gap-3">
               <span className="h-3.5 w-3.5 shrink-0 rounded-full" style={{ backgroundColor: item.color }} />
-              <span className="w-20 text-sm font-semibold text-white">{item.label}</span>
+              <span className="w-20 text-sm font-semibold text-gf-text">{item.label}</span>
               <span className="flex-1 text-sm"><Rich text={item.text} /></span>
             </div>
           ))}

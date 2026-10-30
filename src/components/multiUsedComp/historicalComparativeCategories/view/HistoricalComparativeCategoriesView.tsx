@@ -3,6 +3,7 @@
 import React from "react";
 
 import { InfoTip } from "@/components/multiUsedComp/InfoTip";
+import TutorialTip from "@/components/tour/TutorialTip";
 import TabsToggler, { type TabsTogglerComponentItem } from "../../TabsComponents/TabsToggler";
 import { Skeleton } from "antd";
 import PeriodFiltersWithCompare from "../../periodFiltersWithCompare/PeriodFiltersWithCompare";
@@ -51,8 +52,9 @@ function HistoricalComparativeCategoriesView({
   const t = useT();
   return (
     <div className="w-full h-full">
-      {title || <div className="flex items-center gap-2"><h1 className=" text-3xl text-purple-300">{t("categories.compare.title")}</h1><InfoTip info={APP_INFO.gastos_por_categor_a} /></div>}
+      {title || <div className="flex items-center justify-center gap-2"><h1 className="text-3xl text-center text-purple-300">{t("categories.compare.title")}</h1><span aria-hidden="true" className="mx-2 inline-block h-5 w-px shrink-0 align-middle bg-purple-300/40" /><InfoTip info={APP_INFO.gastos_por_categor_a} /><TutorialTip tour="hisCategories" label={t("tour.hisCategories.name")} /></div>}
       <PeriodFiltersWithCompare
+        tour="his-cat"
         timePeriod={timePeriod}
         getValueFromSelecter={getValueFromSelecter}
         periodFromFather={periodFromFather as SelecterPeriod}
@@ -69,9 +71,9 @@ function HistoricalComparativeCategoriesView({
         <Skeleton active className="py-3" />
       ) : (
         <TabsToggler
+          tour="his-cat"
           tabs={tabs}
           compontentsArray={components}
-          tooltip={t("categories.tabHelp")}
           contentStyle={"flex flex-col justify-center items-center"}
           tabInfo={{
             bills: APP_INFO.gastos_por_categor_a,

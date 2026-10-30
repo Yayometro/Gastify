@@ -11,13 +11,15 @@ export interface LazyMountProps {
   rootMargin?: string;
   id?: string;
   className?: string;
+  // The guided tutorial's anchor (data-tour) for what this section holds. The wrapper exists before the children mount.
+  tour?: string;
 }
 
 // Mounts its children only when they come near the viewport, and keeps them
 // mounted afterwards. The dashboard has many widgets that each process the whole
 // movement list; rendering only the visible ones first makes the page usable
 // sooner. Without IntersectionObserver it mounts right away.
-function LazyMount({ children, minHeight = 320, rootMargin = "600px 0px", id, className }: LazyMountProps): React.JSX.Element {
+function LazyMount({ children, minHeight = 320, rootMargin = "600px 0px", id, className, tour }: LazyMountProps): React.JSX.Element {
   const ref = useRef<HTMLDivElement | null>(null);
   const [visible, setVisible] = useState(false);
 
@@ -42,7 +44,7 @@ function LazyMount({ children, minHeight = 320, rootMargin = "600px 0px", id, cl
   }, [visible, rootMargin]);
 
   return (
-    <div ref={ref} id={id} className={className} style={visible ? undefined : { minHeight }}>
+    <div ref={ref} id={id} className={className} data-tour={tour} style={visible ? undefined : { minHeight }}>
       {visible ? children : <Skeleton active paragraph={{ rows: 4 }} className="p-4" />}
     </div>
   );

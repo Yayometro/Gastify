@@ -269,7 +269,7 @@ function TabsTogglerMontlyController({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const components: TabsTogglerComponentItem<any>[] = [
     {
-      tab: "incomes",
+      tab: t("web.incomes"),
       props: {
         data: data[0] || [],
         totalValue: totalAmount[0] || 0,
@@ -279,7 +279,7 @@ function TabsTogglerMontlyController({
       Component: ResponsiveBarsChartComponent,
     },
     {
-      tab: "bills",
+      tab: t("web.bills"),
       props: {
         data: data[1] || [],
         totalValue: totalAmount[1] || 0,
@@ -289,7 +289,7 @@ function TabsTogglerMontlyController({
       Component: ResponsiveBarsChartComponent,
     },
     {
-      tab: "comparative",
+      tab: t("web.comparative"),
       props: generatePropForChartColAntTogglerTabs({
         t,
         data,
@@ -305,7 +305,7 @@ function TabsTogglerMontlyController({
   const tabs = [t("web.comparative"), t("web.bills"), t("web.incomes")];
   if (compareEnabled && compareChartData) {
     components.push({
-      tab: "compare periods",
+      tab: t("web.compare.periods"),
       props: generatePropForChartColAntPeriodCompare({
         t,
         compareData: compareChartData.chartData,

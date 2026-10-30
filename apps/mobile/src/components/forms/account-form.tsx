@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { Ionicons } from '@expo/vector-icons';
-import { Pressable, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 
 import { BankPicker } from '@/components/bank-picker';
 import { ChipPicker } from '@/components/chip-picker';
+import { TourTarget } from '@/components/tour/tour-target';
 import { FormError } from '@/components/auth/auth-layout';
 import { GradientButton } from '@/components/ui/gradient-button';
 import { TextField } from '@/components/ui/text-field';
@@ -35,8 +35,7 @@ export function AccountForm({
   const [currency, setCurrency] = useState(initial?.currency ?? 'MXN');
   const [amount, setAmount] = useState(initial?.amount ?? '0');
   const [bankId, setBankId] = useState<string | null>(initial?.bankId ?? null);
-  const [cardNumber, setCardNumber] = useState(initial?.cardNumber ?? '');
-  const [showNumber, setShowNumber] = useState(false);
+  const [cardNumber, setCardNumber] = useState((initial?.cardNumber ?? '').slice(-4));
   const [errors, setErrors] = useState<AccountErrors & { cardNumber?: string }>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -60,40 +59,37 @@ export function AccountForm({
 
   return (
     <View className="gap-4">
-      <View className="gap-2">
+      <TourTarget id="m-accform-name" className="gap-2">
         <TextField label={t("mobile.nombre")} value={name} onChangeText={setName} placeholder={t("mobile.cuenta.nomina")} maxLength={40} autoCapitalize="sentences" />
         {errors.name && <Text className="font-inter text-sm text-red-500">{t(errors.name)}</Text>}
-      </View>
-      <View className="gap-2">
+      </TourTarget>
+      <TourTarget id="m-accform-type" className="gap-2">
         <Text className="font-inter-medium text-sm text-gf-text-muted">{t("mobile.tipo")}</Text>
         <ChipPicker items={ACCOUNT_TYPES.map((type) => ({ id: type.value, label: t(type.label) }))} value={accountType} onChange={setAccountType} />
-      </View>
-      <View className="gap-2">
+      </TourTarget>
+      <TourTarget id="m-accform-currency" className="gap-2">
         <Text className="font-inter-medium text-sm text-gf-text-muted">{currencyLocked ? tNow("mobile.moneda.p1.no.se.cambia", { p1: currency }) : t("mobile.moneda.no.se.cambia.despues")}</Text>
         {!currencyLocked && <ChipPicker items={ACCOUNT_CURRENCIES.map((code) => ({ id: code, label: code }))} value={currency} onChange={setCurrency} moreAfter={99} />}
-      </View>
-      <View className="gap-2">
+      </TourTarget>
+      <TourTarget id="m-accform-balance" className="gap-2">
         <TextField label={t("mobile.forms.balanceLabel", { p1: currency })} value={amount} onChangeText={setAmount} placeholder="0.00" keyboardType="numbers-and-punctuation" />
         {errors.amount && <Text className="font-inter text-sm text-red-500">{t(errors.amount)}</Text>}
-      </View>
-      <View className="gap-2">
+      </TourTarget>
+      <TourTarget id="m-accform-bank" className="gap-2">
         <Text className="font-inter-medium text-sm text-gf-text-muted">{t("mobile.banco.opcional")}</Text>
         <BankPicker country={bankCountryForCurrency(currency)} value={bankId} onChange={setBankId} />
-      </View>
+      </TourTarget>
       <View className="gap-2">
         <View className="flex-row items-end gap-2">
-          <View className="flex-1">
-            <TextField label={t("mobile.numero.de.tarjeta.o.de")} value={cardNumber} onChangeText={(text) => setCardNumber(text.replace(/[^\d\s-]/g, ''))} placeholder={t("mobile.solo.si.quieres.tenerlo.a")} keyboardType="number-pad" maxLength={23} secureTextEntry={!showNumber} />
-          </View>
-          <Pressable accessibilityRole="button" accessibilityLabel={showNumber ? t("mobile.ocultar.el.numero") : t("mobile.mostrar.el.numero")} onPress={() => setShowNumber((value) => !value)} className="h-12 w-12 items-center justify-center rounded-2xl border border-gf-border" hitSlop={6}>
-            <Ionicons name={showNumber ? 'eye-off-outline' : 'eye-outline'} size={22} color="#c084fc" />
-          </Pressable>
+          <TourTarget id="m-accform-card" className="flex-1">
+            <TextField label={t("mobile.numero.de.tarjeta.o.de")} value={cardNumber} onChangeText={(text) => setCardNumber(text.replace(/\D/g, '').slice(0, 4))} placeholder="1234" keyboardType="number-pad" maxLength={4} />
+          </TourTarget>
         </View>
-        <Text className="font-inter text-xs text-gf-text-muted">{t("mobile.es.opcional.nunca.pedimos.ni")}</Text>
+        <Text className="font-inter text-xs text-gf-text-muted">{t("mobile.solo.si.quieres.tenerlo.a")}</Text>
         {errors.cardNumber && <Text className="font-inter text-sm text-red-500">{t(errors.cardNumber)}</Text>}
       </View>
       <FormError message={formError} />
-      <GradientButton label={submitLabel} onPress={save} loading={saving} disabled={saving} />
+      <TourTarget id="m-accform-save"><GradientButton label={submitLabel} onPress={save} loading={saving} disabled={saving} /></TourTarget>
     </View>
   );
 }

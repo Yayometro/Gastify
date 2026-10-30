@@ -62,6 +62,8 @@ const en: Record<keyof typeof auth, string> = {
   "auth.done.taking.you.to.your.wallet": "Done! Taking you to your Wallet…",
   "auth.verifying.your.identity": "Verifying your identity…",
   "auth.incorrect.code.you.have.p1.attempt.s.left": "Incorrect code. You have {p1} attempt(s) left.",
+  "auth.stepUp.signOut": "Sign out and use another account",
+  "auth.stepUp.signedAs": "Signed in as {p1}",
 };
 
 export default en;

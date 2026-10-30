@@ -22,8 +22,12 @@ import CurrencyBreakdownChips, {
   type CurrencyBreakdownData,
 } from "../CurrencyBreakdownChips";
 import type { ProjectionTableRow } from "@/hooks/useProjectionTable";
+import { monthAccuracy } from "@gastify/core/transformers/projectionAccuracy";
+import { ProjectionPrecisionChip, rangeFormulaTooltip, singleValueFormulaTooltip } from "./ProjectionPrecisionChip";
 
 import { InfoTip } from "@/components/multiUsedComp/InfoTip";
+import TitleWithHelp from "@/components/multiUsedComp/TitleWithHelp";
+import TutorialTip from "@/components/tour/TutorialTip";
 import { useLocale, useT, useInfo } from "@/i18n/client";
 
 
@@ -75,20 +79,6 @@ export interface ProjectionMonthDetailModalProps {
   readOnly?: boolean;
 }
 
-interface QuestionTooltipProps {
-  title: React.ReactNode;
-}
-
-function QuestionTooltip({ title }: QuestionTooltipProps): React.JSX.Element {
-  return (
-    <Tooltip title={title}>
-      <div className="inline-block ml-1 align-middle text-purple-400">
-        <UniversalCategoIcon type="fa/FaRegQuestionCircle" siz={12} />
-      </div>
-    </Tooltip>
-  );
-}
-
 // Timestamp of a revision, 0 when it is missing or invalid so the sort stays stable (bug 65).
 function revisionTime(value?: Date | string | null): number {
   const time = +new Date(value as string | number | Date);
@@ -122,6 +112,16 @@ function ProjectionMonthDetailModal({
   const [showTransactions, setShowTransactions] = useState<boolean>(false);
 
   if (!monthRow) return null;
+  // Precision of a closed month against the projection it had then. Needs both projected figures on the row.
+  const monthPrecision =
+    monthRow.type === "actual" && monthRow.historicalIncome !== undefined && monthRow.historicalExpense !== undefined
+      ? monthAccuracy({
+          projectedIncome: monthRow.historicalIncome,
+          actualIncome: monthRow.income ?? 0,
+          projectedExpense: monthRow.historicalExpense,
+          actualExpense: monthRow.expense ?? 0,
+        })
+      : null;
 
   // Same [start, end] shape Movements already accepts via timePeriodFromFather
   // elsewhere in the app (e.g. Dashboard.jsx) - reusing the real Movements UI
@@ -187,12 +187,15 @@ function ProjectionMonthDetailModal({
           >
             <CategoIcon type="MdClose" siz={20} />
           </div>
-          <h1 className="text-2xl text-purple-300 capitalize mb-1 flex items-center">
+          <h1 className="text-2xl text-purple-300 capitalize mb-1 flex items-center" data-tour="proj-month-title">
             <span>{monthRow.monthName} {monthRow.year}</span>
-            <InfoTip info={APP_INFO.c_mo_leer_este_mes} />
-            <QuestionTooltip title={t("projections.intro")} />
+            <span aria-hidden="true" className="mx-2 inline-block h-5 w-px shrink-0 align-middle bg-purple-300/40" />
+            <span className="inline-flex items-center">
+              <InfoTip info={APP_INFO.c_mo_leer_este_mes} />
+              <TutorialTip tour="projMonth" label={t("tour.projMonth.name")} />
+            </span>
           </h1>
-          <p className="text-xs text-gf-text-muted mb-4">
+          <p className="text-xs text-gf-text-muted mb-4" data-tour="proj-month-kind">
             {monthRow.type === "actual" && t("web.closed.month.showing.real.transactions")}
             {monthRow.type === "estimate" && t("web.future.month.pure.estimate.from.your.budgets.and.income")}
             {monthRow.type === "current" && t("web.current.month.the.projected.value.climbs.from.your.estim")}
@@ -202,6 +205,7 @@ function ProjectionMonthDetailModal({
             <button
               type="button"
               onClick={() => setShowTransactions((v) => !v)}
+              data-tour="proj-month-see"
               className="mb-4 flex items-center gap-1.5 text-xs font-medium text-purple-600 hover:text-purple-500 transition-colors w-fit"
             >
               <CategoIcon type="MdList" siz={14} />
@@ -210,7 +214,7 @@ function ProjectionMonthDetailModal({
           )}
 
           {monthRow.type === "current" && (
-            <div className="grid grid-cols-2 gap-2 mb-4 text-sm">
+            <div className="grid grid-cols-2 gap-2 mb-4 text-sm" data-tour="proj-month-cards">
               <div className="bg-gf-accent-soft-bg rounded-xl p-2">
                 <p className="text-gf-text-muted">{t("projections.income")}</p>
                 <p className="text-lg text-green-400">{usdFormatChanger(monthRow.projectedIncome || 0)}</p>
@@ -231,7 +235,7 @@ function ProjectionMonthDetailModal({
           )}
 
           {monthRow.type === "estimate" && (
-            <div className="grid grid-cols-2 gap-2 mb-4 text-sm">
+            <div className="grid grid-cols-2 gap-2 mb-4 text-sm" data-tour="proj-month-cards">
               <div className="bg-gf-accent-soft-bg rounded-xl p-2">
                 <p className="text-gf-text-muted">{t("projections.estimatedIncome")}</p>
                 <p className="text-lg text-emerald-500">{usdFormatChanger(monthRow.income || 0)}</p>
@@ -244,7 +248,7 @@ function ProjectionMonthDetailModal({
           )}
 
           {monthRow.type === "actual" && (
-            <div className="grid grid-cols-2 gap-2 mb-4 text-sm">
+            <div className="grid grid-cols-2 gap-2 mb-4 text-sm" data-tour="proj-month-cards">
               <div className="bg-gf-accent-soft-bg rounded-xl p-2">
                 <p className="text-gf-text-muted">{t("projections.realIncome")}</p>
                 <p className="text-lg text-green-400">{usdFormatChanger(monthRow.income || 0)}</p>
@@ -264,8 +268,32 @@ function ProjectionMonthDetailModal({
             </div>
           )}
 
+          {monthPrecision && (
+            <div className="mb-4 rounded-xl bg-gf-accent-soft-bg p-3" data-tour="proj-month-precision">
+              <p className="mb-1 text-[11px] font-bold uppercase tracking-wide text-gf-text-muted">{t("projections.precision.title")}</p>
+              <div className="flex flex-wrap gap-2 text-xs">
+                <ProjectionPrecisionChip
+                  value={monthPrecision.income}
+                  label={t("projections.accuracy.income")}
+                  tooltip={singleValueFormulaTooltip(t, t("projections.accuracy.income"), monthRow.historicalIncome ?? 0, monthRow.income ?? 0)}
+                />
+                <ProjectionPrecisionChip
+                  value={monthPrecision.expense}
+                  label={t("projections.accuracy.expense")}
+                  tooltip={singleValueFormulaTooltip(t, t("projections.accuracy.expense"), monthRow.historicalExpense ?? 0, monthRow.expense ?? 0)}
+                />
+                <ProjectionPrecisionChip
+                  value={monthPrecision.global}
+                  label={t("projections.precision.global")}
+                  tooltip={rangeFormulaTooltip(t, t("projections.precision.global"), monthPrecision.global)}
+                />
+              </div>
+              <p className="mt-2 text-xs text-gf-text-muted">{t("projections.precision.monthSentence")}</p>
+            </div>
+          )}
+
           {bucketBreakdown && bucketBreakdown.length > 0 && (
-            <div className="w-full mb-4">
+            <div className="w-full mb-4" data-tour="proj-month-chart">
               <ComparativeColumnChart
                 data={chartData}
                 propPlus={{
@@ -282,7 +310,7 @@ function ProjectionMonthDetailModal({
           )}
 
           {incomeOccurrences && incomeOccurrences.length > 0 && (
-            <div className="w-full mb-4">
+            <div className="w-full mb-4" data-tour="proj-month-income">
               <h2 className="text-purple-300 mb-1">{t("projections.expectedIncomeThisMonth")}</h2>
               <ul className="flex flex-col gap-1">
                 {incomeOccurrences.map((row, i) => (
@@ -297,14 +325,12 @@ function ProjectionMonthDetailModal({
             </div>
           )}
 
-          {monthRow.type === "actual" && (
-            <div className="form-trans-edit w-full flex flex-col gap-2 mb-6 pt-3 border-t border-gf-border">
+          {monthRow.type === "actual" && !readOnly && (
+            <div className="form-trans-edit w-full flex flex-col gap-2 mb-6 pt-3 border-t border-gf-border" data-tour="proj-month-balance">
               <div className="w-full">
-                <p className="label-tfp flex items-center mb-1">
-                  <span>{t("projections.balance.setThisMonth")}</span>
-                  <InfoTip info={APP_INFO.saldo_real_del_mes} />
-                  <QuestionTooltip title={t("projections.balance.help")} />
-                </p>
+                <div className="label-tfp flex items-center mb-1">
+                  <TitleWithHelp title={t("projections.balance.setThisMonth")} info={APP_INFO.saldo_real_del_mes} />
+                </div>
                 <div className="flex items-center gap-2 w-full">
                   <input
                     type="number"
@@ -325,14 +351,15 @@ function ProjectionMonthDetailModal({
             </div>
           )}
 
-          {!readOnly && <div className="form-trans-edit w-full flex flex-col gap-4 mt-2 pt-4 border-t border-gf-border">
+          {!readOnly && <div className="form-trans-edit w-full flex flex-col gap-4 mt-2 pt-4 border-t border-gf-border" data-tour="proj-month-buffers">
+            <div className="label-tfp flex items-center mb-1">
+              <TitleWithHelp title={t("projections.buffer.title")} info={APP_INFO.buffers} />
+            </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
               <div className="w-full">
-                <p className="label-tfp flex items-center mb-1">
+                <div className="label-tfp mb-1">
                   <span>{t("projections.buffer.expense")}</span>
-                  <InfoTip info={APP_INFO.tope_de_gasto_inesperado} />
-                  <QuestionTooltip title={t("projections.buffer.expenseHelp")} />
-                </p>
+                </div>
                 <input
                   type="number"
                   value={bufferValue}
@@ -342,11 +369,9 @@ function ProjectionMonthDetailModal({
                 />
               </div>
               <div className="w-full">
-                <p className="label-tfp flex items-center mb-1">
+                <div className="label-tfp mb-1">
                   <span>{t("projections.buffer.income")}</span>
-                  <InfoTip info={APP_INFO.tope_de_ingreso_inesperado} />
-                  <QuestionTooltip title={t("projections.buffer.incomeHelp")} />
-                </p>
+                </div>
                 <input
                   type="number"
                   value={incomeBufferValue}
@@ -359,12 +384,13 @@ function ProjectionMonthDetailModal({
             <button
               type="button"
               className="w-full h-10 gf-glass-button text-white font-semibold text-xs rounded-full transition-colors cursor-pointer flex items-center justify-center"
+              data-tour="proj-month-buffers-save"
               onClick={handleSaveBuffers}
             >
               {isSaving ? <Spin size="small" /> : t("web.save.buffers")}
             </button>
             {bufferRevisions && bufferRevisions.length > 0 && (
-              <details className="text-xs">
+              <details className="text-xs" data-tour="proj-month-history">
                 <summary className="text-purple-500 cursor-pointer select-none">
                   {t("projections.history.title", { p1: bufferRevisions.length })}
                 </summary>

@@ -2,11 +2,13 @@
 
 import React from "react";
 import { Tooltip } from "antd";
-import UniversalCategoIcon from "../UniversalCategoIcon";
 import { usdFormatChanger } from "@/helpers/transformers/transactionsChange";
 
-import { InfoTip } from "../InfoTip";
+import TitleWithHelp from "../TitleWithHelp";
+import type { ComponentTourId } from "@gastify/core/tour/tourSteps";
 import { useT, useInfo } from "@/i18n/client";
+import { monthAccuracy, type AccuracyMonthInput } from "@gastify/core/transformers/projectionAccuracy";
+import { ProjectionPrecisionChip, singleValueFormulaTooltip } from "./ProjectionPrecisionChip";
 
 export interface ProjectionRow {
   monthName: string;
@@ -33,6 +35,11 @@ export interface ProjectionRow {
 export interface ProjectionsViewProps {
   rows: ProjectionRow[];
   onRowClick: (row: ProjectionRow) => void;
+  // The tutorial the compass button in the table's header starts, when the screen that shows the table has one.
+  tutorial?: ComponentTourId;
+  // Projected-vs-actual figures per month, keyed by the row's monthName. When given, a
+  // "Precisión" column is shown; a month without an entry (not closed, no projection) stays blank.
+  accuracyByMonth?: Record<string, AccuracyMonthInput>;
 }
 
 const TYPE_LABEL: Record<string, string> = {
@@ -44,20 +51,6 @@ const TYPE_LABEL: Record<string, string> = {
 function formatMoney(value?: number | null): string {
   if (value === null || value === undefined) return "—";
   return usdFormatChanger(value);
-}
-
-interface HeaderTooltipProps {
-  title: React.ReactNode;
-}
-
-function HeaderTooltip({ title }: HeaderTooltipProps): React.JSX.Element {
-  return (
-    <Tooltip title={title}>
-      <div className="inline-block ml-1 align-middle">
-        <UniversalCategoIcon type="fa/FaRegQuestionCircle" siz={12} />
-      </div>
-    </Tooltip>
-  );
 }
 
 const getIncomeColorClass = (type?: string): string => {
@@ -84,29 +77,54 @@ const getExpenseColorClass = (type?: string): string => {
   }
 };
 
-function ProjectionsView({ rows, onRowClick }: ProjectionsViewProps): React.JSX.Element {
+function ProjectionsView({ rows, onRowClick, tutorial, accuracyByMonth }: ProjectionsViewProps): React.JSX.Element {
   const { APP_INFO } = useInfo();
   const t = useT();
   return (
     <div className="w-full overflow-x-auto">
+      <TitleWithHelp
+        as="h2"
+        title={t("projections.table.heading")}
+        info={APP_INFO.c_mo_leer_esta_tabla}
+        tour={tutorial}
+        tourLabel={tutorial ? t(`tour.${tutorial}.name`) : undefined}
+        titleClassName="text-xl text-purple-300"
+        className="mb-2 justify-center"
+        dataTour="proj-table-title"
+      />
       <table className="w-full min-w-[600px] text-center bg-gf-surface rounded-2xl overflow-hidden">
         <thead>
-          <tr className="bg-purple-600 text-white">
-            <th className="py-2 px-3"><span className="inline-flex items-center gap-1">{t("projections.table.month")}<InfoTip info={APP_INFO.c_mo_leer_esta_tabla} /></span></th>
+          <tr className="bg-purple-600 text-white" data-tour="proj-table-head">
+            <th className="py-2 px-3">{t("projections.table.month")}</th>
             <th className="py-2 px-3">{t("projections.income")}</th>
             <th className="py-2 px-3">{t("projections.expense")}</th>
             <th className="py-2 px-3">
-              {t("projections.table.net")}
-              <HeaderTooltip title={t("projections.table.netHelp")} />
+              <TitleWithHelp
+                title={t("projections.table.net")}
+                info={{ title: t("projections.table.net"), text: t("projections.table.netHelp") }}
+                className="justify-center"
+              />
             </th>
-            <th className="py-2 px-3">
-              {t("projections.table.balance")}
-              <HeaderTooltip title={t("projections.table.balanceHelp")} />
+            <th className="py-2 px-3" data-tour="proj-col-balance">
+              <TitleWithHelp
+                title={t("projections.table.balance")}
+                info={{ title: t("projections.table.balance"), text: t("projections.table.balanceHelp") }}
+                className="justify-center"
+              />
             </th>
+            {accuracyByMonth && (
+              <th className="py-2 px-3" data-tour="his-proj-col-accuracy">
+                <TitleWithHelp
+                  title={t("projections.precision.monthlyColumn")}
+                  info={{ title: t("projections.precision.monthlyColumn"), text: t("projections.precision.help") }}
+                  className="justify-center"
+                />
+              </th>
+            )}
           </tr>
         </thead>
         <tbody>
-          {rows.map((row) => {
+          {rows.map((row, position) => {
             const income = row.type === "current" ? row.projectedIncome : row.income;
             const expense = row.type === "current" ? row.projectedExpense : row.expense;
             return (
@@ -116,6 +134,7 @@ function ProjectionsView({ rows, onRowClick }: ProjectionsViewProps): React.JSX.
                   row.type === "current" ? "bg-gf-accent-soft-bg/60 font-medium" : ""
                 }`}
                 onClick={() => onRowClick(row)}
+                data-tour={row.type === "current" ? "proj-row-current" : position === 0 ? "proj-row" : undefined}
               >
                 <td className="py-2 px-3">
                   {row.monthName}
@@ -157,12 +176,34 @@ function ProjectionsView({ rows, onRowClick }: ProjectionsViewProps): React.JSX.
                     formatMoney(row.balance)
                   )}
                 </td>
+                {accuracyByMonth && (
+                  <td className="py-2 px-3">
+                    {accuracyByMonth[row.monthName] && (() => {
+                      const input = accuracyByMonth[row.monthName];
+                      const acc = monthAccuracy(input);
+                      return (
+                        <div className="flex flex-col items-center gap-1 text-xs">
+                          <ProjectionPrecisionChip
+                            value={acc.income}
+                            label={t("projections.accuracy.income")}
+                            tooltip={singleValueFormulaTooltip(t, `${t("projections.accuracy.income")} · ${row.monthName}`, input.projectedIncome, input.actualIncome)}
+                          />
+                          <ProjectionPrecisionChip
+                            value={acc.expense}
+                            label={t("projections.accuracy.expense")}
+                            tooltip={singleValueFormulaTooltip(t, `${t("projections.accuracy.expense")} · ${row.monthName}`, input.projectedExpense, input.actualExpense)}
+                          />
+                        </div>
+                      );
+                    })()}
+                  </td>
+                )}
               </tr>
             );
           })}
         </tbody>
       </table>
-      <p className="text-xs text-gf-text-muted mt-2 px-1">
+      <p className="text-xs text-gf-text-muted mt-2 px-1" data-tour="proj-table-note">
         {t("projections.table.balanceAnchor")}
       </p>
     </div>

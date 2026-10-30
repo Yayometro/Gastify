@@ -1,17 +1,20 @@
-import { Pressable, Text, View, useColorScheme } from 'react-native';
+import { Text, View, useColorScheme } from 'react-native';
 
+import { TourPressable } from '@/components/tour/tour-target';
 import { glassFill } from '@/components/ui/glass-fill';
 import { Colors } from '@/constants/theme';
 
-// Two or three exclusive options side by side (Gasto / Ingreso / Transferencia).
+// Two or three exclusive options side by side (Gasto / Ingreso / Transferencia). `tourIds` names an option for the tutorial, which can press it.
 export function Segmented<T extends string>({
   options,
   value,
   onChange,
+  tourIds,
 }: {
   options: { value: T; label: string }[];
   value: T;
   onChange: (value: T) => void;
+  tourIds?: Partial<Record<T, string>>;
 }) {
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
@@ -20,8 +23,9 @@ export function Segmented<T extends string>({
       {options.map((option) => {
         const selected = option.value === value;
         return (
-          <Pressable
+          <TourPressable
             key={option.value}
+            id={tourIds?.[option.value]}
             accessibilityRole="tab"
             accessibilityState={{ selected }}
             onPress={() => onChange(option.value)}
@@ -30,7 +34,7 @@ export function Segmented<T extends string>({
             <Text className="font-inter-semibold text-sm" style={{ color: selected ? '#ffffff' : colors.text }}>
               {option.label}
             </Text>
-          </Pressable>
+          </TourPressable>
         );
       })}
     </View>

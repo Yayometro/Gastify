@@ -34,7 +34,7 @@ export default function DemoMovementTools(): React.JSX.Element {
 
   return (
     <>
-      <div className="flex min-w-0 flex-col gap-4">
+      <div className="flex min-w-0 flex-col gap-4" data-tour="mov-tools">
         <section className="gf-glass-card flex flex-col gap-3 rounded-[28px] border border-gf-border p-4 sm:p-5" aria-labelledby="demo-import-title">
           <div className="flex items-start gap-3">
             <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-emerald-200/15 bg-emerald-300/10 text-emerald-200"><PiMicrosoftExcelLogoFill size={20} /></span>

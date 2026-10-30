@@ -1,0 +1,2831 @@
+{
+  "namespace": "info",
+  "entries": [
+    {
+      "key": "Proyectado contra real",
+      "source": "Proyectado contra real",
+      "es": "Proyectado contra real",
+      "en": ""
+    },
+    {
+      "key": "table",
+      "source": "table",
+      "es": "table",
+      "en": ""
+    },
+    {
+      "key": "Columna",
+      "source": "Columna",
+      "es": "Columna",
+      "en": ""
+    },
+    {
+      "key": "Qué es",
+      "source": "Qué es",
+      "es": "Qué es",
+      "en": ""
+    },
+    {
+      "key": "Proyectado",
+      "source": "Proyectado",
+      "es": "Proyectado",
+      "en": ""
+    },
+    {
+      "key": "Lo que esperabas para ese mes con lo que tenías configurado entonces (tope o referencia histórica). No se recalcula después: editar hoy un mes cerrado no cambia lo que ese mes «proyectaba».",
+      "source": "Lo que esperabas para ese mes con lo que tenías configurado entonces (tope o referencia histórica). No se recalcula después: editar hoy un mes cerrado no cambia lo que ese mes «proyectaba».",
+      "es": "Lo que esperabas para ese mes con lo que tenías configurado entonces (tope o referencia histórica). No se recalcula después: editar hoy un mes cerrado no cambia lo que ese mes «proyectaba».",
+      "en": ""
+    },
+    {
+      "key": "Real",
+      "source": "Real",
+      "es": "Real",
+      "en": ""
+    },
+    {
+      "key": "Lo que tus movimientos dicen que pasó de verdad.",
+      "source": "Lo que tus movimientos dicen que pasó de verdad.",
+      "es": "Lo que tus movimientos dicen que pasó de verdad.",
+      "en": ""
+    },
+    {
+      "key": "Desajuste",
+      "source": "Desajuste",
+      "es": "Desajuste",
+      "en": ""
+    },
+    {
+      "key": "Real − proyectado, uno por renglón: el de ingreso compara solo ingresos y el de gasto solo gastos.",
+      "source": "Real − proyectado, uno por renglón: el de ingreso compara solo ingresos y el de gasto solo gastos.",
+      "es": "Real − proyectado, uno por renglón: el de ingreso compara solo ingresos y el de gasto solo gastos.",
+      "en": ""
+    },
+    {
+      "key": "equation",
+      "source": "equation",
+      "es": "equation",
+      "en": ""
+    },
+    {
+      "key": "Real − Proyectado",
+      "source": "Real − Proyectado",
+      "es": "Real − Proyectado",
+      "en": ""
+    },
+    {
+      "key": "Cómo leer los colores",
+      "source": "Cómo leer los colores",
+      "es": "Cómo leer los colores",
+      "en": ""
+    },
+    {
+      "key": "p",
+      "source": "p",
+      "es": "p",
+      "en": ""
+    },
+    {
+      "key": "El color siempre significa lo mismo (verde: te fue mejor de lo esperado; rojo: te fue peor), pero «mejor» es distinto en cada renglón:",
+      "source": "El color siempre significa lo mismo (verde: te fue mejor de lo esperado; rojo: te fue peor), pero «mejor» es distinto en cada renglón:",
+      "es": "El color siempre significa lo mismo (verde: te fue mejor de lo esperado; rojo: te fue peor), pero «mejor» es distinto en cada renglón:",
+      "en": ""
+    },
+    {
+      "key": "Renglón",
+      "source": "Renglón",
+      "es": "Renglón",
+      "en": ""
+    },
+    {
+      "key": "Número positivo",
+      "source": "Número positivo",
+      "es": "Número positivo",
+      "en": ""
+    },
+    {
+      "key": "Número negativo",
+      "source": "Número negativo",
+      "es": "Número negativo",
+      "en": ""
+    },
+    {
+      "key": "Ingreso",
+      "source": "Ingreso",
+      "es": "Ingreso",
+      "en": ""
+    },
+    {
+      "key": "verde ▲ ganaste más de lo proyectado",
+      "source": "verde ▲ ganaste más de lo proyectado",
+      "es": "verde ▲ ganaste más de lo proyectado",
+      "en": ""
+    },
+    {
+      "key": "rojo ▼ ganaste menos",
+      "source": "rojo ▼ ganaste menos",
+      "es": "rojo ▼ ganaste menos",
+      "en": ""
+    },
+    {
+      "key": "Gasto",
+      "source": "Gasto",
+      "es": "Gasto",
+      "en": ""
+    },
+    {
+      "key": "rojo ▲ gastaste más de lo proyectado",
+      "source": "rojo ▲ gastaste más de lo proyectado",
+      "es": "rojo ▲ gastaste más de lo proyectado",
+      "en": ""
+    },
+    {
+      "key": "verde ▼ gastaste menos",
+      "source": "verde ▼ gastaste menos",
+      "es": "verde ▼ gastaste menos",
+      "en": ""
+    },
+    {
+      "key": "Por eso un mismo mes puede mostrar un renglón en rojo y otro en verde: son dos comparaciones independientes, no un total combinado.",
+      "source": "Por eso un mismo mes puede mostrar un renglón en rojo y otro en verde: son dos comparaciones independientes, no un total combinado.",
+      "es": "Por eso un mismo mes puede mostrar un renglón en rojo y otro en verde: son dos comparaciones independientes, no un total combinado.",
+      "en": ""
+    },
+    {
+      "key": "Ejemplo",
+      "source": "Ejemplo",
+      "es": "Ejemplo",
+      "en": ""
+    },
+    {
+      "key": "example",
+      "source": "example",
+      "es": "example",
+      "en": ""
+    },
+    {
+      "key": "Proyectabas $50,000 de gasto y gastaste $47,000: desajuste de −$3,000, verde (gastaste menos). Proyectabas $80,000 de ingreso y ganaste $60,000: desajuste de −$20,000, rojo (ganaste menos).",
+      "source": "Proyectabas $50,000 de gasto y gastaste $47,000: desajuste de −$3,000, verde (gastaste menos). Proyectabas $80,000 de ingreso y ganaste $60,000: desajuste de −$20,000, rojo (ganaste menos).",
+      "es": "Proyectabas $50,000 de gasto y gastaste $47,000: desajuste de −$3,000, verde (gastaste menos). Proyectabas $80,000 de ingreso y ganaste $60,000: desajuste de −$20,000, rojo (ganaste menos).",
+      "en": ""
+    },
+    {
+      "key": "Solo se muestran meses cerrados con un historial de proyección registrado. Toca un mes para ver su detalle.",
+      "source": "Solo se muestran meses cerrados con un historial de proyección registrado. Toca un mes para ver su detalle.",
+      "es": "Solo se muestran meses cerrados con un historial de proyección registrado. Toca un mes para ver su detalle.",
+      "en": ""
+    },
+    {
+      "key": "Qué muestra",
+      "source": "Qué muestra",
+      "es": "Qué muestra",
+      "en": ""
+    },
+    {
+      "key": "El mes elegido contra el mes inmediato anterior, renglón por renglón.",
+      "source": "El mes elegido contra el mes inmediato anterior, renglón por renglón.",
+      "es": "El mes elegido contra el mes inmediato anterior, renglón por renglón.",
+      "en": ""
+    },
+    {
+      "key": "Cómo se calcula",
+      "source": "Cómo se calcula",
+      "es": "Cómo se calcula",
+      "en": ""
+    },
+    {
+      "key": "Cambio",
+      "source": "Cambio",
+      "es": "Cambio",
+      "en": ""
+    },
+    {
+      "key": "(Actual − Anterior) ÷ Anterior",
+      "source": "(Actual − Anterior) ÷ Anterior",
+      "es": "(Actual − Anterior) ÷ Anterior",
+      "en": ""
+    },
+    {
+      "key": "Ahorro",
+      "source": "Ahorro",
+      "es": "Ahorro",
+      "en": ""
+    },
+    {
+      "key": "(Ingresos − Gastos) ÷ Ingresos",
+      "source": "(Ingresos − Gastos) ÷ Ingresos",
+      "es": "(Ingresos − Gastos) ÷ Ingresos",
+      "en": ""
+    },
+    {
+      "key": "En «Ahorro» el cambio se da en puntos porcentuales (pts), no en %.",
+      "source": "En «Ahorro» el cambio se da en puntos porcentuales (pts), no en %.",
+      "es": "En «Ahorro» el cambio se da en puntos porcentuales (pts), no en %.",
+      "en": ""
+    },
+    {
+      "key": "Cómo leerlo",
+      "source": "Cómo leerlo",
+      "es": "Cómo leerlo",
+      "en": ""
+    },
+    {
+      "key": "Señal",
+      "source": "Señal",
+      "es": "Señal",
+      "en": ""
+    },
+    {
+      "key": "Significa",
+      "source": "Significa",
+      "es": "Significa",
+      "en": ""
+    },
+    {
+      "key": "Subió (más de 0.5%)",
+      "source": "Subió (más de 0.5%)",
+      "es": "Subió (más de 0.5%)",
+      "en": ""
+    },
+    {
+      "key": "Bajó (más de 0.5%)",
+      "source": "Bajó (más de 0.5%)",
+      "es": "Bajó (más de 0.5%)",
+      "en": ""
+    },
+    {
+      "key": "Casi no cambió (menos de 0.5%)",
+      "source": "Casi no cambió (menos de 0.5%)",
+      "es": "Casi no cambió (menos de 0.5%)",
+      "en": ""
+    },
+    {
+      "key": "legend",
+      "source": "legend",
+      "es": "legend",
+      "en": ""
+    },
+    {
+      "key": "#34d399",
+      "source": "#34d399",
+      "es": "#34d399",
+      "en": ""
+    },
+    {
+      "key": "Verde",
+      "source": "Verde",
+      "es": "Verde",
+      "en": ""
+    },
+    {
+      "key": "Buena noticia: más ingresos, balance o ahorro, o menos gastos.",
+      "source": "Buena noticia: más ingresos, balance o ahorro, o menos gastos.",
+      "es": "Buena noticia: más ingresos, balance o ahorro, o menos gastos.",
+      "en": ""
+    },
+    {
+      "key": "#fb7185",
+      "source": "#fb7185",
+      "es": "#fb7185",
+      "en": ""
+    },
+    {
+      "key": "Rojo",
+      "source": "Rojo",
+      "es": "Rojo",
+      "en": ""
+    },
+    {
+      "key": "Mala noticia: menos ingresos, balance o ahorro, o más gastos.",
+      "source": "Mala noticia: menos ingresos, balance o ahorro, o más gastos.",
+      "es": "Mala noticia: menos ingresos, balance o ahorro, o más gastos.",
+      "en": ""
+    },
+    {
+      "key": "#f59e0b",
+      "source": "#f59e0b",
+      "es": "#f59e0b",
+      "en": ""
+    },
+    {
+      "key": "Naranja",
+      "source": "Naranja",
+      "es": "Naranja",
+      "en": ""
+    },
+    {
+      "key": "Sin cambio.",
+      "source": "Sin cambio.",
+      "es": "Sin cambio.",
+      "en": ""
+    },
+    {
+      "key": "Cómo se calcula cada cuadrito",
+      "source": "Cómo se calcula cada cuadrito",
+      "es": "Cómo se calcula cada cuadrito",
+      "en": ""
+    },
+    {
+      "key": "Cuadrito",
+      "source": "Cuadrito",
+      "es": "Cuadrito",
+      "en": ""
+    },
+    {
+      "key": "Cálculo",
+      "source": "Cálculo",
+      "es": "Cálculo",
+      "en": ""
+    },
+    {
+      "key": "Gasto por día",
+      "source": "Gasto por día",
+      "es": "Gasto por día",
+      "en": ""
+    },
+    {
+      "key": "Gasto del periodo ÷ días transcurridos",
+      "source": "Gasto del periodo ÷ días transcurridos",
+      "es": "Gasto del periodo ÷ días transcurridos",
+      "en": ""
+    },
+    {
+      "key": "Al ritmo actual",
+      "source": "Al ritmo actual",
+      "es": "Al ritmo actual",
+      "en": ""
+    },
+    {
+      "key": "Gasto por día × días del periodo (solo mientras sigue en curso)",
+      "source": "Gasto por día × días del periodo (solo mientras sigue en curso)",
+      "es": "Gasto por día × días del periodo (solo mientras sigue en curso)",
+      "en": ""
+    },
+    {
+      "key": "Lo que conservas",
+      "source": "Lo que conservas",
+      "es": "Lo que conservas",
+      "en": ""
+    },
+    {
+      "key": "Gastos vs anterior",
+      "source": "Gastos vs anterior",
+      "es": "Gastos vs anterior",
+      "en": ""
+    },
+    {
+      "key": "(Gastos − Gastos del periodo anterior) ÷ Gastos del periodo anterior",
+      "source": "(Gastos − Gastos del periodo anterior) ÷ Gastos del periodo anterior",
+      "es": "(Gastos − Gastos del periodo anterior) ÷ Gastos del periodo anterior",
+      "en": ""
+    },
+    {
+      "key": "Ingresos vs anterior",
+      "source": "Ingresos vs anterior",
+      "es": "Ingresos vs anterior",
+      "en": ""
+    },
+    {
+      "key": "Lo mismo con los ingresos",
+      "source": "Lo mismo con los ingresos",
+      "es": "Lo mismo con los ingresos",
+      "en": ""
+    },
+    {
+      "key": "Lo que más pesa",
+      "source": "Lo que más pesa",
+      "es": "Lo que más pesa",
+      "en": ""
+    },
+    {
+      "key": "La categoría con más gasto y su parte del gasto total",
+      "source": "La categoría con más gasto y su parte del gasto total",
+      "es": "La categoría con más gasto y su parte del gasto total",
+      "en": ""
+    },
+    {
+      "key": "Gasto más grande",
+      "source": "Gasto más grande",
+      "es": "Gasto más grande",
+      "en": ""
+    },
+    {
+      "key": "El movimiento de gasto más alto del periodo",
+      "source": "El movimiento de gasto más alto del periodo",
+      "es": "El movimiento de gasto más alto del periodo",
+      "en": ""
+    },
+    {
+      "key": "Gasto promedio",
+      "source": "Gasto promedio",
+      "es": "Gasto promedio",
+      "en": ""
+    },
+    {
+      "key": "Gasto total ÷ número de gastos",
+      "source": "Gasto total ÷ número de gastos",
+      "es": "Gasto total ÷ número de gastos",
+      "en": ""
+    },
+    {
+      "key": "Balance",
+      "source": "Balance",
+      "es": "Balance",
+      "en": ""
+    },
+    {
+      "key": "Ingresos − Gastos, y cuántos movimientos tuvo el periodo",
+      "source": "Ingresos − Gastos, y cuántos movimientos tuvo el periodo",
+      "es": "Ingresos − Gastos, y cuántos movimientos tuvo el periodo",
+      "en": ""
+    },
+    {
+      "key": "Los cambios comparan contra el periodo inmediato anterior de la misma duración.",
+      "source": "Los cambios comparan contra el periodo inmediato anterior de la misma duración.",
+      "es": "Los cambios comparan contra el periodo inmediato anterior de la misma duración.",
+      "en": ""
+    },
+    {
+      "key": "Cómo usarlo",
+      "source": "Cómo usarlo",
+      "es": "Cómo usarlo",
+      "en": ""
+    },
+    {
+      "key": "bullets",
+      "source": "bullets",
+      "es": "bullets",
+      "en": ""
+    },
+    {
+      "key": "Toca cualquier parte de la tarjeta para abrir el Analizador de cartera completo.",
+      "source": "Toca cualquier parte de la tarjeta para abrir el Analizador de cartera completo.",
+      "es": "Toca cualquier parte de la tarjeta para abrir el Analizador de cartera completo.",
+      "en": ""
+    },
+    {
+      "key": "Tus presupuestos del periodo, del que está más cerca de su límite al más lejano. Cada barra es lo gastado ÷ el límite, y el círculo marca el porcentaje.",
+      "source": "Tus presupuestos del periodo, del que está más cerca de su límite al más lejano. Cada barra es lo gastado ÷ el límite, y el círculo marca el porcentaje.",
+      "es": "Tus presupuestos del periodo, del que está más cerca de su límite al más lejano. Cada barra es lo gastado ÷ el límite, y el círculo marca el porcentaje.",
+      "en": ""
+    },
+    {
+      "key": "La carita",
+      "source": "La carita",
+      "es": "La carita",
+      "en": ""
+    },
+    {
+      "key": "Carita",
+      "source": "Carita",
+      "es": "Carita",
+      "en": ""
+    },
+    {
+      "key": "Gastado ÷ límite",
+      "source": "Gastado ÷ límite",
+      "es": "Gastado ÷ límite",
+      "en": ""
+    },
+    {
+      "key": "menos de 30%",
+      "source": "menos de 30%",
+      "es": "menos de 30%",
+      "en": ""
+    },
+    {
+      "key": "Vas muy holgado",
+      "source": "Vas muy holgado",
+      "es": "Vas muy holgado",
+      "en": ""
+    },
+    {
+      "key": "30% a 60%",
+      "source": "30% a 60%",
+      "es": "30% a 60%",
+      "en": ""
+    },
+    {
+      "key": "Todo en orden",
+      "source": "Todo en orden",
+      "es": "Todo en orden",
+      "en": ""
+    },
+    {
+      "key": "60% a 85%",
+      "source": "60% a 85%",
+      "es": "60% a 85%",
+      "en": ""
+    },
+    {
+      "key": "Ojo, ya llevas buena parte",
+      "source": "Ojo, ya llevas buena parte",
+      "es": "Ojo, ya llevas buena parte",
+      "en": ""
+    },
+    {
+      "key": "85% a 100%",
+      "source": "85% a 100%",
+      "es": "85% a 100%",
+      "en": ""
+    },
+    {
+      "key": "Muy cerca del límite",
+      "source": "Muy cerca del límite",
+      "es": "Muy cerca del límite",
+      "en": ""
+    },
+    {
+      "key": "más de 100%",
+      "source": "más de 100%",
+      "es": "más de 100%",
+      "en": ""
+    },
+    {
+      "key": "Excediste el límite",
+      "source": "Excediste el límite",
+      "es": "Excediste el límite",
+      "en": ""
+    },
+    {
+      "key": "En los presupuestos de ahorro la lectura se invierte: 🤩 a partir de 85% de la meta, 🙂 de 35% a 85% y 😟 por debajo de 35%.",
+      "source": "En los presupuestos de ahorro la lectura se invierte: 🤩 a partir de 85% de la meta, 🙂 de 35% a 85% y 😟 por debajo de 35%.",
+      "es": "En los presupuestos de ahorro la lectura se invierte: 🤩 a partir de 85% de la meta, 🙂 de 35% a 85% y 😟 por debajo de 35%.",
+      "en": ""
+    },
+    {
+      "key": "Toca un presupuesto para ver sus movimientos.",
+      "source": "Toca un presupuesto para ver sus movimientos.",
+      "es": "Toca un presupuesto para ver sus movimientos.",
+      "en": ""
+    },
+    {
+      "key": "Cada mes del año en una tarjeta, en tu moneda principal.",
+      "source": "Cada mes del año en una tarjeta, en tu moneda principal.",
+      "es": "Cada mes del año en una tarjeta, en tu moneda principal.",
+      "en": ""
+    },
+    {
+      "key": "Etiqueta",
+      "source": "Etiqueta",
+      "es": "Etiqueta",
+      "en": ""
+    },
+    {
+      "key": "De dónde salen las cifras",
+      "source": "De dónde salen las cifras",
+      "es": "De dónde salen las cifras",
+      "en": ""
+    },
+    {
+      "key": "Un mes que ya ocurrió: tus movimientos.",
+      "source": "Un mes que ya ocurrió: tus movimientos.",
+      "es": "Un mes que ya ocurrió: tus movimientos.",
+      "en": ""
+    },
+    {
+      "key": "Estimado",
+      "source": "Estimado",
+      "es": "Estimado",
+      "en": ""
+    },
+    {
+      "key": "Un mes futuro: tus fuentes de ingreso, tus presupuestos y tus referencias históricas.",
+      "source": "Un mes futuro: tus fuentes de ingreso, tus presupuestos y tus referencias históricas.",
+      "es": "Un mes futuro: tus fuentes de ingreso, tus presupuestos y tus referencias históricas.",
+      "en": ""
+    },
+    {
+      "key": "Este mes",
+      "source": "Este mes",
+      "es": "Este mes",
+      "en": ""
+    },
+    {
+      "key": "Arranca como estimado y se llena con lo real conforme pasa el mes.",
+      "source": "Arranca como estimado y se llena con lo real conforme pasa el mes.",
+      "es": "Arranca como estimado y se llena con lo real conforme pasa el mes.",
+      "en": ""
+    },
+    {
+      "key": "Neto",
+      "source": "Neto",
+      "es": "Neto",
+      "en": ""
+    },
+    {
+      "key": "Ingresos − Gastos",
+      "source": "Ingresos − Gastos",
+      "es": "Ingresos − Gastos",
+      "en": ""
+    },
+    {
+      "key": "Saldo = el dinero que tendrías al cierre del mes. Con ≈ es una estimación hecha hacia atrás, porque no guardaste el saldo real de ese mes.",
+      "source": "Saldo = el dinero que tendrías al cierre del mes. Con ≈ es una estimación hecha hacia atrás, porque no guardaste el saldo real de ese mes.",
+      "es": "Saldo = el dinero que tendrías al cierre del mes. Con ≈ es una estimación hecha hacia atrás, porque no guardaste el saldo real de ese mes.",
+      "en": ""
+    },
+    {
+      "key": "Toca un mes para ver sus movimientos, comparar lo real contra lo presupuestado, guardar el saldo real y ajustar los topes inesperados.",
+      "source": "Toca un mes para ver sus movimientos, comparar lo real contra lo presupuestado, guardar el saldo real y ajustar los topes inesperados.",
+      "es": "Toca un mes para ver sus movimientos, comparar lo real contra lo presupuestado, guardar el saldo real y ajustar los topes inesperados.",
+      "en": ""
+    },
+    {
+      "key": "Si este mes vas gastando más rápido o más lento de lo habitual, comparando el mismo día del mes.",
+      "source": "Si este mes vas gastando más rápido o más lento de lo habitual, comparando el mismo día del mes.",
+      "es": "Si este mes vas gastando más rápido o más lento de lo habitual, comparando el mismo día del mes.",
+      "en": ""
+    },
+    {
+      "key": "Lo normal",
+      "source": "Lo normal",
+      "es": "Lo normal",
+      "en": ""
+    },
+    {
+      "key": "Promedio de lo gastado al mismo día en los 6 meses anteriores",
+      "source": "Promedio de lo gastado al mismo día en los 6 meses anteriores",
+      "es": "Promedio de lo gastado al mismo día en los 6 meses anteriores",
+      "en": ""
+    },
+    {
+      "key": "(Este mes − Lo normal) ÷ Lo normal",
+      "source": "(Este mes − Lo normal) ÷ Lo normal",
+      "es": "(Este mes − Lo normal) ÷ Lo normal",
+      "en": ""
+    },
+    {
+      "key": "Vas gastando más rápido de lo normal.",
+      "source": "Vas gastando más rápido de lo normal.",
+      "es": "Vas gastando más rápido de lo normal.",
+      "en": ""
+    },
+    {
+      "key": "Vas gastando más lento de lo normal.",
+      "source": "Vas gastando más lento de lo normal.",
+      "es": "Vas gastando más lento de lo normal.",
+      "en": ""
+    },
+    {
+      "key": "Abre «Ver más» para revisar cada mes.",
+      "source": "Abre «Ver más» para revisar cada mes.",
+      "es": "Abre «Ver más» para revisar cada mes.",
+      "en": ""
+    },
+    {
+      "key": "Contra el periodo anterior",
+      "source": "Contra el periodo anterior",
+      "es": "Contra el periodo anterior",
+      "en": ""
+    },
+    {
+      "key": "Compara tus ingresos, gastos y balance del periodo elegido con el periodo inmediato anterior de la misma duración.",
+      "source": "Compara tus ingresos, gastos y balance del periodo elegido con el periodo inmediato anterior de la misma duración.",
+      "es": "Compara tus ingresos, gastos y balance del periodo elegido con el periodo inmediato anterior de la misma duración.",
+      "en": ""
+    },
+    {
+      "key": "Cada renglón (Ingresos, Gastos, Balance) trae lo que cambió en dinero, el porcentaje, lo que valía el periodo anterior y lo que vale ahora.",
+      "source": "Cada renglón (Ingresos, Gastos, Balance) trae lo que cambió en dinero, el porcentaje, lo que valía el periodo anterior y lo que vale ahora.",
+      "es": "Cada renglón (Ingresos, Gastos, Balance) trae lo que cambió en dinero, el porcentaje, lo que valía el periodo anterior y lo que vale ahora.",
+      "en": ""
+    },
+    {
+      "key": "Actual − Anterior",
+      "source": "Actual − Anterior",
+      "es": "Actual − Anterior",
+      "en": ""
+    },
+    {
+      "key": "El periodo anterior es el tramo justo antes del elegido y con la misma duración: si miras octubre, es septiembre; si miras 7 días, son los 7 días de antes.",
+      "source": "El periodo anterior es el tramo justo antes del elegido y con la misma duración: si miras octubre, es septiembre; si miras 7 días, son los 7 días de antes.",
+      "es": "El periodo anterior es el tramo justo antes del elegido y con la misma duración: si miras octubre, es septiembre; si miras 7 días, son los 7 días de antes.",
+      "en": ""
+    },
+    {
+      "key": "Subió contra el periodo anterior",
+      "source": "Subió contra el periodo anterior",
+      "es": "Subió contra el periodo anterior",
+      "en": ""
+    },
+    {
+      "key": "Bajó contra el periodo anterior",
+      "source": "Bajó contra el periodo anterior",
+      "es": "Bajó contra el periodo anterior",
+      "en": ""
+    },
+    {
+      "key": "#6EE7A8",
+      "source": "#6EE7A8",
+      "es": "#6EE7A8",
+      "en": ""
+    },
+    {
+      "key": "Ingresos",
+      "source": "Ingresos",
+      "es": "Ingresos",
+      "en": ""
+    },
+    {
+      "key": "Verde: lo que entró.",
+      "source": "Verde: lo que entró.",
+      "es": "Verde: lo que entró.",
+      "en": ""
+    },
+    {
+      "key": "#FF8A8A",
+      "source": "#FF8A8A",
+      "es": "#FF8A8A",
+      "en": ""
+    },
+    {
+      "key": "Gastos",
+      "source": "Gastos",
+      "es": "Gastos",
+      "en": ""
+    },
+    {
+      "key": "Rojo: lo que salió.",
+      "source": "Rojo: lo que salió.",
+      "es": "Rojo: lo que salió.",
+      "en": ""
+    },
+    {
+      "key": "#7EC8FF",
+      "source": "#7EC8FF",
+      "es": "#7EC8FF",
+      "en": ""
+    },
+    {
+      "key": "Azul: ingresos − gastos.",
+      "source": "Azul: ingresos − gastos.",
+      "es": "Azul: ingresos − gastos.",
+      "en": ""
+    },
+    {
+      "key": "Resumen del periodo",
+      "source": "Resumen del periodo",
+      "es": "Resumen del periodo",
+      "en": ""
+    },
+    {
+      "key": "Lo que entró, lo que salió y lo que quedó en el periodo elegido.",
+      "source": "Lo que entró, lo que salió y lo que quedó en el periodo elegido.",
+      "es": "Lo que entró, lo que salió y lo que quedó en el periodo elegido.",
+      "en": ""
+    },
+    {
+      "key": "Ingresos y gastos suman los movimientos del periodo en tu moneda principal. Las transferencias entre tus cuentas no cuentan, porque ni entran ni salen de tu dinero.",
+      "source": "Ingresos y gastos suman los movimientos del periodo en tu moneda principal. Las transferencias entre tus cuentas no cuentan, porque ni entran ni salen de tu dinero.",
+      "es": "Ingresos y gastos suman los movimientos del periodo en tu moneda principal. Las transferencias entre tus cuentas no cuentan, porque ni entran ni salen de tu dinero.",
+      "en": ""
+    },
+    {
+      "key": "Cambia el periodo con los filtros de arriba; el resumen se actualiza.",
+      "source": "Cambia el periodo con los filtros de arriba; el resumen se actualiza.",
+      "es": "Cambia el periodo con los filtros de arriba; el resumen se actualiza.",
+      "en": ""
+    },
+    {
+      "key": "Tus cuentas",
+      "source": "Tus cuentas",
+      "es": "Tus cuentas",
+      "en": ""
+    },
+    {
+      "key": "Tus cuentas, de la de mayor saldo a la de menor.",
+      "source": "Tus cuentas, de la de mayor saldo a la de menor.",
+      "es": "Tus cuentas, de la de mayor saldo a la de menor.",
+      "en": ""
+    },
+    {
+      "key": "El saldo actual de cada cuenta en su propia moneda (las que no son de tu moneda principal llevan su código al lado).",
+      "source": "El saldo actual de cada cuenta en su propia moneda (las que no son de tu moneda principal llevan su código al lado).",
+      "es": "El saldo actual de cada cuenta en su propia moneda (las que no son de tu moneda principal llevan su código al lado).",
+      "en": ""
+    },
+    {
+      "key": "El total convierte cada saldo a tu moneda principal con el tipo de cambio más reciente. Las tarjetas de crédito no se suman a tu dinero disponible.",
+      "source": "El total convierte cada saldo a tu moneda principal con el tipo de cambio más reciente. Las tarjetas de crédito no se suman a tu dinero disponible.",
+      "es": "El total convierte cada saldo a tu moneda principal con el tipo de cambio más reciente. Las tarjetas de crédito no se suman a tu dinero disponible.",
+      "en": ""
+    },
+    {
+      "key": "Abre «Cuentas» desde el menú para crear, editar o reordenar tus cuentas.",
+      "source": "Abre «Cuentas» desde el menú para crear, editar o reordenar tus cuentas.",
+      "es": "Abre «Cuentas» desde el menú para crear, editar o reordenar tus cuentas.",
+      "en": ""
+    },
+    {
+      "key": "Historial",
+      "source": "Historial",
+      "es": "Historial",
+      "en": ""
+    },
+    {
+      "key": "El Historial sirve para comparar tu dinero a lo largo del tiempo: meses, trimestres, semestres y años.",
+      "source": "El Historial sirve para comparar tu dinero a lo largo del tiempo: meses, trimestres, semestres y años.",
+      "es": "El Historial sirve para comparar tu dinero a lo largo del tiempo: meses, trimestres, semestres y años.",
+      "en": ""
+    },
+    {
+      "key": "Para qué sirve",
+      "source": "Para qué sirve",
+      "es": "Para qué sirve",
+      "en": ""
+    },
+    {
+      "key": "Es la pantalla para mirar hacia atrás y comparar: ¿gasté más que el año pasado?, ¿este trimestre fue mejor que el anterior?, ¿qué meses pesan más? Se hizo pensando en periodos largos, no en el día a día (para eso están Inicio y Movimientos).",
+      "source": "Es la pantalla para mirar hacia atrás y comparar: ¿gasté más que el año pasado?, ¿este trimestre fue mejor que el anterior?, ¿qué meses pesan más? Se hizo pensando en periodos largos, no en el día a día (para eso están Inicio y Movimientos).",
+      "es": "Es la pantalla para mirar hacia atrás y comparar: ¿gasté más que el año pasado?, ¿este trimestre fue mejor que el anterior?, ¿qué meses pesan más? Se hizo pensando en periodos largos, no en el día a día (para eso están Inicio y Movimientos).",
+      "en": ""
+    },
+    {
+      "key": "Cómo usarla",
+      "source": "Cómo usarla",
+      "es": "Cómo usarla",
+      "en": ""
+    },
+    {
+      "key": "Elige arriba el periodo (por defecto, los últimos 3 meses) y muévelo con las flechas.",
+      "source": "Elige arriba el periodo (por defecto, los últimos 3 meses) y muévelo con las flechas.",
+      "es": "Elige arriba el periodo (por defecto, los últimos 3 meses) y muévelo con las flechas.",
+      "en": ""
+    },
+    {
+      "key": "Activa «Comparar con otro periodo» para ver cada cifra contra el mismo tramo del año pasado, contra el periodo anterior o contra uno que elijas.",
+      "source": "Activa «Comparar con otro periodo» para ver cada cifra contra el mismo tramo del año pasado, contra el periodo anterior o contra uno que elijas.",
+      "es": "Activa «Comparar con otro periodo» para ver cada cifra contra el mismo tramo del año pasado, contra el periodo anterior o contra uno que elijas.",
+      "en": ""
+    },
+    {
+      "key": "Cada módulo de abajo puede tener su propio periodo («Igual que arriba» lo sigue).",
+      "source": "Cada módulo de abajo puede tener su propio periodo («Igual que arriba» lo sigue).",
+      "es": "Cada módulo de abajo puede tener su propio periodo («Igual que arriba» lo sigue).",
+      "en": ""
+    },
+    {
+      "key": "Qué hace cada módulo",
+      "source": "Qué hace cada módulo",
+      "es": "Qué hace cada módulo",
+      "en": ""
+    },
+    {
+      "key": "Módulo",
+      "source": "Módulo",
+      "es": "Módulo",
+      "en": ""
+    },
+    {
+      "key": "Para qué",
+      "source": "Para qué",
+      "es": "Para qué",
+      "en": ""
+    },
+    {
+      "key": "Periodo",
+      "source": "Periodo",
+      "es": "Periodo",
+      "en": ""
+    },
+    {
+      "key": "Elige el tramo a analizar y, si quieres, con qué compararlo.",
+      "source": "Elige el tramo a analizar y, si quieres, con qué compararlo.",
+      "es": "Elige el tramo a analizar y, si quieres, con qué compararlo.",
+      "en": ""
+    },
+    {
+      "key": "Resumen",
+      "source": "Resumen",
+      "es": "Resumen",
+      "en": ""
+    },
+    {
+      "key": "Ingresos, gastos y balance del periodo (y del comparado).",
+      "source": "Ingresos, gastos y balance del periodo (y del comparado).",
+      "es": "Ingresos, gastos y balance del periodo (y del comparado).",
+      "en": ""
+    },
+    {
+      "key": "Datos del periodo",
+      "source": "Datos del periodo",
+      "es": "Datos del periodo",
+      "en": ""
+    },
+    {
+      "key": "Movimientos, lo que conservaste, gasto promedio por mes, lo que más pesa y el gasto más grande.",
+      "source": "Movimientos, lo que conservaste, gasto promedio por mes, lo que más pesa y el gasto más grande.",
+      "es": "Movimientos, lo que conservaste, gasto promedio por mes, lo que más pesa y el gasto más grande.",
+      "en": ""
+    },
+    {
+      "key": "Mes a mes",
+      "source": "Mes a mes",
+      "es": "Mes a mes",
+      "en": ""
+    },
+    {
+      "key": "Barras de ingresos y gastos de cada mes; toca un mes para ver su detalle.",
+      "source": "Barras de ingresos y gastos de cada mes; toca un mes para ver su detalle.",
+      "es": "Barras de ingresos y gastos de cada mes; toca un mes para ver su detalle.",
+      "en": ""
+    },
+    {
+      "key": "Gastos e ingresos por categoría",
+      "source": "Gastos e ingresos por categoría",
+      "es": "Gastos e ingresos por categoría",
+      "en": ""
+    },
+    {
+      "key": "En qué se fue y de dónde vino tu dinero; toca una categoría para ver sus subcategorías y movimientos.",
+      "source": "En qué se fue y de dónde vino tu dinero; toca una categoría para ver sus subcategorías y movimientos.",
+      "es": "En qué se fue y de dónde vino tu dinero; toca una categoría para ver sus subcategorías y movimientos.",
+      "en": ""
+    },
+    {
+      "key": "Grandes gastos",
+      "source": "Grandes gastos",
+      "es": "Grandes gastos",
+      "en": ""
+    },
+    {
+      "key": "La transacción, categoría y subcategoría más grandes de los últimos 12 meses y quién lideró cada mes.",
+      "source": "La transacción, categoría y subcategoría más grandes de los últimos 12 meses y quién lideró cada mes.",
+      "es": "La transacción, categoría y subcategoría más grandes de los últimos 12 meses y quién lideró cada mes.",
+      "en": ""
+    },
+    {
+      "key": "Suscripciones recurrentes",
+      "source": "Suscripciones recurrentes",
+      "es": "Suscripciones recurrentes",
+      "en": ""
+    },
+    {
+      "key": "Cargos que se repiten cada mes.",
+      "source": "Cargos que se repiten cada mes.",
+      "es": "Cargos que se repiten cada mes.",
+      "en": ""
+    },
+    {
+      "key": "Presupuestos del periodo",
+      "source": "Presupuestos del periodo",
+      "es": "Presupuestos del periodo",
+      "en": ""
+    },
+    {
+      "key": "Cuántos meses cumpliste cada presupuesto y cuánto gastaste contra su meta.",
+      "source": "Cuántos meses cumpliste cada presupuesto y cuánto gastaste contra su meta.",
+      "es": "Cuántos meses cumpliste cada presupuesto y cuánto gastaste contra su meta.",
+      "en": ""
+    },
+    {
+      "key": "Proyecciones",
+      "source": "Proyecciones",
+      "es": "Proyecciones",
+      "en": ""
+    },
+    {
+      "key": "El neto de cada mes del año, real o estimado.",
+      "source": "El neto de cada mes del año, real o estimado.",
+      "es": "El neto de cada mes del año, real o estimado.",
+      "en": ""
+    },
+    {
+      "key": "Top",
+      "source": "Top",
+      "es": "Top",
+      "en": ""
+    },
+    {
+      "key": "Las categorías o movimientos más grandes, mes por mes para compararlos.",
+      "source": "Las categorías o movimientos más grandes, mes por mes para compararlos.",
+      "es": "Las categorías o movimientos más grandes, mes por mes para compararlos.",
+      "en": ""
+    },
+    {
+      "key": "PROYECTADO VS. REAL",
+      "source": "PROYECTADO VS. REAL",
+      "es": "PROYECTADO VS. REAL",
+      "en": ""
+    },
+    {
+      "key": "«Proyectado» es lo que esperabas para ese mes según lo que tenías configurado en ese momento (tope, o tu referencia histórica); no se recalcula después, así que editar hoy un mes ya cerrado no cambia lo que ese mes «proyectaba». «Real» es lo que tus movimientos dicen que pasó de verdad.",
+      "source": "«Proyectado» es lo que esperabas para ese mes según lo que tenías configurado en ese momento (tope, o tu referencia histórica); no se recalcula después, así que editar hoy un mes ya cerrado no cambia lo que ese mes «proyectaba». «Real» es lo que tus movimientos dicen que pasó de verdad.",
+      "es": "«Proyectado» es lo que esperabas para ese mes según lo que tenías configurado en ese momento (tope, o tu referencia histórica); no se recalcula después, así que editar hoy un mes ya cerrado no cambia lo que ese mes «proyectaba». «Real» es lo que tus movimientos dicen que pasó de verdad.",
+      "en": ""
+    },
+    {
+      "key": "DESAJUSTE: DOS NÚMEROS, UNO POR RENGLÓN",
+      "source": "DESAJUSTE: DOS NÚMEROS, UNO POR RENGLÓN",
+      "es": "DESAJUSTE: DOS NÚMEROS, UNO POR RENGLÓN",
+      "en": ""
+    },
+    {
+      "key": "El de ingreso es Ingreso real menos Ingreso proyectado. El de gasto es Gasto real menos Gasto proyectado. No están relacionados entre sí: cada uno compara su propia columna.",
+      "source": "El de ingreso es Ingreso real menos Ingreso proyectado. El de gasto es Gasto real menos Gasto proyectado. No están relacionados entre sí: cada uno compara su propia columna.",
+      "es": "El de ingreso es Ingreso real menos Ingreso proyectado. El de gasto es Gasto real menos Gasto proyectado. No están relacionados entre sí: cada uno compara su propia columna.",
+      "en": ""
+    },
+    {
+      "key": "POR QUÉ EL COLOR NO SIGUE EL SIGNO IGUAL EN LOS DOS",
+      "source": "POR QUÉ EL COLOR NO SIGUE EL SIGNO IGUAL EN LOS DOS",
+      "es": "POR QUÉ EL COLOR NO SIGUE EL SIGNO IGUAL EN LOS DOS",
+      "en": ""
+    },
+    {
+      "key": "El color siempre significa lo mismo (verde: te fue mejor de lo esperado; rojo: te fue peor), pero «mejor» se ve distinto en cada uno. En ingreso, más dinero del proyectado es bueno: un número positivo es verde y uno negativo es rojo. En gasto, gastar menos de lo proyectado es bueno: un número negativo es verde y uno positivo es rojo. Por eso un mismo mes puede mostrar un renglón en rojo y el otro en verde: son dos comparaciones independientes, no un total combinado.",
+      "source": "El color siempre significa lo mismo (verde: te fue mejor de lo esperado; rojo: te fue peor), pero «mejor» se ve distinto en cada uno. En ingreso, más dinero del proyectado es bueno: un número positivo es verde y uno negativo es rojo. En gasto, gastar menos de lo proyectado es bueno: un número negativo es verde y uno positivo es rojo. Por eso un mismo mes puede mostrar un renglón en rojo y el otro en verde: son dos comparaciones independientes, no un total combinado.",
+      "es": "El color siempre significa lo mismo (verde: te fue mejor de lo esperado; rojo: te fue peor), pero «mejor» se ve distinto en cada uno. En ingreso, más dinero del proyectado es bueno: un número positivo es verde y uno negativo es rojo. En gasto, gastar menos de lo proyectado es bueno: un número negativo es verde y uno positivo es rojo. Por eso un mismo mes puede mostrar un renglón en rojo y el otro en verde: son dos comparaciones independientes, no un total combinado.",
+      "en": ""
+    },
+    {
+      "key": "EJEMPLO",
+      "source": "EJEMPLO",
+      "es": "EJEMPLO",
+      "en": ""
+    },
+    {
+      "key": "Proyectabas $50,000 de gasto y gastaste $47,000: desajuste de gasto de -$3,000, verde (gastaste menos). Proyectabas $80,000 de ingreso y ganaste $60,000: desajuste de ingreso de -$20,000, rojo (ganaste menos).",
+      "source": "Proyectabas $50,000 de gasto y gastaste $47,000: desajuste de gasto de -$3,000, verde (gastaste menos). Proyectabas $80,000 de ingreso y ganaste $60,000: desajuste de ingreso de -$20,000, rojo (ganaste menos).",
+      "es": "Proyectabas $50,000 de gasto y gastaste $47,000: desajuste de gasto de -$3,000, verde (gastaste menos). Proyectabas $80,000 de ingreso y ganaste $60,000: desajuste de ingreso de -$20,000, rojo (ganaste menos).",
+      "en": ""
+    },
+    {
+      "key": "distribuci_n_del_gasto",
+      "source": "distribuci_n_del_gasto",
+      "es": "distribuci_n_del_gasto",
+      "en": ""
+    },
+    {
+      "key": "Distribución del gasto",
+      "source": "Distribución del gasto",
+      "es": "Distribución del gasto",
+      "en": ""
+    },
+    {
+      "key": "Cada tramo muestra qué parte de los movimientos que cuentan para este presupuesto corresponde a una categoría o subcategoría. El porcentaje se calcula sobre esos movimientos.",
+      "source": "Cada tramo muestra qué parte de los movimientos que cuentan para este presupuesto corresponde a una categoría o subcategoría. El porcentaje se calcula sobre esos movimientos.",
+      "es": "Cada tramo muestra qué parte de los movimientos que cuentan para este presupuesto corresponde a una categoría o subcategoría. El porcentaje se calcula sobre esos movimientos.",
+      "en": ""
+    },
+    {
+      "key": "gasto_total",
+      "source": "gasto_total",
+      "es": "gasto_total",
+      "en": ""
+    },
+    {
+      "key": "Gasto total",
+      "source": "Gasto total",
+      "es": "Gasto total",
+      "en": ""
+    },
+    {
+      "key": "Suma de todos tus gastos del periodo elegido, estén o no cubiertos por un presupuesto, en tu moneda principal. Sirve para saber cuánto sale en total antes de ver cuánto está controlado. Toca la tarjeta para ver el desglose por presupuesto.",
+      "source": "Suma de todos tus gastos del periodo elegido, estén o no cubiertos por un presupuesto, en tu moneda principal. Sirve para saber cuánto sale en total antes de ver cuánto está controlado. Toca la tarjeta para ver el desglose por presupuesto.",
+      "es": "Suma de todos tus gastos del periodo elegido, estén o no cubiertos por un presupuesto, en tu moneda principal. Sirve para saber cuánto sale en total antes de ver cuánto está controlado. Toca la tarjeta para ver el desglose por presupuesto.",
+      "en": ""
+    },
+    {
+      "key": "sin_presupuesto",
+      "source": "sin_presupuesto",
+      "es": "sin_presupuesto",
+      "en": ""
+    },
+    {
+      "key": "Sin presupuesto",
+      "source": "Sin presupuesto",
+      "es": "Sin presupuesto",
+      "en": ""
+    },
+    {
+      "key": "Gasto total del periodo menos lo que cae dentro de algún presupuesto activo (por categoría o subcategoría). El porcentaje es esa parte ÷ el gasto total. Sirve para detectar dinero que se va sin control. Toca la tarjeta para ver de qué categorías viene y crear un presupuesto.",
+      "source": "Gasto total del periodo menos lo que cae dentro de algún presupuesto activo (por categoría o subcategoría). El porcentaje es esa parte ÷ el gasto total. Sirve para detectar dinero que se va sin control. Toca la tarjeta para ver de qué categorías viene y crear un presupuesto.",
+      "es": "Gasto total del periodo menos lo que cae dentro de algún presupuesto activo (por categoría o subcategoría). El porcentaje es esa parte ÷ el gasto total. Sirve para detectar dinero que se va sin control. Toca la tarjeta para ver de qué categorías viene y crear un presupuesto.",
+      "en": ""
+    },
+    {
+      "key": "cuentas",
+      "source": "cuentas",
+      "es": "cuentas",
+      "en": ""
+    },
+    {
+      "key": "Cuentas",
+      "source": "Cuentas",
+      "es": "Cuentas",
+      "en": ""
+    },
+    {
+      "key": "Cada tarjeta es una cuenta con su saldo actual. «Entró» y «salió» son la suma de los ingresos y gastos de esa cuenta en el periodo elegido arriba. El total convierte cada saldo a tu moneda principal con el tipo de cambio más reciente (las tarjetas de crédito no se suman a tu dinero disponible).",
+      "source": "Cada tarjeta es una cuenta con su saldo actual. «Entró» y «salió» son la suma de los ingresos y gastos de esa cuenta en el periodo elegido arriba. El total convierte cada saldo a tu moneda principal con el tipo de cambio más reciente (las tarjetas de crédito no se suman a tu dinero disponible).",
+      "es": "Cada tarjeta es una cuenta con su saldo actual. «Entró» y «salió» son la suma de los ingresos y gastos de esa cuenta en el periodo elegido arriba. El total convierte cada saldo a tu moneda principal con el tipo de cambio más reciente (las tarjetas de crédito no se suman a tu dinero disponible).",
+      "en": ""
+    },
+    {
+      "key": "ltimos_movimientos",
+      "source": "ltimos_movimientos",
+      "es": "ltimos_movimientos",
+      "en": ""
+    },
+    {
+      "key": "Últimos movimientos",
+      "source": "Últimos movimientos",
+      "es": "Últimos movimientos",
+      "en": ""
+    },
+    {
+      "key": "Los movimientos con la fecha más reciente de toda tu cuenta (cinco en el teléfono; en la tablet los que quepan junto a tus presupuestos), sin aplicar el periodo de arriba (es la única tarjeta que lo ignora). Sirve para revisar rápido lo último que registraste. Toca uno para verlo o editarlo, o abre la lista completa con sus filtros.",
+      "source": "Los movimientos con la fecha más reciente de toda tu cuenta (cinco en el teléfono; en la tablet los que quepan junto a tus presupuestos), sin aplicar el periodo de arriba (es la única tarjeta que lo ignora). Sirve para revisar rápido lo último que registraste. Toca uno para verlo o editarlo, o abre la lista completa con sus filtros.",
+      "es": "Los movimientos con la fecha más reciente de toda tu cuenta (cinco en el teléfono; en la tablet los que quepan junto a tus presupuestos), sin aplicar el periodo de arriba (es la única tarjeta que lo ignora). Sirve para revisar rápido lo último que registraste. Toca uno para verlo o editarlo, o abre la lista completa con sus filtros.",
+      "en": ""
+    },
+    {
+      "key": "ltimos_movimientos_2",
+      "source": "ltimos_movimientos_2",
+      "es": "ltimos_movimientos_2",
+      "en": ""
+    },
+    {
+      "key": "Los cinco movimientos con la fecha más reciente de toda tu cuenta, sin aplicar el periodo de arriba (es la única tarjeta que lo ignora). Sirve para revisar rápido lo último que registraste. Toca uno para verlo o editarlo, o abre la lista completa con sus filtros.",
+      "source": "Los cinco movimientos con la fecha más reciente de toda tu cuenta, sin aplicar el periodo de arriba (es la única tarjeta que lo ignora). Sirve para revisar rápido lo último que registraste. Toca uno para verlo o editarlo, o abre la lista completa con sus filtros.",
+      "es": "Los cinco movimientos con la fecha más reciente de toda tu cuenta, sin aplicar el periodo de arriba (es la única tarjeta que lo ignora). Sirve para revisar rápido lo último que registraste. Toca uno para verlo o editarlo, o abre la lista completa con sus filtros.",
+      "en": ""
+    },
+    {
+      "key": "banco_y_n_mero",
+      "source": "banco_y_n_mero",
+      "es": "banco_y_n_mero",
+      "en": ""
+    },
+    {
+      "key": "Banco y número",
+      "source": "Banco y número",
+      "es": "Banco y número",
+      "en": ""
+    },
+    {
+      "key": "El banco al que pertenece la cuenta y, si lo quisiste, su número de tarjeta o de cuenta, oculto de forma predeterminada (toca el ojito para verlo). Nunca se guarda el CVV ni el NIP.",
+      "source": "El banco al que pertenece la cuenta y, si lo quisiste, su número de tarjeta o de cuenta, oculto de forma predeterminada (toca el ojito para verlo). Nunca se guarda el CVV ni el NIP.",
+      "es": "El banco al que pertenece la cuenta y, si lo quisiste, su número de tarjeta o de cuenta, oculto de forma predeterminada (toca el ojito para verlo). Nunca se guarda el CVV ni el NIP.",
+      "en": ""
+    },
+    {
+      "key": "movimientos_de_la_cuenta",
+      "source": "movimientos_de_la_cuenta",
+      "es": "movimientos_de_la_cuenta",
+      "en": ""
+    },
+    {
+      "key": "Movimientos de la cuenta",
+      "source": "Movimientos de la cuenta",
+      "es": "Movimientos de la cuenta",
+      "en": ""
+    },
+    {
+      "key": "Lo que entró y salió de esta cuenta en el periodo elegido, y sus movimientos más recientes. Las transferencias entre tus cuentas no cuentan como ingreso ni gasto.",
+      "source": "Lo que entró y salió de esta cuenta en el periodo elegido, y sus movimientos más recientes. Las transferencias entre tus cuentas no cuentan como ingreso ni gasto.",
+      "es": "Lo que entró y salió de esta cuenta en el periodo elegido, y sus movimientos más recientes. Las transferencias entre tus cuentas no cuentan como ingreso ni gasto.",
+      "en": ""
+    },
+    {
+      "key": "total",
+      "source": "total",
+      "es": "total",
+      "en": ""
+    },
+    {
+      "key": "Total",
+      "source": "Total",
+      "es": "Total",
+      "en": ""
+    },
+    {
+      "key": "Suma del saldo de todas tus cuentas, cada una convertida a tu moneda principal con el tipo de cambio más reciente (saldo × tasa). Si una moneda no tiene tipo de cambio, esa cuenta no suma y se avisa. Sirve para saber cuánto dinero tienes en total hoy.",
+      "source": "Suma del saldo de todas tus cuentas, cada una convertida a tu moneda principal con el tipo de cambio más reciente (saldo × tasa). Si una moneda no tiene tipo de cambio, esa cuenta no suma y se avisa. Sirve para saber cuánto dinero tienes en total hoy.",
+      "es": "Suma del saldo de todas tus cuentas, cada una convertida a tu moneda principal con el tipo de cambio más reciente (saldo × tasa). Si una moneda no tiene tipo de cambio, esa cuenta no suma y se avisa. Sirve para saber cuánto dinero tienes en total hoy.",
+      "en": ""
+    },
+    {
+      "key": "vs_el_mes_anterior",
+      "source": "vs_el_mes_anterior",
+      "es": "vs_el_mes_anterior",
+      "en": ""
+    },
+    {
+      "key": "VS el mes anterior",
+      "source": "VS el mes anterior",
+      "es": "VS el mes anterior",
+      "en": ""
+    },
+    {
+      "key": "Compara el mes elegido con el mes inmediato anterior. «Cambio» es (actual − anterior) ÷ anterior. La flecha ▲ sube, ▼ baja y ▬ indica que casi no cambió (menos de 0.5%). Verde es una buena noticia (más ingresos, menos gastos, más balance o ahorro), rojo es una mala y naranja es sin cambio. El ahorro es la parte de tus ingresos que conservas: (ingresos − gastos) ÷ ingresos.",
+      "source": "Compara el mes elegido con el mes inmediato anterior. «Cambio» es (actual − anterior) ÷ anterior. La flecha ▲ sube, ▼ baja y ▬ indica que casi no cambió (menos de 0.5%). Verde es una buena noticia (más ingresos, menos gastos, más balance o ahorro), rojo es una mala y naranja es sin cambio. El ahorro es la parte de tus ingresos que conservas: (ingresos − gastos) ÷ ingresos.",
+      "es": "Compara el mes elegido con el mes inmediato anterior. «Cambio» es (actual − anterior) ÷ anterior. La flecha ▲ sube, ▼ baja y ▬ indica que casi no cambió (menos de 0.5%). Verde es una buena noticia (más ingresos, menos gastos, más balance o ahorro), rojo es una mala y naranja es sin cambio. El ahorro es la parte de tus ingresos que conservas: (ingresos − gastos) ÷ ingresos.",
+      "en": ""
+    },
+    {
+      "key": "promedio_mensual",
+      "source": "promedio_mensual",
+      "es": "promedio_mensual",
+      "en": ""
+    },
+    {
+      "key": "Promedio mensual",
+      "source": "Promedio mensual",
+      "es": "Promedio mensual",
+      "en": ""
+    },
+    {
+      "key": "tendencia",
+      "source": "tendencia",
+      "es": "tendencia",
+      "en": ""
+    },
+    {
+      "key": "Tendencia",
+      "source": "Tendencia",
+      "es": "Tendencia",
+      "en": ""
+    },
+    {
+      "key": "Ingresos (verde) y gastos (rojo) de cada uno de los últimos seis meses, terminando en el mes elegido. Toca un mes para ver su tabla: ingresos, gastos y balance contra el mes anterior, con flechas que dicen si subieron o bajaron.",
+      "source": "Ingresos (verde) y gastos (rojo) de cada uno de los últimos seis meses, terminando en el mes elegido. Toca un mes para ver su tabla: ingresos, gastos y balance contra el mes anterior, con flechas que dicen si subieron o bajaron.",
+      "es": "Ingresos (verde) y gastos (rojo) de cada uno de los últimos seis meses, terminando en el mes elegido. Toca un mes para ver su tabla: ingresos, gastos y balance contra el mes anterior, con flechas que dicen si subieron o bajaron.",
+      "en": ""
+    },
+    {
+      "key": "vs_el_mes_anterior_2",
+      "source": "vs_el_mes_anterior_2",
+      "es": "vs_el_mes_anterior_2",
+      "en": ""
+    },
+    {
+      "key": "tendencia_2",
+      "source": "tendencia_2",
+      "es": "tendencia_2",
+      "en": ""
+    },
+    {
+      "key": "promedio_mensual_2",
+      "source": "promedio_mensual_2",
+      "es": "promedio_mensual_2",
+      "en": ""
+    },
+    {
+      "key": "analyzer",
+      "source": "analyzer",
+      "es": "analyzer",
+      "en": ""
+    },
+    {
+      "key": "Las categorías y los movimientos con más gasto del mes elegido, con el cambio contra el mes anterior. Toca una categoría para ver todos sus movimientos, o un movimiento para abrirlo directamente.",
+      "source": "Las categorías y los movimientos con más gasto del mes elegido, con el cambio contra el mes anterior. Toca una categoría para ver todos sus movimientos, o un movimiento para abrirlo directamente.",
+      "es": "Las categorías y los movimientos con más gasto del mes elegido, con el cambio contra el mes anterior. Toca una categoría para ver todos sus movimientos, o un movimiento para abrirlo directamente.",
+      "en": ""
+    },
+    {
+      "key": "pagos_recurrentes",
+      "source": "pagos_recurrentes",
+      "es": "pagos_recurrentes",
+      "en": ""
+    },
+    {
+      "key": "Pagos recurrentes",
+      "source": "Pagos recurrentes",
+      "es": "Pagos recurrentes",
+      "en": ""
+    },
+    {
+      "key": "Gastos con el mismo nombre que se repiten en al menos 2 de los últimos 3 meses con un monto que varía menos de 15%. Toca la tarjeta para ver todos, con su cuenta, categoría y cargos; toca un cargo para abrir el movimiento. Se marca «nuevo» si no existía antes y «posible duplicado» si hay dos cargos con menos de 48 horas de diferencia en el mes.",
+      "source": "Gastos con el mismo nombre que se repiten en al menos 2 de los últimos 3 meses con un monto que varía menos de 15%. Toca la tarjeta para ver todos, con su cuenta, categoría y cargos; toca un cargo para abrir el movimiento. Se marca «nuevo» si no existía antes y «posible duplicado» si hay dos cargos con menos de 48 horas de diferencia en el mes.",
+      "es": "Gastos con el mismo nombre que se repiten en al menos 2 de los últimos 3 meses con un monto que varía menos de 15%. Toca la tarjeta para ver todos, con su cuenta, categoría y cargos; toca un cargo para abrir el movimiento. Se marca «nuevo» si no existía antes y «posible duplicado» si hay dos cargos con menos de 48 horas de diferencia en el mes.",
+      "en": ""
+    },
+    {
+      "key": "ritmo_de_gasto",
+      "source": "ritmo_de_gasto",
+      "es": "ritmo_de_gasto",
+      "en": ""
+    },
+    {
+      "key": "Ritmo de gasto",
+      "source": "Ritmo de gasto",
+      "es": "Ritmo de gasto",
+      "en": ""
+    },
+    {
+      "key": "Se suma lo gastado desde el día 1 hasta hoy y se compara con el promedio de lo que llevabas gastado, al mismo día del mes, en los 6 meses anteriores. El porcentaje es (lo de este mes − lo normal) ÷ lo normal: rojo si vas gastando más rápido, verde si más lento. Sirve para corregir a tiempo, antes de que termine el mes. Abre Ver más para revisar cada mes.",
+      "source": "Se suma lo gastado desde el día 1 hasta hoy y se compara con el promedio de lo que llevabas gastado, al mismo día del mes, en los 6 meses anteriores. El porcentaje es (lo de este mes − lo normal) ÷ lo normal: rojo si vas gastando más rápido, verde si más lento. Sirve para corregir a tiempo, antes de que termine el mes. Abre Ver más para revisar cada mes.",
+      "es": "Se suma lo gastado desde el día 1 hasta hoy y se compara con el promedio de lo que llevabas gastado, al mismo día del mes, en los 6 meses anteriores. El porcentaje es (lo de este mes − lo normal) ÷ lo normal: rojo si vas gastando más rápido, verde si más lento. Sirve para corregir a tiempo, antes de que termine el mes. Abre Ver más para revisar cada mes.",
+      "en": ""
+    },
+    {
+      "key": "ritmo_de_gasto_2",
+      "source": "ritmo_de_gasto_2",
+      "es": "ritmo_de_gasto_2",
+      "en": ""
+    },
+    {
+      "key": "periodo",
+      "source": "periodo",
+      "es": "periodo",
+      "en": ""
+    },
+    {
+      "key": "Elige qué tramo de tiempo analizar; todas las tarjetas de abajo que dicen «Igual que arriba» lo siguen. Al comparar con otro periodo (el mismo tramo del año anterior, el periodo inmediato anterior de la misma duración o uno que elijas) cada cifra muestra cuánto cambió. Por defecto se analizan los últimos 3 meses.",
+      "source": "Elige qué tramo de tiempo analizar; todas las tarjetas de abajo que dicen «Igual que arriba» lo siguen. Al comparar con otro periodo (el mismo tramo del año anterior, el periodo inmediato anterior de la misma duración o uno que elijas) cada cifra muestra cuánto cambió. Por defecto se analizan los últimos 3 meses.",
+      "es": "Elige qué tramo de tiempo analizar; todas las tarjetas de abajo que dicen «Igual que arriba» lo siguen. Al comparar con otro periodo (el mismo tramo del año anterior, el periodo inmediato anterior de la misma duración o uno que elijas) cada cifra muestra cuánto cambió. Por defecto se analizan los últimos 3 meses.",
+      "en": ""
+    },
+    {
+      "key": "resumen",
+      "source": "resumen",
+      "es": "resumen",
+      "en": ""
+    },
+    {
+      "key": "Ingresos = suma de lo que entró en el periodo; gastos = suma de lo que salió; balance = ingresos − gastos. Las transferencias entre tus cuentas no cuentan. Con una comparación activa, la columna derecha es el otro periodo y el porcentaje es (periodo − comparado) ÷ comparado; en gastos, que suba es malo (rojo) y que baje es bueno (verde).",
+      "source": "Ingresos = suma de lo que entró en el periodo; gastos = suma de lo que salió; balance = ingresos − gastos. Las transferencias entre tus cuentas no cuentan. Con una comparación activa, la columna derecha es el otro periodo y el porcentaje es (periodo − comparado) ÷ comparado; en gastos, que suba es malo (rojo) y que baje es bueno (verde).",
+      "es": "Ingresos = suma de lo que entró en el periodo; gastos = suma de lo que salió; balance = ingresos − gastos. Las transferencias entre tus cuentas no cuentan. Con una comparación activa, la columna derecha es el otro periodo y el porcentaje es (periodo − comparado) ÷ comparado; en gastos, que suba es malo (rojo) y que baje es bueno (verde).",
+      "en": ""
+    },
+    {
+      "key": "datos_del_periodo",
+      "source": "datos_del_periodo",
+      "es": "datos_del_periodo",
+      "en": ""
+    },
+    {
+      "key": "Lecturas rápidas del mismo periodo: cuántos movimientos tuvo, qué parte de tus ingresos conservaste ((ingresos − gastos) ÷ ingresos), cuánto gastaste en promedio por mes, qué categoría pesó más y cuál fue tu gasto más grande. Se calculan con los mismos movimientos que el resumen.",
+      "source": "Lecturas rápidas del mismo periodo: cuántos movimientos tuvo, qué parte de tus ingresos conservaste ((ingresos − gastos) ÷ ingresos), cuánto gastaste en promedio por mes, qué categoría pesó más y cuál fue tu gasto más grande. Se calculan con los mismos movimientos que el resumen.",
+      "es": "Lecturas rápidas del mismo periodo: cuántos movimientos tuvo, qué parte de tus ingresos conservaste ((ingresos − gastos) ÷ ingresos), cuánto gastaste en promedio por mes, qué categoría pesó más y cuál fue tu gasto más grande. Se calculan con los mismos movimientos que el resumen.",
+      "en": ""
+    },
+    {
+      "key": "resumen_2",
+      "source": "resumen_2",
+      "es": "resumen_2",
+      "en": ""
+    },
+    {
+      "key": "gastos_por_categor_a",
+      "source": "gastos_por_categor_a",
+      "es": "gastos_por_categor_a",
+      "en": ""
+    },
+    {
+      "key": "Gastos por categoría",
+      "source": "Gastos por categoría",
+      "es": "Gastos por categoría",
+      "en": ""
+    },
+    {
+      "key": "Suma de los gastos de cada categoría en el periodo, de mayor a menor; la barra es la categoría ÷ la mayor de la lista. Filtro: tiene su propio periodo (por defecto «Igual que arriba», con su comparación si la activaste), pero puedes elegir otro sin cambiar el resto de la pantalla. Sirve para ver en qué se fue tu dinero. Toca una categoría para ver sus movimientos.",
+      "source": "Suma de los gastos de cada categoría en el periodo, de mayor a menor; la barra es la categoría ÷ la mayor de la lista. Filtro: tiene su propio periodo (por defecto «Igual que arriba», con su comparación si la activaste), pero puedes elegir otro sin cambiar el resto de la pantalla. Sirve para ver en qué se fue tu dinero. Toca una categoría para ver sus movimientos.",
+      "es": "Suma de los gastos de cada categoría en el periodo, de mayor a menor; la barra es la categoría ÷ la mayor de la lista. Filtro: tiene su propio periodo (por defecto «Igual que arriba», con su comparación si la activaste), pero puedes elegir otro sin cambiar el resto de la pantalla. Sirve para ver en qué se fue tu dinero. Toca una categoría para ver sus movimientos.",
+      "en": ""
+    },
+    {
+      "key": "ingresos_por_categor_a",
+      "source": "ingresos_por_categor_a",
+      "es": "ingresos_por_categor_a",
+      "en": ""
+    },
+    {
+      "key": "Ingresos por categoría",
+      "source": "Ingresos por categoría",
+      "es": "Ingresos por categoría",
+      "en": ""
+    },
+    {
+      "key": "Suma de los ingresos de cada categoría en el periodo, de mayor a menor; la barra es la categoría ÷ la mayor de la lista. Filtro: tiene su propio periodo, igual que los gastos. Sirve para ver de dónde viene tu dinero. Toca una categoría para ver sus movimientos.",
+      "source": "Suma de los ingresos de cada categoría en el periodo, de mayor a menor; la barra es la categoría ÷ la mayor de la lista. Filtro: tiene su propio periodo, igual que los gastos. Sirve para ver de dónde viene tu dinero. Toca una categoría para ver sus movimientos.",
+      "es": "Suma de los ingresos de cada categoría en el periodo, de mayor a menor; la barra es la categoría ÷ la mayor de la lista. Filtro: tiene su propio periodo, igual que los gastos. Sirve para ver de dónde viene tu dinero. Toca una categoría para ver sus movimientos.",
+      "en": ""
+    },
+    {
+      "key": "gastos_por_categor_a_2",
+      "source": "gastos_por_categor_a_2",
+      "es": "gastos_por_categor_a_2",
+      "en": ""
+    },
+    {
+      "key": "ingresos_por_categor_a_2",
+      "source": "ingresos_por_categor_a_2",
+      "es": "ingresos_por_categor_a_2",
+      "en": ""
+    },
+    {
+      "key": "mes_a_mes",
+      "source": "mes_a_mes",
+      "es": "mes_a_mes",
+      "en": ""
+    },
+    {
+      "key": "Cada mes del año en una tarjeta. Ingresos: lo que entra. Gastos: lo que sale. Neto: ingresos menos gastos (verde si sobra, rojo si falta). Saldo: el dinero que tendrías al cierre del mes en tu moneda principal. «Real» es un mes que ya ocurrió, con tus movimientos; «Estimado» se proyecta con tus fuentes de ingreso, presupuestos y referencias históricas; «Este mes» arranca como estimado y se llena con lo real. Con ≈, el saldo es una estimación hecha hacia atrás cuando no guardaste el saldo real. Todas las cifras están en tu moneda principal. Toca un mes para ver sus movimientos, comparar lo real contra lo presupuestado, guardar el saldo real y ajustar los topes inesperados.",
+      "source": "Cada mes del año en una tarjeta. Ingresos: lo que entra. Gastos: lo que sale. Neto: ingresos menos gastos (verde si sobra, rojo si falta). Saldo: el dinero que tendrías al cierre del mes en tu moneda principal. «Real» es un mes que ya ocurrió, con tus movimientos; «Estimado» se proyecta con tus fuentes de ingreso, presupuestos y referencias históricas; «Este mes» arranca como estimado y se llena con lo real. Con ≈, el saldo es una estimación hecha hacia atrás cuando no guardaste el saldo real. Todas las cifras están en tu moneda principal. Toca un mes para ver sus movimientos, comparar lo real contra lo presupuestado, guardar el saldo real y ajustar los topes inesperados.",
+      "es": "Cada mes del año en una tarjeta. Ingresos: lo que entra. Gastos: lo que sale. Neto: ingresos menos gastos (verde si sobra, rojo si falta). Saldo: el dinero que tendrías al cierre del mes en tu moneda principal. «Real» es un mes que ya ocurrió, con tus movimientos; «Estimado» se proyecta con tus fuentes de ingreso, presupuestos y referencias históricas; «Este mes» arranca como estimado y se llena con lo real. Con ≈, el saldo es una estimación hecha hacia atrás cuando no guardaste el saldo real. Todas las cifras están en tu moneda principal. Toca un mes para ver sus movimientos, comparar lo real contra lo presupuestado, guardar el saldo real y ajustar los topes inesperados.",
+      "en": ""
+    },
+    {
+      "key": "plantilla",
+      "source": "plantilla",
+      "es": "plantilla",
+      "en": ""
+    },
+    {
+      "key": "Plantilla",
+      "source": "Plantilla",
+      "es": "Plantilla",
+      "en": ""
+    },
+    {
+      "key": "Es el mismo formato que usa la web. Llénala con fecha, concepto, monto, moneda y tipo; las categorías, etiquetas y cuentas se enlazan con las que ya tienes.",
+      "source": "Es el mismo formato que usa la web. Llénala con fecha, concepto, monto, moneda y tipo; las categorías, etiquetas y cuentas se enlazan con las que ya tienes.",
+      "es": "Es el mismo formato que usa la web. Llénala con fecha, concepto, monto, moneda y tipo; las categorías, etiquetas y cuentas se enlazan con las que ya tienes.",
+      "en": ""
+    },
+    {
+      "key": "seleccionar_movimientos",
+      "source": "seleccionar_movimientos",
+      "es": "seleccionar_movimientos",
+      "en": ""
+    },
+    {
+      "key": "Seleccionar movimientos",
+      "source": "Seleccionar movimientos",
+      "es": "Seleccionar movimientos",
+      "en": ""
+    },
+    {
+      "key": "Marca los movimientos que quieras cambiar. Con los botones cambias un solo campo de todos a la vez (nombre, fecha, tipo, categoría o cuenta), o usas la edición general para llenar varios campos juntos. Lo que no llenes se queda como estaba en cada movimiento. «Borrar» quita todos los seleccionados. Mantener presionado un movimiento también lo selecciona.",
+      "source": "Marca los movimientos que quieras cambiar. Con los botones cambias un solo campo de todos a la vez (nombre, fecha, tipo, categoría o cuenta), o usas la edición general para llenar varios campos juntos. Lo que no llenes se queda como estaba en cada movimiento. «Borrar» quita todos los seleccionados. Mantener presionado un movimiento también lo selecciona.",
+      "es": "Marca los movimientos que quieras cambiar. Con los botones cambias un solo campo de todos a la vez (nombre, fecha, tipo, categoría o cuenta), o usas la edición general para llenar varios campos juntos. Lo que no llenes se queda como estaba en cada movimiento. «Borrar» quita todos los seleccionados. Mantener presionado un movimiento también lo selecciona.",
+      "en": ""
+    },
+    {
+      "key": "notificaciones",
+      "source": "notificaciones",
+      "es": "notificaciones",
+      "en": ""
+    },
+    {
+      "key": "Notificaciones",
+      "source": "Notificaciones",
+      "es": "Notificaciones",
+      "en": ""
+    },
+    {
+      "key": "Te avisamos cuando un presupuesto llega al 70, 80, 90 o 100 % de su límite, cuando un ahorro avanza, y cuando vas bien a mitad del periodo. Cada aviso aparece una vez por presupuesto y periodo. Desliza un aviso a la izquierda o a la derecha para quitarlo de la lista.",
+      "source": "Te avisamos cuando un presupuesto llega al 70, 80, 90 o 100 % de su límite, cuando un ahorro avanza, y cuando vas bien a mitad del periodo. Cada aviso aparece una vez por presupuesto y periodo. Desliza un aviso a la izquierda o a la derecha para quitarlo de la lista.",
+      "es": "Te avisamos cuando un presupuesto llega al 70, 80, 90 o 100 % de su límite, cuando un ahorro avanza, y cuando vas bien a mitad del periodo. Cada aviso aparece una vez por presupuesto y periodo. Desliza un aviso a la izquierda o a la derecha para quitarlo de la lista.",
+      "en": ""
+    },
+    {
+      "key": "c_mo_leer_esto",
+      "source": "c_mo_leer_esto",
+      "es": "c_mo_leer_esto",
+      "en": ""
+    },
+    {
+      "key": "Cómo leer esto",
+      "source": "Cómo leer esto",
+      "es": "Cómo leer esto",
+      "en": ""
+    },
+    {
+      "key": "Cada renglón es un mes (o una fecha) que sirvió para calcular la señal. ✓ significa que se cumplió el límite o la meta; ✗, que no. Los montos están en tu moneda principal.",
+      "source": "Cada renglón es un mes (o una fecha) que sirvió para calcular la señal. ✓ significa que se cumplió el límite o la meta; ✗, que no. Los montos están en tu moneda principal.",
+      "es": "Cada renglón es un mes (o una fecha) que sirvió para calcular la señal. ✓ significa que se cumplió el límite o la meta; ✗, que no. Los montos están en tu moneda principal.",
+      "en": ""
+    },
+    {
+      "key": "cumplimiento_del_presupuesto",
+      "source": "cumplimiento_del_presupuesto",
+      "es": "cumplimiento_del_presupuesto",
+      "en": ""
+    },
+    {
+      "key": "Cumplimiento del presupuesto",
+      "source": "Cumplimiento del presupuesto",
+      "es": "Cumplimiento del presupuesto",
+      "en": ""
+    },
+    {
+      "key": "Cada mes se compara lo gastado en la categoría con el límite del presupuesto. ✓ si no lo superaste, ✗ si sí. La racha cuenta los meses seguidos, hasta el actual, dentro del límite. Si el presupuesto es nuevo, los meses anteriores usan su meta más antigua como estimado.",
+      "source": "Cada mes se compara lo gastado en la categoría con el límite del presupuesto. ✓ si no lo superaste, ✗ si sí. La racha cuenta los meses seguidos, hasta el actual, dentro del límite. Si el presupuesto es nuevo, los meses anteriores usan su meta más antigua como estimado.",
+      "es": "Cada mes se compara lo gastado en la categoría con el límite del presupuesto. ✓ si no lo superaste, ✗ si sí. La racha cuenta los meses seguidos, hasta el actual, dentro del límite. Si el presupuesto es nuevo, los meses anteriores usan su meta más antigua como estimado.",
+      "en": ""
+    },
+    {
+      "key": "l_deres_por_mes",
+      "source": "l_deres_por_mes",
+      "es": "l_deres_por_mes",
+      "en": ""
+    },
+    {
+      "key": "Líderes por mes",
+      "source": "Líderes por mes",
+      "es": "Líderes por mes",
+      "en": ""
+    },
+    {
+      "key": "Para cada uno de los últimos doce meses se busca el movimiento, la categoría o la subcategoría con más gasto. La lista va de mayor a menor para que se vea cuál ganó en el año. En categorías, el % es su parte del gasto de los doce meses.",
+      "source": "Para cada uno de los últimos doce meses se busca el movimiento, la categoría o la subcategoría con más gasto. La lista va de mayor a menor para que se vea cuál ganó en el año. En categorías, el % es su parte del gasto de los doce meses.",
+      "es": "Para cada uno de los últimos doce meses se busca el movimiento, la categoría o la subcategoría con más gasto. La lista va de mayor a menor para que se vea cuál ganó en el año. En categorías, el % es su parte del gasto de los doce meses.",
+      "en": ""
+    },
+    {
+      "key": "de_d_nde_sale_este_an_lisis",
+      "source": "de_d_nde_sale_este_an_lisis",
+      "es": "de_d_nde_sale_este_an_lisis",
+      "en": ""
+    },
+    {
+      "key": "De dónde sale este análisis",
+      "source": "De dónde sale este análisis",
+      "es": "De dónde sale este análisis",
+      "en": ""
+    },
+    {
+      "key": "No usa inteligencia artificial: cada frase es la lectura directa de un cálculo sobre tus últimos doce meses (si la transacción más grande está en la categoría líder, qué parte del gasto es la categoría, qué tan aislado fue el gasto y qué etiqueta se repite).",
+      "source": "No usa inteligencia artificial: cada frase es la lectura directa de un cálculo sobre tus últimos doce meses (si la transacción más grande está en la categoría líder, qué parte del gasto es la categoría, qué tan aislado fue el gasto y qué etiqueta se repite).",
+      "es": "No usa inteligencia artificial: cada frase es la lectura directa de un cálculo sobre tus últimos doce meses (si la transacción más grande está en la categoría líder, qué parte del gasto es la categoría, qué tan aislado fue el gasto y qué etiqueta se repite).",
+      "en": ""
+    },
+    {
+      "key": "c_mo_se_calcula",
+      "source": "c_mo_se_calcula",
+      "es": "c_mo_se_calcula",
+      "en": ""
+    },
+    {
+      "key": "Se suma el gasto de cada día de la semana (todos los lunes, todos los martes…) durante el mes y se divide entre cuántas veces cayó ese día; un mes tiene 4 o 5 de cada uno, así que dividir hace justa la comparación.",
+      "source": "Se suma el gasto de cada día de la semana (todos los lunes, todos los martes…) durante el mes y se divide entre cuántas veces cayó ese día; un mes tiene 4 o 5 de cada uno, así que dividir hace justa la comparación.",
+      "es": "Se suma el gasto de cada día de la semana (todos los lunes, todos los martes…) durante el mes y se divide entre cuántas veces cayó ese día; un mes tiene 4 o 5 de cada uno, así que dividir hace justa la comparación.",
+      "en": ""
+    },
+    {
+      "key": "lo_m_s_destacado",
+      "source": "lo_m_s_destacado",
+      "es": "lo_m_s_destacado",
+      "en": ""
+    },
+    {
+      "key": "Lo más destacado",
+      "source": "Lo más destacado",
+      "es": "Lo más destacado",
+      "en": ""
+    },
+    {
+      "key": "Señales calculadas con tus movimientos del mes: límites superados, categorías fuera de lo habitual (contra el promedio de los 6 meses anteriores, sin contar el actual, y con al menos 3 meses de historial), suscripciones detectadas, rachas y ritmo de gasto. Toca una para ver los meses y el cálculo detrás. No son movimientos adicionales.",
+      "source": "Señales calculadas con tus movimientos del mes: límites superados, categorías fuera de lo habitual (contra el promedio de los 6 meses anteriores, sin contar el actual, y con al menos 3 meses de historial), suscripciones detectadas, rachas y ritmo de gasto. Toca una para ver los meses y el cálculo detrás. No son movimientos adicionales.",
+      "es": "Señales calculadas con tus movimientos del mes: límites superados, categorías fuera de lo habitual (contra el promedio de los 6 meses anteriores, sin contar el actual, y con al menos 3 meses de historial), suscripciones detectadas, rachas y ritmo de gasto. Toca una para ver los meses y el cálculo detrás. No son movimientos adicionales.",
+      "en": ""
+    },
+    {
+      "key": "proyecci_n_del_mes",
+      "source": "proyecci_n_del_mes",
+      "es": "proyecci_n_del_mes",
+      "en": ""
+    },
+    {
+      "key": "Proyección del mes",
+      "source": "Proyección del mes",
+      "es": "Proyección del mes",
+      "en": ""
+    },
+    {
+      "key": "Contrasta lo previsto con lo real del mes elegido. Previsto = tus fuentes de ingreso (ingresos) y tus presupuestos activos más los topes que hayas puesto (gastos); Real = la suma de tus movimientos del mes. Para un mes cerrado solo aparece la comparación si había referencias o ajustes registrados; en el mes en curso muestra el avance contra lo previsto. Sirve para ver si tu plan se está cumpliendo.",
+      "source": "Contrasta lo previsto con lo real del mes elegido. Previsto = tus fuentes de ingreso (ingresos) y tus presupuestos activos más los topes que hayas puesto (gastos); Real = la suma de tus movimientos del mes. Para un mes cerrado solo aparece la comparación si había referencias o ajustes registrados; en el mes en curso muestra el avance contra lo previsto. Sirve para ver si tu plan se está cumpliendo.",
+      "es": "Contrasta lo previsto con lo real del mes elegido. Previsto = tus fuentes de ingreso (ingresos) y tus presupuestos activos más los topes que hayas puesto (gastos); Real = la suma de tus movimientos del mes. Para un mes cerrado solo aparece la comparación si había referencias o ajustes registrados; en el mes en curso muestra el avance contra lo previsto. Sirve para ver si tu plan se está cumpliendo.",
+      "en": ""
+    },
+    {
+      "key": "presupuestos_del_analizador",
+      "source": "presupuestos_del_analizador",
+      "es": "presupuestos_del_analizador",
+      "en": ""
+    },
+    {
+      "key": "Presupuestos del analizador",
+      "source": "Presupuestos del analizador",
+      "es": "Presupuestos del analizador",
+      "en": ""
+    },
+    {
+      "key": "Compara el gasto de cada presupuesto con su límite en el periodo, de los más llenos o excedidos a los menos llenos, y muestra cuántos meses seguidos se cumplió (la racha). Toca uno para ver sus últimos 12 meses: lo gastado, el límite de cada mes y si se cumplió.",
+      "source": "Compara el gasto de cada presupuesto con su límite en el periodo, de los más llenos o excedidos a los menos llenos, y muestra cuántos meses seguidos se cumplió (la racha). Toca uno para ver sus últimos 12 meses: lo gastado, el límite de cada mes y si se cumplió.",
+      "es": "Compara el gasto de cada presupuesto con su límite en el periodo, de los más llenos o excedidos a los menos llenos, y muestra cuántos meses seguidos se cumplió (la racha). Toca uno para ver sus últimos 12 meses: lo gastado, el límite de cada mes y si se cumplió.",
+      "en": ""
+    },
+    {
+      "key": "grandes_gastos",
+      "source": "grandes_gastos",
+      "es": "grandes_gastos",
+      "en": ""
+    },
+    {
+      "key": "Muestra la transacción, la categoría y la subcategoría con más gasto en los últimos doce meses. Toca cada una para ver quién lideró cada mes, o abre «Ver mes por mes» para el resumen completo y «Ver análisis» para una lectura en palabras.",
+      "source": "Muestra la transacción, la categoría y la subcategoría con más gasto en los últimos doce meses. Toca cada una para ver quién lideró cada mes, o abre «Ver mes por mes» para el resumen completo y «Ver análisis» para una lectura en palabras.",
+      "es": "Muestra la transacción, la categoría y la subcategoría con más gasto en los últimos doce meses. Toca cada una para ver quién lideró cada mes, o abre «Ver mes por mes» para el resumen completo y «Ver análisis» para una lectura en palabras.",
+      "en": ""
+    },
+    {
+      "key": "exposici_n_multimoneda",
+      "source": "exposici_n_multimoneda",
+      "es": "exposici_n_multimoneda",
+      "en": ""
+    },
+    {
+      "key": "Exposición multimoneda",
+      "source": "Exposición multimoneda",
+      "es": "Exposición multimoneda",
+      "en": ""
+    },
+    {
+      "key": "Tus saldos en monedas distintas a la principal, convertidos con el tipo de cambio actual (saldo nativo × tasa). El porcentaje compara ese valor con el que tendría el MISMO saldo nativo al cierre del mes anterior; mide cuánto te ayudó o perjudicó el tipo de cambio, no es rendimiento de la cuenta. Sirve para saber qué tan expuesto estás a variaciones de otras monedas.",
+      "source": "Tus saldos en monedas distintas a la principal, convertidos con el tipo de cambio actual (saldo nativo × tasa). El porcentaje compara ese valor con el que tendría el MISMO saldo nativo al cierre del mes anterior; mide cuánto te ayudó o perjudicó el tipo de cambio, no es rendimiento de la cuenta. Sirve para saber qué tan expuesto estás a variaciones de otras monedas.",
+      "es": "Tus saldos en monedas distintas a la principal, convertidos con el tipo de cambio actual (saldo nativo × tasa). El porcentaje compara ese valor con el que tendría el MISMO saldo nativo al cierre del mes anterior; mide cuánto te ayudó o perjudicó el tipo de cambio, no es rendimiento de la cuenta. Sirve para saber qué tan expuesto estás a variaciones de otras monedas.",
+      "en": ""
+    },
+    {
+      "key": "patr_n_semanal",
+      "source": "patr_n_semanal",
+      "es": "patr_n_semanal",
+      "en": ""
+    },
+    {
+      "key": "Patrón semanal",
+      "source": "Patrón semanal",
+      "es": "Patrón semanal",
+      "en": ""
+    },
+    {
+      "key": "Se suma el gasto de cada día de la semana en el mes elegido y se divide entre cuántas veces cayó ese día (un mes tiene 4 o 5 de cada uno), para que la comparación sea justa. «Ver detalle» muestra la semana con más gasto y cada día.",
+      "source": "Se suma el gasto de cada día de la semana en el mes elegido y se divide entre cuántas veces cayó ese día (un mes tiene 4 o 5 de cada uno), para que la comparación sea justa. «Ver detalle» muestra la semana con más gasto y cada día.",
+      "es": "Se suma el gasto de cada día de la semana en el mes elegido y se divide entre cuántas veces cayó ese día (un mes tiene 4 o 5 de cada uno), para que la comparación sea justa. «Ver detalle» muestra la semana con más gasto y cada día.",
+      "en": ""
+    },
+    {
+      "key": "detalle_de_la_categor_a",
+      "source": "detalle_de_la_categor_a",
+      "es": "detalle_de_la_categor_a",
+      "en": ""
+    },
+    {
+      "key": "Detalle de la categoría",
+      "source": "Detalle de la categoría",
+      "es": "Detalle de la categoría",
+      "en": ""
+    },
+    {
+      "key": "Total de la categoría = la suma de todos sus movimientos en el periodo. Abajo, cada subcategoría con su total, ordenadas de mayor a menor gasto, y dentro de cada una sus movimientos, también de mayor a menor. Con el interruptor puedes invertir el orden (de menor a mayor). Toca un movimiento para abrirlo.",
+      "source": "Total de la categoría = la suma de todos sus movimientos en el periodo. Abajo, cada subcategoría con su total, ordenadas de mayor a menor gasto, y dentro de cada una sus movimientos, también de mayor a menor. Con el interruptor puedes invertir el orden (de menor a mayor). Toca un movimiento para abrirlo.",
+      "es": "Total de la categoría = la suma de todos sus movimientos en el periodo. Abajo, cada subcategoría con su total, ordenadas de mayor a menor gasto, y dentro de cada una sus movimientos, también de mayor a menor. Con el interruptor puedes invertir el orden (de menor a mayor). Toca un movimiento para abrirlo.",
+      "en": ""
+    },
+    {
+      "key": "presupuestos_del_periodo",
+      "source": "presupuestos_del_periodo",
+      "es": "presupuestos_del_periodo",
+      "en": ""
+    },
+    {
+      "key": "Para cada presupuesto se cuenta, mes por mes del periodo, cuántos meses lo gastado no superó la meta (por ejemplo 4 de 6) y se compara el gasto total contra la meta total del periodo. Si activas la comparación arriba, verás también los resultados del otro periodo. Toca una fila para revisar cada mes; ≈ indica una meta estimada (el presupuesto es más nuevo que ese mes).",
+      "source": "Para cada presupuesto se cuenta, mes por mes del periodo, cuántos meses lo gastado no superó la meta (por ejemplo 4 de 6) y se compara el gasto total contra la meta total del periodo. Si activas la comparación arriba, verás también los resultados del otro periodo. Toca una fila para revisar cada mes; ≈ indica una meta estimada (el presupuesto es más nuevo que ese mes).",
+      "es": "Para cada presupuesto se cuenta, mes por mes del periodo, cuántos meses lo gastado no superó la meta (por ejemplo 4 de 6) y se compara el gasto total contra la meta total del periodo. Si activas la comparación arriba, verás también los resultados del otro periodo. Toca una fila para revisar cada mes; ≈ indica una meta estimada (el presupuesto es más nuevo que ese mes).",
+      "en": ""
+    },
+    {
+      "key": "grandes_gastos_2",
+      "source": "grandes_gastos_2",
+      "es": "grandes_gastos_2",
+      "en": ""
+    },
+    {
+      "key": "La mayor transacción, categoría y subcategoría del año móvil que termina en el periodo elegido. Toca cada una para ver quién lideró cada mes (con su mes), «Ver líderes mes por mes» para el resumen y «Ver análisis» para una lectura en palabras.",
+      "source": "La mayor transacción, categoría y subcategoría del año móvil que termina en el periodo elegido. Toca cada una para ver quién lideró cada mes (con su mes), «Ver líderes mes por mes» para el resumen y «Ver análisis» para una lectura en palabras.",
+      "es": "La mayor transacción, categoría y subcategoría del año móvil que termina en el periodo elegido. Toca cada una para ver quién lideró cada mes (con su mes), «Ver líderes mes por mes» para el resumen y «Ver análisis» para una lectura en palabras.",
+      "en": ""
+    },
+    {
+      "key": "suscripciones_recurrentes",
+      "source": "suscripciones_recurrentes",
+      "es": "suscripciones_recurrentes",
+      "en": ""
+    },
+    {
+      "key": "Se detectan gastos con el mismo nombre que aparecen en al menos 2 de los últimos 3 meses con un monto que varía menos de 15%. El monto mostrado es el cargo más reciente. Toca uno para revisar sus fechas e importes (y abrir cada movimiento); se marca «nuevo» si antes no existía y «posible duplicado» si hay dos cargos con menos de 48 horas de diferencia en el mes.",
+      "source": "Se detectan gastos con el mismo nombre que aparecen en al menos 2 de los últimos 3 meses con un monto que varía menos de 15%. El monto mostrado es el cargo más reciente. Toca uno para revisar sus fechas e importes (y abrir cada movimiento); se marca «nuevo» si antes no existía y «posible duplicado» si hay dos cargos con menos de 48 horas de diferencia en el mes.",
+      "es": "Se detectan gastos con el mismo nombre que aparecen en al menos 2 de los últimos 3 meses con un monto que varía menos de 15%. El monto mostrado es el cargo más reciente. Toca uno para revisar sus fechas e importes (y abrir cada movimiento); se marca «nuevo» si antes no existía y «posible duplicado» si hay dos cargos con menos de 48 horas de diferencia en el mes.",
+      "en": ""
+    },
+    {
+      "key": "mes_a_mes_2",
+      "source": "mes_a_mes_2",
+      "es": "mes_a_mes_2",
+      "en": ""
+    },
+    {
+      "key": "Ingresos (verde) y gastos (rojo) de cada mes del periodo, con la cifra sobre cada barra. Toca un mes para ver su detalle y su categoría líder. Si comparas, las barras tenues corresponden al mes y año indicados abajo.",
+      "source": "Ingresos (verde) y gastos (rojo) de cada mes del periodo, con la cifra sobre cada barra. Toca un mes para ver su detalle y su categoría líder. Si comparas, las barras tenues corresponden al mes y año indicados abajo.",
+      "es": "Ingresos (verde) y gastos (rojo) de cada mes del periodo, con la cifra sobre cada barra. Toca un mes para ver su detalle y su categoría líder. Si comparas, las barras tenues corresponden al mes y año indicados abajo.",
+      "en": ""
+    },
+    {
+      "key": "detalle_del_mes",
+      "source": "detalle_del_mes",
+      "es": "detalle_del_mes",
+      "en": ""
+    },
+    {
+      "key": "Detalle del mes",
+      "source": "Detalle del mes",
+      "es": "Detalle del mes",
+      "en": ""
+    },
+    {
+      "key": "A la izquierda, el mes elegido del periodo; a la derecha, el mes que le corresponde en el periodo con el que comparas. Cada renglón compara lo mismo: ingresos contra ingresos, gastos contra gastos, balance contra balance y la categoría que más pesó en cada mes.",
+      "source": "A la izquierda, el mes elegido del periodo; a la derecha, el mes que le corresponde en el periodo con el que comparas. Cada renglón compara lo mismo: ingresos contra ingresos, gastos contra gastos, balance contra balance y la categoría que más pesó en cada mes.",
+      "es": "A la izquierda, el mes elegido del periodo; a la derecha, el mes que le corresponde en el periodo con el que comparas. Cada renglón compara lo mismo: ingresos contra ingresos, gastos contra gastos, balance contra balance y la categoría que más pesó en cada mes.",
+      "en": ""
+    },
+    {
+      "key": "Ingresos y gastos del mes, su balance (ingresos − gastos) y la categoría que más gasto tuvo ese mes.",
+      "source": "Ingresos y gastos del mes, su balance (ingresos − gastos) y la categoría que más gasto tuvo ese mes.",
+      "es": "Ingresos y gastos del mes, su balance (ingresos − gastos) y la categoría que más gasto tuvo ese mes.",
+      "en": ""
+    },
+    {
+      "key": "proyecciones",
+      "source": "proyecciones",
+      "es": "proyecciones",
+      "en": ""
+    },
+    {
+      "key": "Cada barra es el neto del mes (ingresos − gastos). Los meses cerrados usan tus movimientos reales; los futuros se estiman con tus fuentes de ingreso, tus presupuestos y tus referencias históricas; el mes en curso mezcla ambos. Verde: sobra. Rojo: falta. Toca «Ver el detalle» para la tabla completa y el detalle de cada mes.",
+      "source": "Cada barra es el neto del mes (ingresos − gastos). Los meses cerrados usan tus movimientos reales; los futuros se estiman con tus fuentes de ingreso, tus presupuestos y tus referencias históricas; el mes en curso mezcla ambos. Verde: sobra. Rojo: falta. Toca «Ver el detalle» para la tabla completa y el detalle de cada mes.",
+      "es": "Cada barra es el neto del mes (ingresos − gastos). Los meses cerrados usan tus movimientos reales; los futuros se estiman con tus fuentes de ingreso, tus presupuestos y tus referencias históricas; el mes en curso mezcla ambos. Verde: sobra. Rojo: falta. Toca «Ver el detalle» para la tabla completa y el detalle de cada mes.",
+      "en": ""
+    },
+    {
+      "key": "c_mo_leer_esta_tabla",
+      "source": "c_mo_leer_esta_tabla",
+      "es": "c_mo_leer_esta_tabla",
+      "en": ""
+    },
+    {
+      "key": "Cómo leer esta tabla",
+      "source": "Cómo leer esta tabla",
+      "es": "Cómo leer esta tabla",
+      "en": ""
+    },
+    {
+      "key": "presupuestos",
+      "source": "presupuestos",
+      "es": "presupuestos",
+      "en": ""
+    },
+    {
+      "key": "Presupuestos",
+      "source": "Presupuestos",
+      "es": "Presupuestos",
+      "en": ""
+    },
+    {
+      "key": "Cada barra es lo gastado en el periodo del presupuesto ÷ su límite; el círculo marca el porcentaje y la carita cambia de ánimo según qué tan cerca estés del límite (verde tranquilo, naranja cerca, rojo excedido). Se ordenan igual que en Presupuestos: primero la barra más llena o pasada del límite, y así hasta la más vacía. Aquí se ven hasta 10; «Ver todos» abre todos. Toca uno para ver sus movimientos.",
+      "source": "Cada barra es lo gastado en el periodo del presupuesto ÷ su límite; el círculo marca el porcentaje y la carita cambia de ánimo según qué tan cerca estés del límite (verde tranquilo, naranja cerca, rojo excedido). Se ordenan igual que en Presupuestos: primero la barra más llena o pasada del límite, y así hasta la más vacía. Aquí se ven hasta 10; «Ver todos» abre todos. Toca uno para ver sus movimientos.",
+      "es": "Cada barra es lo gastado en el periodo del presupuesto ÷ su límite; el círculo marca el porcentaje y la carita cambia de ánimo según qué tan cerca estés del límite (verde tranquilo, naranja cerca, rojo excedido). Se ordenan igual que en Presupuestos: primero la barra más llena o pasada del límite, y así hasta la más vacía. Aquí se ven hasta 10; «Ver todos» abre todos. Toca uno para ver sus movimientos.",
+      "en": ""
+    },
+    {
+      "key": "an_lisis_del_periodo",
+      "source": "an_lisis_del_periodo",
+      "es": "an_lisis_del_periodo",
+      "en": ""
+    },
+    {
+      "key": "Análisis del periodo",
+      "source": "Análisis del periodo",
+      "es": "Análisis del periodo",
+      "en": ""
+    },
+    {
+      "key": "Gasto por día = gasto del periodo ÷ días transcurridos. Al ritmo actual = ese promedio × los días del periodo (solo mientras sigue en curso). Lo que conservas = (ingresos − gastos) ÷ ingresos. Los cambios comparan contra el periodo inmediato anterior de la misma duración. El gasto promedio es el gasto total ÷ el número de gastos. Toca cualquier parte de la tarjeta para abrir el Analizador de cartera completo.",
+      "source": "Gasto por día = gasto del periodo ÷ días transcurridos. Al ritmo actual = ese promedio × los días del periodo (solo mientras sigue en curso). Lo que conservas = (ingresos − gastos) ÷ ingresos. Los cambios comparan contra el periodo inmediato anterior de la misma duración. El gasto promedio es el gasto total ÷ el número de gastos. Toca cualquier parte de la tarjeta para abrir el Analizador de cartera completo.",
+      "es": "Gasto por día = gasto del periodo ÷ días transcurridos. Al ritmo actual = ese promedio × los días del periodo (solo mientras sigue en curso). Lo que conservas = (ingresos − gastos) ÷ ingresos. Los cambios comparan contra el periodo inmediato anterior de la misma duración. El gasto promedio es el gasto total ÷ el número de gastos. Toca cualquier parte de la tarjeta para abrir el Analizador de cartera completo.",
+      "en": ""
+    },
+    {
+      "key": "resumen_de_transacciones",
+      "source": "resumen_de_transacciones",
+      "es": "resumen_de_transacciones",
+      "en": ""
+    },
+    {
+      "key": "Resumen de transacciones",
+      "source": "Resumen de transacciones",
+      "es": "Resumen de transacciones",
+      "en": ""
+    },
+    {
+      "key": "Muestra cómo se reparten tus gastos (o ingresos) entre categorías: cada porción es la suma de la categoría ÷ el total del periodo. Anillo, burbujas y mapa son tres formas de ver la misma distribución, y la tabla lista las categorías con su porcentaje y su monto (hasta 15 aquí; si hay más, «Ver las N categorías» abre una ventana grande con todas). Toca una categoría para ver sus subcategorías y usa la flecha para regresar. Filtros: tiene su propio periodo, que puede ser distinto al de Inicio; abre Más filtros para cambiarlo.",
+      "source": "Muestra cómo se reparten tus gastos (o ingresos) entre categorías: cada porción es la suma de la categoría ÷ el total del periodo. Anillo, burbujas y mapa son tres formas de ver la misma distribución, y la tabla lista las categorías con su porcentaje y su monto (hasta 15 aquí; si hay más, «Ver las N categorías» abre una ventana grande con todas). Toca una categoría para ver sus subcategorías y usa la flecha para regresar. Filtros: tiene su propio periodo, que puede ser distinto al de Inicio; abre Más filtros para cambiarlo.",
+      "es": "Muestra cómo se reparten tus gastos (o ingresos) entre categorías: cada porción es la suma de la categoría ÷ el total del periodo. Anillo, burbujas y mapa son tres formas de ver la misma distribución, y la tabla lista las categorías con su porcentaje y su monto (hasta 15 aquí; si hay más, «Ver las N categorías» abre una ventana grande con todas). Toca una categoría para ver sus subcategorías y usa la flecha para regresar. Filtros: tiene su propio periodo, que puede ser distinto al de Inicio; abre Más filtros para cambiarlo.",
+      "en": ""
+    },
+    {
+      "key": "los_m_s_grandes",
+      "source": "los_m_s_grandes",
+      "es": "los_m_s_grandes",
+      "en": ""
+    },
+    {
+      "key": "Los más grandes",
+      "source": "Los más grandes",
+      "es": "Los más grandes",
+      "en": ""
+    },
+    {
+      "key": "Para qué sirve: ver en qué se fue la mayor parte de tu dinero. Cómo se calcula: se toman los gastos (o ingresos) del periodo, se agrupan por categoría y se ordenan de mayor a menor suma; en «Movimientos» se ordenan uno por uno por monto. Filtro: el periodo y el tipo (gastos o ingresos) que elijas en esta tarjeta; las transferencias entre tus cuentas no cuentan.",
+      "source": "Para qué sirve: ver en qué se fue la mayor parte de tu dinero. Cómo se calcula: se toman los gastos (o ingresos) del periodo, se agrupan por categoría y se ordenan de mayor a menor suma; en «Movimientos» se ordenan uno por uno por monto. Filtro: el periodo y el tipo (gastos o ingresos) que elijas en esta tarjeta; las transferencias entre tus cuentas no cuentan.",
+      "es": "Para qué sirve: ver en qué se fue la mayor parte de tu dinero. Cómo se calcula: se toman los gastos (o ingresos) del periodo, se agrupan por categoría y se ordenan de mayor a menor suma; en «Movimientos» se ordenan uno por uno por monto. Filtro: el periodo y el tipo (gastos o ingresos) que elijas en esta tarjeta; las transferencias entre tus cuentas no cuentan.",
+      "en": ""
+    },
+    {
+      "key": "filtros",
+      "source": "filtros",
+      "es": "filtros",
+      "en": ""
+    },
+    {
+      "key": "Filtros",
+      "source": "Filtros",
+      "es": "Filtros",
+      "en": ""
+    },
+    {
+      "key": "Acota la lista: por texto, tipo, legibilidad, categoría, cuenta o monto exacto. El buscador de duplicados encuentra movimientos repetidos para borrarlos de una vez.",
+      "source": "Acota la lista: por texto, tipo, legibilidad, categoría, cuenta o monto exacto. El buscador de duplicados encuentra movimientos repetidos para borrarlos de una vez.",
+      "es": "Acota la lista: por texto, tipo, legibilidad, categoría, cuenta o monto exacto. El buscador de duplicados encuentra movimientos repetidos para borrarlos de una vez.",
+      "en": ""
+    },
+    {
+      "key": "acceso",
+      "source": "acceso",
+      "es": "acceso",
+      "en": ""
+    },
+    {
+      "key": "Acceso",
+      "source": "Acceso",
+      "es": "Acceso",
+      "en": ""
+    },
+    {
+      "key": "Con qué correo y contraseña entras a Gastify. Si entras con Google y nunca definiste una contraseña, aquí puedes crear una.",
+      "source": "Con qué correo y contraseña entras a Gastify. Si entras con Google y nunca definiste una contraseña, aquí puedes crear una.",
+      "es": "Con qué correo y contraseña entras a Gastify. Si entras con Google y nunca definiste una contraseña, aquí puedes crear una.",
+      "en": ""
+    },
+    {
+      "key": "tokens_de_acceso",
+      "source": "tokens_de_acceso",
+      "es": "tokens_de_acceso",
+      "en": ""
+    },
+    {
+      "key": "Tokens de acceso",
+      "source": "Tokens de acceso",
+      "es": "Tokens de acceso",
+      "en": ""
+    },
+    {
+      "key": "Un token permite que otra herramienta (un asistente, un script) lea y escriba en tu cuenta sin tu contraseña. Se muestra una sola vez al crearlo; si lo pierdes, revócalo y crea otro.",
+      "source": "Un token permite que otra herramienta (un asistente, un script) lea y escriba en tu cuenta sin tu contraseña. Se muestra una sola vez al crearlo; si lo pierdes, revócalo y crea otro.",
+      "es": "Un token permite que otra herramienta (un asistente, un script) lea y escriba en tu cuenta sin tu contraseña. Se muestra una sola vez al crearlo; si lo pierdes, revócalo y crea otro.",
+      "en": ""
+    },
+    {
+      "key": "moneda_principal",
+      "source": "moneda_principal",
+      "es": "moneda_principal",
+      "en": ""
+    },
+    {
+      "key": "Moneda principal",
+      "source": "Moneda principal",
+      "es": "Moneda principal",
+      "en": ""
+    },
+    {
+      "key": "Es la moneda en la que se muestran tus totales, presupuestos, historial y proyecciones. Cada cuenta conserva su saldo en su propia moneda; solo cambia cómo se presentan los totales, convertidos con el tipo de cambio más reciente. Cambiarla no modifica ningún movimiento.",
+      "source": "Es la moneda en la que se muestran tus totales, presupuestos, historial y proyecciones. Cada cuenta conserva su saldo en su propia moneda; solo cambia cómo se presentan los totales, convertidos con el tipo de cambio más reciente. Cambiarla no modifica ningún movimiento.",
+      "es": "Es la moneda en la que se muestran tus totales, presupuestos, historial y proyecciones. Cada cuenta conserva su saldo en su propia moneda; solo cambia cómo se presentan los totales, convertidos con el tipo de cambio más reciente. Cambiarla no modifica ningún movimiento.",
+      "en": ""
+    },
+    {
+      "key": "passkeys",
+      "source": "passkeys",
+      "es": "passkeys",
+      "en": ""
+    },
+    {
+      "key": "Passkeys",
+      "source": "Passkeys",
+      "es": "Passkeys",
+      "en": ""
+    },
+    {
+      "key": "Un passkey te deja entrar con tu huella, tu cara o el código de tu teléfono, sin contraseña. Se agrega desde la web o desde la app instalada.",
+      "source": "Un passkey te deja entrar con tu huella, tu cara o el código de tu teléfono, sin contraseña. Se agrega desde la web o desde la app instalada.",
+      "es": "Un passkey te deja entrar con tu huella, tu cara o el código de tu teléfono, sin contraseña. Se agrega desde la web o desde la app instalada.",
+      "en": ""
+    },
+    {
+      "key": "verificaci_n_en_dos_pasos",
+      "source": "verificaci_n_en_dos_pasos",
+      "es": "verificaci_n_en_dos_pasos",
+      "en": ""
+    },
+    {
+      "key": "Verificación en dos pasos",
+      "source": "Verificación en dos pasos",
+      "es": "Verificación en dos pasos",
+      "en": ""
+    },
+    {
+      "key": "Además de tu contraseña, Gastify te pide un código de 6 dígitos de una app autenticadora. Los códigos de respaldo sirven si pierdes el teléfono: guárdalos en un lugar seguro.",
+      "source": "Además de tu contraseña, Gastify te pide un código de 6 dígitos de una app autenticadora. Los códigos de respaldo sirven si pierdes el teléfono: guárdalos en un lugar seguro.",
+      "es": "Además de tu contraseña, Gastify te pide un código de 6 dígitos de una app autenticadora. Los códigos de respaldo sirven si pierdes el teléfono: guárdalos en un lugar seguro.",
+      "en": ""
+    },
+    {
+      "key": "c_mo_leer_esta_tabla_2",
+      "source": "c_mo_leer_esta_tabla_2",
+      "es": "c_mo_leer_esta_tabla_2",
+      "en": ""
+    },
+    {
+      "key": "referencias_hist_ricas",
+      "source": "referencias_hist_ricas",
+      "es": "referencias_hist_ricas",
+      "en": ""
+    },
+    {
+      "key": "Referencias históricas",
+      "source": "Referencias históricas",
+      "es": "Referencias históricas",
+      "en": ""
+    },
+    {
+      "key": "Montos por mes que las proyecciones usan como punto de partida: lo que de verdad ingresó o gastó, o un estimado que vale por un tiempo. Ingresos y gastos se guardan por separado.",
+      "source": "Montos por mes que las proyecciones usan como punto de partida: lo que de verdad ingresó o gastó, o un estimado que vale por un tiempo. Ingresos y gastos se guardan por separado.",
+      "es": "Montos por mes que las proyecciones usan como punto de partida: lo que de verdad ingresó o gastó, o un estimado que vale por un tiempo. Ingresos y gastos se guardan por separado.",
+      "en": ""
+    },
+    {
+      "key": "fuentes_de_ingreso",
+      "source": "fuentes_de_ingreso",
+      "es": "fuentes_de_ingreso",
+      "en": ""
+    },
+    {
+      "key": "Fuentes de ingreso",
+      "source": "Fuentes de ingreso",
+      "es": "Fuentes de ingreso",
+      "en": ""
+    },
+    {
+      "key": "Lo que entra cada periodo (sueldo, rentas...). Las proyecciones lo suman mes a mes, convertido a la moneda principal.",
+      "source": "Lo que entra cada periodo (sueldo, rentas...). Las proyecciones lo suman mes a mes, convertido a la moneda principal.",
+      "es": "Lo que entra cada periodo (sueldo, rentas...). Las proyecciones lo suman mes a mes, convertido a la moneda principal.",
+      "en": ""
+    },
+    {
+      "key": "c_mo_leer_este_mes",
+      "source": "c_mo_leer_este_mes",
+      "es": "c_mo_leer_este_mes",
+      "en": ""
+    },
+    {
+      "key": "Cómo leer este mes",
+      "source": "Cómo leer este mes",
+      "es": "Cómo leer este mes",
+      "en": ""
+    },
+    {
+      "key": "Los meses cerrados muestran tus movimientos reales. Los futuros son un estimado puro hecho con tus presupuestos activos (gastos) y tus fuentes de ingreso (ingresos). El mes en curso mezcla ambos: empieza como estimado y se llena con lo real. Con «Ver movimientos» ves los movimientos detrás de estas cifras, y los topes de abajo sirven para sumar dinero que no está ligado a ningún presupuesto ni fuente de ingreso.",
+      "source": "Los meses cerrados muestran tus movimientos reales. Los futuros son un estimado puro hecho con tus presupuestos activos (gastos) y tus fuentes de ingreso (ingresos). El mes en curso mezcla ambos: empieza como estimado y se llena con lo real. Con «Ver movimientos» ves los movimientos detrás de estas cifras, y los topes de abajo sirven para sumar dinero que no está ligado a ningún presupuesto ni fuente de ingreso.",
+      "es": "Los meses cerrados muestran tus movimientos reales. Los futuros son un estimado puro hecho con tus presupuestos activos (gastos) y tus fuentes de ingreso (ingresos). El mes en curso mezcla ambos: empieza como estimado y se llena con lo real. Con «Ver movimientos» ves los movimientos detrás de estas cifras, y los topes de abajo sirven para sumar dinero que no está ligado a ningún presupuesto ni fuente de ingreso.",
+      "en": ""
+    },
+    {
+      "key": "saldo_real_del_mes",
+      "source": "saldo_real_del_mes",
+      "es": "saldo_real_del_mes",
+      "en": ""
+    },
+    {
+      "key": "Saldo real del mes",
+      "source": "Saldo real del mes",
+      "es": "Saldo real del mes",
+      "en": ""
+    },
+    {
+      "key": "La app no puede calcular saldos pasados por sí sola. Si sabes cuánto tenías en tus cuentas al terminar este mes, regístralo aquí: se usa como punto de partida en la columna de saldo de la proyección.",
+      "source": "La app no puede calcular saldos pasados por sí sola. Si sabes cuánto tenías en tus cuentas al terminar este mes, regístralo aquí: se usa como punto de partida en la columna de saldo de la proyección.",
+      "es": "La app no puede calcular saldos pasados por sí sola. Si sabes cuánto tenías en tus cuentas al terminar este mes, regístralo aquí: se usa como punto de partida en la columna de saldo de la proyección.",
+      "en": ""
+    },
+    {
+      "key": "tope_de_gasto_inesperado",
+      "source": "tope_de_gasto_inesperado",
+      "es": "tope_de_gasto_inesperado",
+      "en": ""
+    },
+    {
+      "key": "Tope de gasto inesperado",
+      "source": "Tope de gasto inesperado",
+      "es": "Tope de gasto inesperado",
+      "en": ""
+    },
+    {
+      "key": "Un monto manual que se suma a tu estimado de gastos, para gastos que no tienen su propio presupuesto.",
+      "source": "Un monto manual que se suma a tu estimado de gastos, para gastos que no tienen su propio presupuesto.",
+      "es": "Un monto manual que se suma a tu estimado de gastos, para gastos que no tienen su propio presupuesto.",
+      "en": ""
+    },
+    {
+      "key": "tope_de_ingreso_inesperado",
+      "source": "tope_de_ingreso_inesperado",
+      "es": "tope_de_ingreso_inesperado",
+      "en": ""
+    },
+    {
+      "key": "Tope de ingreso inesperado",
+      "source": "Tope de ingreso inesperado",
+      "es": "Tope de ingreso inesperado",
+      "en": ""
+    },
+    {
+      "key": "Un monto manual que se suma a tu estimado de ingresos, para dinero que entra y no está ligado a una fuente de ingreso recurrente.",
+      "source": "Un monto manual que se suma a tu estimado de ingresos, para dinero que entra y no está ligado a una fuente de ingreso recurrente.",
+      "es": "Un monto manual que se suma a tu estimado de ingresos, para dinero que entra y no está ligado a una fuente de ingreso recurrente.",
+      "en": ""
+    },
+    {
+      "key": "totales",
+      "source": "totales",
+      "es": "totales",
+      "en": ""
+    },
+    {
+      "key": "Totales",
+      "source": "Totales",
+      "es": "Totales",
+      "en": ""
+    },
+    {
+      "key": "Ingresos = suma de todo lo que entró en el periodo. Gastos = suma de todo lo que salió. Balance = ingresos − gastos (verde si sobra, rojo si falta). Se calcula con los movimientos que ves bajo los filtros activos, en tu moneda principal; las transferencias entre tus cuentas no cuentan porque ni entran ni salen de tu dinero.",
+      "source": "Ingresos = suma de todo lo que entró en el periodo. Gastos = suma de todo lo que salió. Balance = ingresos − gastos (verde si sobra, rojo si falta). Se calcula con los movimientos que ves bajo los filtros activos, en tu moneda principal; las transferencias entre tus cuentas no cuentan porque ni entran ni salen de tu dinero.",
+      "es": "Ingresos = suma de todo lo que entró en el periodo. Gastos = suma de todo lo que salió. Balance = ingresos − gastos (verde si sobra, rojo si falta). Se calcula con los movimientos que ves bajo los filtros activos, en tu moneda principal; las transferencias entre tus cuentas no cuentan porque ni entran ni salen de tu dinero.",
+      "en": ""
+    },
+    {
+      "key": "definition",
+      "source": "definition",
+      "es": "definition",
+      "en": ""
+    },
+    {
+      "key": "expense",
+      "source": "expense",
+      "es": "expense",
+      "en": ""
+    },
+    {
+      "key": "income",
+      "source": "income",
+      "es": "income",
+      "en": ""
+    },
+    {
+      "key": "transfer",
+      "source": "transfer",
+      "es": "transfer",
+      "en": ""
+    },
+    {
+      "key": "account",
+      "source": "account",
+      "es": "account",
+      "en": ""
+    },
+    {
+      "key": "category",
+      "source": "category",
+      "es": "category",
+      "en": ""
+    },
+    {
+      "key": "budget",
+      "source": "budget",
+      "es": "budget",
+      "en": ""
+    },
+    {
+      "key": "saving",
+      "source": "saving",
+      "es": "saving",
+      "en": ""
+    },
+    {
+      "key": "project",
+      "source": "project",
+      "es": "project",
+      "en": ""
+    },
+    {
+      "key": "Crear",
+      "source": "Crear",
+      "es": "Crear",
+      "en": ""
+    },
+    {
+      "key": "Desde aquí creas casi todo lo que usa Gastify, sin buscar la pantalla de cada cosa. Elige arriba qué quieres crear y debajo aparece su formulario. Cada tipo tiene un papel distinto: los gastos e ingresos son movimientos (lo que entra y sale de tus cuentas), las transferencias mueven dinero entre tus cuentas, y las cuentas y categorías organizan esos movimientos. Los presupuestos, ahorros y proyectos son metas de dinero que se llenan solas con tus movimientos. Toca el ⓘ de cada tipo para ver cómo se llena.",
+      "source": "Desde aquí creas casi todo lo que usa Gastify, sin buscar la pantalla de cada cosa. Elige arriba qué quieres crear y debajo aparece su formulario. Cada tipo tiene un papel distinto: los gastos e ingresos son movimientos (lo que entra y sale de tus cuentas), las transferencias mueven dinero entre tus cuentas, y las cuentas y categorías organizan esos movimientos. Los presupuestos, ahorros y proyectos son metas de dinero que se llenan solas con tus movimientos. Toca el ⓘ de cada tipo para ver cómo se llena.",
+      "es": "Desde aquí creas casi todo lo que usa Gastify, sin buscar la pantalla de cada cosa. Elige arriba qué quieres crear y debajo aparece su formulario. Cada tipo tiene un papel distinto: los gastos e ingresos son movimientos (lo que entra y sale de tus cuentas), las transferencias mueven dinero entre tus cuentas, y las cuentas y categorías organizan esos movimientos. Los presupuestos, ahorros y proyectos son metas de dinero que se llenan solas con tus movimientos. Toca el ⓘ de cada tipo para ver cómo se llena.",
+      "en": ""
+    },
+    {
+      "key": "Movimientos",
+      "source": "Movimientos",
+      "es": "Movimientos",
+      "en": ""
+    },
+    {
+      "key": "Dinero que sale de una cuenta: una compra, un recibo, una comida. Es lo que alimenta las gráficas de gastos.",
+      "source": "Dinero que sale de una cuenta: una compra, un recibo, una comida. Es lo que alimenta las gráficas de gastos.",
+      "es": "Dinero que sale de una cuenta: una compra, un recibo, una comida. Es lo que alimenta las gráficas de gastos.",
+      "en": ""
+    },
+    {
+      "key": "Dinero que entra a una cuenta: sueldo, venta, reembolso. Suma a tus ingresos del periodo y a tu balance.",
+      "source": "Dinero que entra a una cuenta: sueldo, venta, reembolso. Suma a tus ingresos del periodo y a tu balance.",
+      "es": "Dinero que entra a una cuenta: sueldo, venta, reembolso. Suma a tus ingresos del periodo y a tu balance.",
+      "en": ""
+    },
+    {
+      "key": "Transferir",
+      "source": "Transferir",
+      "es": "Transferir",
+      "en": ""
+    },
+    {
+      "key": "Mover dinero de una de tus cuentas a otra. No es ingreso ni gasto, así que no cambia lo que gastaste.",
+      "source": "Mover dinero de una de tus cuentas a otra. No es ingreso ni gasto, así que no cambia lo que gastaste.",
+      "es": "Mover dinero de una de tus cuentas a otra. No es ingreso ni gasto, así que no cambia lo que gastaste.",
+      "en": ""
+    },
+    {
+      "key": "Para organizar",
+      "source": "Para organizar",
+      "es": "Para organizar",
+      "en": ""
+    },
+    {
+      "key": "Cuenta",
+      "source": "Cuenta",
+      "es": "Cuenta",
+      "en": ""
+    },
+    {
+      "key": "Un lugar donde tienes dinero: banco, tarjeta, efectivo o ahorro. Todos los movimientos se guardan en una cuenta.",
+      "source": "Un lugar donde tienes dinero: banco, tarjeta, efectivo o ahorro. Todos los movimientos se guardan en una cuenta.",
+      "es": "Un lugar donde tienes dinero: banco, tarjeta, efectivo o ahorro. Todos los movimientos se guardan en una cuenta.",
+      "en": ""
+    },
+    {
+      "key": "Categoría",
+      "source": "Categoría",
+      "es": "Categoría",
+      "en": ""
+    },
+    {
+      "key": "Un tema de tus gastos o ingresos: Comida, Transporte, Sueldo. Las gráficas del Resumen y del Analizador las agrupan así.",
+      "source": "Un tema de tus gastos o ingresos: Comida, Transporte, Sueldo. Las gráficas del Resumen y del Analizador las agrupan así.",
+      "es": "Un tema de tus gastos o ingresos: Comida, Transporte, Sueldo. Las gráficas del Resumen y del Analizador las agrupan así.",
+      "en": ""
+    },
+    {
+      "key": "Metas",
+      "source": "Metas",
+      "es": "Metas",
+      "en": ""
+    },
+    {
+      "key": "Presupuesto",
+      "source": "Presupuesto",
+      "es": "Presupuesto",
+      "en": ""
+    },
+    {
+      "key": "Un límite de gasto por periodo (mensual, trimestral, semestral o anual) para ciertas categorías. Te avisa al 70, 80, 90 y 100 %.",
+      "source": "Un límite de gasto por periodo (mensual, trimestral, semestral o anual) para ciertas categorías. Te avisa al 70, 80, 90 y 100 %.",
+      "es": "Un límite de gasto por periodo (mensual, trimestral, semestral o anual) para ciertas categorías. Te avisa al 70, 80, 90 y 100 %.",
+      "en": ""
+    },
+    {
+      "key": "Una cantidad que quieres juntar. Su avance sale de las cuentas que le ligues, o de lo que escribas como ahorrado.",
+      "source": "Una cantidad que quieres juntar. Su avance sale de las cuentas que le ligues, o de lo que escribas como ahorrado.",
+      "es": "Una cantidad que quieres juntar. Su avance sale de las cuentas que le ligues, o de lo que escribas como ahorrado.",
+      "en": ""
+    },
+    {
+      "key": "Proyecto",
+      "source": "Proyecto",
+      "es": "Proyecto",
+      "en": ""
+    },
+    {
+      "key": "Un gasto planeado con inicio y fin, como un viaje o una boda. Suma todo lo que gastes ligado a él, sin importar el mes.",
+      "source": "Un gasto planeado con inicio y fin, como un viaje o una boda. Suma todo lo que gastes ligado a él, sin importar el mes.",
+      "es": "Un gasto planeado con inicio y fin, como un viaje o una boda. Suma todo lo que gastes ligado a él, sin importar el mes.",
+      "en": ""
+    },
+    {
+      "key": "Orden sugerido",
+      "source": "Orden sugerido",
+      "es": "Orden sugerido",
+      "en": ""
+    },
+    {
+      "key": "Primero crea tus cuentas con su saldo actual.",
+      "source": "Primero crea tus cuentas con su saldo actual.",
+      "es": "Primero crea tus cuentas con su saldo actual.",
+      "en": ""
+    },
+    {
+      "key": "Después tus categorías (puedes usar las que ya trae la app).",
+      "source": "Después tus categorías (puedes usar las que ya trae la app).",
+      "es": "Después tus categorías (puedes usar las que ya trae la app).",
+      "en": ""
+    },
+    {
+      "key": "Luego registra gastos, ingresos y transferencias conforme pasen.",
+      "source": "Luego registra gastos, ingresos y transferencias conforme pasen.",
+      "es": "Luego registra gastos, ingresos y transferencias conforme pasen.",
+      "en": ""
+    },
+    {
+      "key": "Por último, crea presupuestos, ahorros o proyectos si quieres llevar una meta.",
+      "source": "Por último, crea presupuestos, ahorros o proyectos si quieres llevar una meta.",
+      "es": "Por último, crea presupuestos, ahorros o proyectos si quieres llevar una meta.",
+      "en": ""
+    },
+    {
+      "key": "Un gasto es dinero que sale de una de tus cuentas. Se registra al momento en que pagas.",
+      "source": "Un gasto es dinero que sale de una de tus cuentas. Se registra al momento en que pagas.",
+      "es": "Un gasto es dinero que sale de una de tus cuentas. Se registra al momento en que pagas.",
+      "en": ""
+    },
+    {
+      "key": "Qué llenar",
+      "source": "Qué llenar",
+      "es": "Qué llenar",
+      "en": ""
+    },
+    {
+      "key": "Campo",
+      "source": "Campo",
+      "es": "Campo",
+      "en": ""
+    },
+    {
+      "key": "Qué poner",
+      "source": "Qué poner",
+      "es": "Qué poner",
+      "en": ""
+    },
+    {
+      "key": "Monto",
+      "source": "Monto",
+      "es": "Monto",
+      "en": ""
+    },
+    {
+      "key": "Lo que pagaste, en la moneda de la cuenta. Si el comercio cobró en otra moneda, aparece el campo para poner cuánto cobró.",
+      "source": "Lo que pagaste, en la moneda de la cuenta. Si el comercio cobró en otra moneda, aparece el campo para poner cuánto cobró.",
+      "es": "Lo que pagaste, en la moneda de la cuenta. Si el comercio cobró en otra moneda, aparece el campo para poner cuánto cobró.",
+      "en": ""
+    },
+    {
+      "key": "De cuál cuenta sale el dinero. Si todavía no tienes ninguna, primero crea una cuenta.",
+      "source": "De cuál cuenta sale el dinero. Si todavía no tienes ninguna, primero crea una cuenta.",
+      "es": "De cuál cuenta sale el dinero. Si todavía no tienes ninguna, primero crea una cuenta.",
+      "en": ""
+    },
+    {
+      "key": "En qué se gastó (Comida, Transporte…). Con subcategoría si quieres más detalle. Define las gráficas.",
+      "source": "En qué se gastó (Comida, Transporte…). Con subcategoría si quieres más detalle. Define las gráficas.",
+      "es": "En qué se gastó (Comida, Transporte…). Con subcategoría si quieres más detalle. Define las gráficas.",
+      "en": ""
+    },
+    {
+      "key": "Opcional. Liga el gasto a un presupuesto o proyecto para ver cuánto llevas de su límite.",
+      "source": "Opcional. Liga el gasto a un presupuesto o proyecto para ver cuánto llevas de su límite.",
+      "es": "Opcional. Liga el gasto a un presupuesto o proyecto para ver cuánto llevas de su límite.",
+      "en": ""
+    },
+    {
+      "key": "Fecha",
+      "source": "Fecha",
+      "es": "Fecha",
+      "en": ""
+    },
+    {
+      "key": "Cuándo ocurrió. Por defecto es hoy.",
+      "source": "Cuándo ocurrió. Por defecto es hoy.",
+      "es": "Cuándo ocurrió. Por defecto es hoy.",
+      "en": ""
+    },
+    {
+      "key": "Nombre",
+      "source": "Nombre",
+      "es": "Nombre",
+      "en": ""
+    },
+    {
+      "key": "Opcional. Si lo dejas vacío, se usa la categoría.",
+      "source": "Opcional. Si lo dejas vacío, se usa la categoría.",
+      "es": "Opcional. Si lo dejas vacío, se usa la categoría.",
+      "en": ""
+    },
+    {
+      "key": "Etiquetas",
+      "source": "Etiquetas",
+      "es": "Etiquetas",
+      "en": ""
+    },
+    {
+      "key": "Opcionales, separadas por comas. Sirven para filtrar después.",
+      "source": "Opcionales, separadas por comas. Sirven para filtrar después.",
+      "es": "Opcionales, separadas por comas. Sirven para filtrar después.",
+      "en": ""
+    },
+    {
+      "key": "Pagaste un café de $65 con tu tarjeta: Monto 65, Cuenta Tarjeta, Categoría Comida › Cafés, Presupuesto Comida, fecha hoy.",
+      "source": "Pagaste un café de $65 con tu tarjeta: Monto 65, Cuenta Tarjeta, Categoría Comida › Cafés, Presupuesto Comida, fecha hoy.",
+      "es": "Pagaste un café de $65 con tu tarjeta: Monto 65, Cuenta Tarjeta, Categoría Comida › Cafés, Presupuesto Comida, fecha hoy.",
+      "en": ""
+    },
+    {
+      "key": "Un ingreso es dinero que entra a una de tus cuentas. Se llena igual que un gasto, pero suma en vez de restar.",
+      "source": "Un ingreso es dinero que entra a una de tus cuentas. Se llena igual que un gasto, pero suma en vez de restar.",
+      "es": "Un ingreso es dinero que entra a una de tus cuentas. Se llena igual que un gasto, pero suma en vez de restar.",
+      "en": ""
+    },
+    {
+      "key": "Monto y cuenta donde llegó el dinero.",
+      "source": "Monto y cuenta donde llegó el dinero.",
+      "es": "Monto y cuenta donde llegó el dinero.",
+      "en": ""
+    },
+    {
+      "key": "Categoría (por ejemplo, Sueldo o Ventas), para que las gráficas de ingresos lo agrupen.",
+      "source": "Categoría (por ejemplo, Sueldo o Ventas), para que las gráficas de ingresos lo agrupen.",
+      "es": "Categoría (por ejemplo, Sueldo o Ventas), para que las gráficas de ingresos lo agrupen.",
+      "en": ""
+    },
+    {
+      "key": "Fecha, y un nombre opcional.",
+      "source": "Fecha, y un nombre opcional.",
+      "es": "Fecha, y un nombre opcional.",
+      "en": ""
+    },
+    {
+      "key": "Este formulario registra lo que ya llegó. Para proyectar un ingreso que se repite cada mes (tu sueldo fijo, por ejemplo), créalo como fuente de ingreso en Más › Proyecciones.",
+      "source": "Este formulario registra lo que ya llegó. Para proyectar un ingreso que se repite cada mes (tu sueldo fijo, por ejemplo), créalo como fuente de ingreso en Más › Proyecciones.",
+      "es": "Este formulario registra lo que ya llegó. Para proyectar un ingreso que se repite cada mes (tu sueldo fijo, por ejemplo), créalo como fuente de ingreso en Más › Proyecciones.",
+      "en": ""
+    },
+    {
+      "key": "Te depositaron tu quincena: Monto 12,000, Cuenta Nómina, Categoría Sueldo, fecha de hoy.",
+      "source": "Te depositaron tu quincena: Monto 12,000, Cuenta Nómina, Categoría Sueldo, fecha de hoy.",
+      "es": "Te depositaron tu quincena: Monto 12,000, Cuenta Nómina, Categoría Sueldo, fecha de hoy.",
+      "en": ""
+    },
+    {
+      "key": "Mueve dinero de una cuenta tuya a otra. No es ingreso ni gasto: solo cambia de lugar.",
+      "source": "Mueve dinero de una cuenta tuya a otra. No es ingreso ni gasto: solo cambia de lugar.",
+      "es": "Mueve dinero de una cuenta tuya a otra. No es ingreso ni gasto: solo cambia de lugar.",
+      "en": ""
+    },
+    {
+      "key": "Desde",
+      "source": "Desde",
+      "es": "Desde",
+      "en": ""
+    },
+    {
+      "key": "La cuenta de la que sale el dinero.",
+      "source": "La cuenta de la que sale el dinero.",
+      "es": "La cuenta de la que sale el dinero.",
+      "en": ""
+    },
+    {
+      "key": "Hacia",
+      "source": "Hacia",
+      "es": "Hacia",
+      "en": ""
+    },
+    {
+      "key": "La cuenta que lo recibe. Debe ser otra cuenta, no la misma.",
+      "source": "La cuenta que lo recibe. Debe ser otra cuenta, no la misma.",
+      "es": "La cuenta que lo recibe. Debe ser otra cuenta, no la misma.",
+      "en": ""
+    },
+    {
+      "key": "Monto que sale",
+      "source": "Monto que sale",
+      "es": "Monto que sale",
+      "en": ""
+    },
+    {
+      "key": "Cuánto se descuenta de la cuenta de origen.",
+      "source": "Cuánto se descuenta de la cuenta de origen.",
+      "es": "Cuánto se descuenta de la cuenta de origen.",
+      "en": ""
+    },
+    {
+      "key": "Monto que llega",
+      "source": "Monto que llega",
+      "es": "Monto que llega",
+      "en": ""
+    },
+    {
+      "key": "Solo aparece si las dos cuentas tienen monedas distintas: cuánto llega en la moneda de destino.",
+      "source": "Solo aparece si las dos cuentas tienen monedas distintas: cuánto llega en la moneda de destino.",
+      "es": "Solo aparece si las dos cuentas tienen monedas distintas: cuánto llega en la moneda de destino.",
+      "en": ""
+    },
+    {
+      "key": "Fecha y nombre",
+      "source": "Fecha y nombre",
+      "es": "Fecha y nombre",
+      "en": ""
+    },
+    {
+      "key": "La fecha del movimiento y un nombre opcional, como «Pago de tarjeta».",
+      "source": "La fecha del movimiento y un nombre opcional, como «Pago de tarjeta».",
+      "es": "La fecha del movimiento y un nombre opcional, como «Pago de tarjeta».",
+      "en": ""
+    },
+    {
+      "key": "Pagaste la tarjeta desde tu nómina: Desde Nómina, Hacia Tarjeta, Monto 5,000. No cuenta como gasto ni como ingreso.",
+      "source": "Pagaste la tarjeta desde tu nómina: Desde Nómina, Hacia Tarjeta, Monto 5,000. No cuenta como gasto ni como ingreso.",
+      "es": "Pagaste la tarjeta desde tu nómina: Desde Nómina, Hacia Tarjeta, Monto 5,000. No cuenta como gasto ni como ingreso.",
+      "en": ""
+    },
+    {
+      "key": "Una cuenta es un lugar donde tienes dinero: tu banco, tu tarjeta de crédito, tu efectivo o tu cuenta de ahorro.",
+      "source": "Una cuenta es un lugar donde tienes dinero: tu banco, tu tarjeta de crédito, tu efectivo o tu cuenta de ahorro.",
+      "es": "Una cuenta es un lugar donde tienes dinero: tu banco, tu tarjeta de crédito, tu efectivo o tu cuenta de ahorro.",
+      "en": ""
+    },
+    {
+      "key": "Cómo la reconoces, por ejemplo «Nómina» o «Tarjeta Nu».",
+      "source": "Cómo la reconoces, por ejemplo «Nómina» o «Tarjeta Nu».",
+      "es": "Cómo la reconoces, por ejemplo «Nómina» o «Tarjeta Nu».",
+      "en": ""
+    },
+    {
+      "key": "Tipo",
+      "source": "Tipo",
+      "es": "Tipo",
+      "en": ""
+    },
+    {
+      "key": "Débito, Crédito, Efectivo o Ahorro. Te ayuda a reconocerla y a agruparla.",
+      "source": "Débito, Crédito, Efectivo o Ahorro. Te ayuda a reconocerla y a agruparla.",
+      "es": "Débito, Crédito, Efectivo o Ahorro. Te ayuda a reconocerla y a agruparla.",
+      "en": ""
+    },
+    {
+      "key": "Moneda",
+      "source": "Moneda",
+      "es": "Moneda",
+      "en": ""
+    },
+    {
+      "key": "En qué moneda manejas esa cuenta.",
+      "source": "En qué moneda manejas esa cuenta.",
+      "es": "En qué moneda manejas esa cuenta.",
+      "en": ""
+    },
+    {
+      "key": "Saldo",
+      "source": "Saldo",
+      "es": "Saldo",
+      "en": ""
+    },
+    {
+      "key": "Cuánto tienes hoy. A partir de aquí, cada movimiento lo va cambiando.",
+      "source": "Cuánto tienes hoy. A partir de aquí, cada movimiento lo va cambiando.",
+      "es": "Cuánto tienes hoy. A partir de aquí, cada movimiento lo va cambiando.",
+      "en": ""
+    },
+    {
+      "key": "Banco",
+      "source": "Banco",
+      "es": "Banco",
+      "en": ""
+    },
+    {
+      "key": "Opcional. Muestra su logo en la tarjeta de la cuenta.",
+      "source": "Opcional. Muestra su logo en la tarjeta de la cuenta.",
+      "es": "Opcional. Muestra su logo en la tarjeta de la cuenta.",
+      "en": ""
+    },
+    {
+      "key": "Número",
+      "source": "Número",
+      "es": "Número",
+      "en": ""
+    },
+    {
+      "key": "Opcional, solo para tenerlo a la mano. Se oculta con el ojo. Nunca pedimos el CVV.",
+      "source": "Opcional, solo para tenerlo a la mano. Se oculta con el ojo. Nunca pedimos el CVV.",
+      "es": "Opcional, solo para tenerlo a la mano. Se oculta con el ojo. Nunca pedimos el CVV.",
+      "en": ""
+    },
+    {
+      "key": "Tu cuenta de nómina: Nombre Nómina, Tipo Débito, Moneda MXN, Saldo 8,400, Banco BBVA.",
+      "source": "Tu cuenta de nómina: Nombre Nómina, Tipo Débito, Moneda MXN, Saldo 8,400, Banco BBVA.",
+      "es": "Tu cuenta de nómina: Nombre Nómina, Tipo Débito, Moneda MXN, Saldo 8,400, Banco BBVA.",
+      "en": ""
+    },
+    {
+      "key": "Una categoría es un tema en el que gastas o ganas. Todo movimiento cae en una categoría.",
+      "source": "Una categoría es un tema en el que gastas o ganas. Todo movimiento cae en una categoría.",
+      "es": "Una categoría es un tema en el que gastas o ganas. Todo movimiento cae en una categoría.",
+      "en": ""
+    },
+    {
+      "key": "Nombre, por ejemplo «Mascotas».",
+      "source": "Nombre, por ejemplo «Mascotas».",
+      "es": "Nombre, por ejemplo «Mascotas».",
+      "en": ""
+    },
+    {
+      "key": "Ícono y color: solo para reconocerla de un vistazo.",
+      "source": "Ícono y color: solo para reconocerla de un vistazo.",
+      "es": "Ícono y color: solo para reconocerla de un vistazo.",
+      "en": ""
+    },
+    {
+      "key": "Subcategorías (opcionales): un nivel más de detalle. Comida puede tener Restaurantes y Súper.",
+      "source": "Subcategorías (opcionales): un nivel más de detalle. Comida puede tener Restaurantes y Súper.",
+      "es": "Subcategorías (opcionales): un nivel más de detalle. Comida puede tener Restaurantes y Súper.",
+      "en": ""
+    },
+    {
+      "key": "Las categorías alimentan las gráficas del Resumen y del Analizador, y un presupuesto cubre una o varias categorías.",
+      "source": "Las categorías alimentan las gráficas del Resumen y del Analizador, y un presupuesto cubre una o varias categorías.",
+      "es": "Las categorías alimentan las gráficas del Resumen y del Analizador, y un presupuesto cubre una o varias categorías.",
+      "en": ""
+    },
+    {
+      "key": "Mascotas, con subcategorías Croquetas y Veterinario. Desde ahora, ese gasto aparece como Mascotas en la gráfica.",
+      "source": "Mascotas, con subcategorías Croquetas y Veterinario. Desde ahora, ese gasto aparece como Mascotas en la gráfica.",
+      "es": "Mascotas, con subcategorías Croquetas y Veterinario. Desde ahora, ese gasto aparece como Mascotas en la gráfica.",
+      "en": ""
+    },
+    {
+      "key": "Un presupuesto es un límite de gasto para un periodo, en ciertas categorías: «no gastar más de 4,000 en Comida al mes».",
+      "source": "Un presupuesto es un límite de gasto para un periodo, en ciertas categorías: «no gastar más de 4,000 en Comida al mes».",
+      "es": "Un presupuesto es un límite de gasto para un periodo, en ciertas categorías: «no gastar más de 4,000 en Comida al mes».",
+      "en": ""
+    },
+    {
+      "key": "Por ejemplo «Comida».",
+      "source": "Por ejemplo «Comida».",
+      "es": "Por ejemplo «Comida».",
+      "en": ""
+    },
+    {
+      "key": "Moneda y meta",
+      "source": "Moneda y meta",
+      "es": "Moneda y meta",
+      "en": ""
+    },
+    {
+      "key": "La moneda del límite y cuánto no quieres pasar.",
+      "source": "La moneda del límite y cuánto no quieres pasar.",
+      "es": "La moneda del límite y cuánto no quieres pasar.",
+      "en": ""
+    },
+    {
+      "key": "Mensual, Trimestral, Semestral o Anual. Cada periodo empieza a contar desde cero.",
+      "source": "Mensual, Trimestral, Semestral o Anual. Cada periodo empieza a contar desde cero.",
+      "es": "Mensual, Trimestral, Semestral o Anual. Cada periodo empieza a contar desde cero.",
+      "en": ""
+    },
+    {
+      "key": "Categorías que cubre",
+      "source": "Categorías que cubre",
+      "es": "Categorías que cubre",
+      "en": ""
+    },
+    {
+      "key": "Todos los gastos de esas categorías suman contra el límite.",
+      "source": "Todos los gastos de esas categorías suman contra el límite.",
+      "es": "Todos los gastos de esas categorías suman contra el límite.",
+      "en": ""
+    },
+    {
+      "key": "Avance",
+      "source": "Avance",
+      "es": "Avance",
+      "en": ""
+    },
+    {
+      "key": "Gastado ÷ Meta",
+      "source": "Gastado ÷ Meta",
+      "es": "Gastado ÷ Meta",
+      "en": ""
+    },
+    {
+      "key": "Te avisa al 70, 80, 90 y 100 %. Si a mitad del periodo llevas menos del 50 %, la app te felicita.",
+      "source": "Te avisa al 70, 80, 90 y 100 %. Si a mitad del periodo llevas menos del 50 %, la app te felicita.",
+      "es": "Te avisa al 70, 80, 90 y 100 %. Si a mitad del periodo llevas menos del 50 %, la app te felicita.",
+      "en": ""
+    },
+    {
+      "key": "Comida: Meta 4,000 MXN al mes, categorías Comida y Súper. Si llevas 3,200, vas al 80 %.",
+      "source": "Comida: Meta 4,000 MXN al mes, categorías Comida y Súper. Si llevas 3,200, vas al 80 %.",
+      "es": "Comida: Meta 4,000 MXN al mes, categorías Comida y Súper. Si llevas 3,200, vas al 80 %.",
+      "en": ""
+    },
+    {
+      "key": "Un ahorro es una cantidad que quieres juntar, como un fondo de emergencia o unas vacaciones.",
+      "source": "Un ahorro es una cantidad que quieres juntar, como un fondo de emergencia o unas vacaciones.",
+      "es": "Un ahorro es una cantidad que quieres juntar, como un fondo de emergencia o unas vacaciones.",
+      "en": ""
+    },
+    {
+      "key": "Nombre y moneda",
+      "source": "Nombre y moneda",
+      "es": "Nombre y moneda",
+      "en": ""
+    },
+    {
+      "key": "Por ejemplo «Fondo de emergencia», en la moneda en que lo juntas.",
+      "source": "Por ejemplo «Fondo de emergencia», en la moneda en que lo juntas.",
+      "es": "Por ejemplo «Fondo de emergencia», en la moneda en que lo juntas.",
+      "en": ""
+    },
+    {
+      "key": "Meta",
+      "source": "Meta",
+      "es": "Meta",
+      "en": ""
+    },
+    {
+      "key": "Cuánto quieres juntar en total.",
+      "source": "Cuánto quieres juntar en total.",
+      "es": "Cuánto quieres juntar en total.",
+      "en": ""
+    },
+    {
+      "key": "Cuentas que lo alimentan",
+      "source": "Cuentas que lo alimentan",
+      "es": "Cuentas que lo alimentan",
+      "en": ""
+    },
+    {
+      "key": "Opcional. Su avance es el saldo sumado de esas cuentas.",
+      "source": "Opcional. Su avance es el saldo sumado de esas cuentas.",
+      "es": "Opcional. Su avance es el saldo sumado de esas cuentas.",
+      "en": ""
+    },
+    {
+      "key": "Ahorrado hasta ahora",
+      "source": "Ahorrado hasta ahora",
+      "es": "Ahorrado hasta ahora",
+      "en": ""
+    },
+    {
+      "key": "Solo si no ligas cuentas: cuánto llevas. La app usa el mayor entre esto y lo que hayas registrado bajo ese ahorro.",
+      "source": "Solo si no ligas cuentas: cuánto llevas. La app usa el mayor entre esto y lo que hayas registrado bajo ese ahorro.",
+      "es": "Solo si no ligas cuentas: cuánto llevas. La app usa el mayor entre esto y lo que hayas registrado bajo ese ahorro.",
+      "en": ""
+    },
+    {
+      "key": "Ahorrado ÷ Meta",
+      "source": "Ahorrado ÷ Meta",
+      "es": "Ahorrado ÷ Meta",
+      "en": ""
+    },
+    {
+      "key": "Fondo de emergencia: Meta 30,000 MXN, ligado a la cuenta Ahorro. Si la cuenta tiene 12,000, vas al 40 %.",
+      "source": "Fondo de emergencia: Meta 30,000 MXN, ligado a la cuenta Ahorro. Si la cuenta tiene 12,000, vas al 40 %.",
+      "es": "Fondo de emergencia: Meta 30,000 MXN, ligado a la cuenta Ahorro. Si la cuenta tiene 12,000, vas al 40 %.",
+      "en": ""
+    },
+    {
+      "key": "Un proyecto es un gasto planeado con fecha de inicio y fin, como un viaje, una boda o una remodelación.",
+      "source": "Un proyecto es un gasto planeado con fecha de inicio y fin, como un viaje, una boda o una remodelación.",
+      "es": "Un proyecto es un gasto planeado con fecha de inicio y fin, como un viaje, una boda o una remodelación.",
+      "en": ""
+    },
+    {
+      "key": "Por ejemplo «Viaje a Oaxaca».",
+      "source": "Por ejemplo «Viaje a Oaxaca».",
+      "es": "Por ejemplo «Viaje a Oaxaca».",
+      "en": ""
+    },
+    {
+      "key": "Cuánto piensas gastar en total.",
+      "source": "Cuánto piensas gastar en total.",
+      "es": "Cuánto piensas gastar en total.",
+      "en": ""
+    },
+    {
+      "key": "Empieza y termina",
+      "source": "Empieza y termina",
+      "es": "Empieza y termina",
+      "en": ""
+    },
+    {
+      "key": "Las fechas del proyecto.",
+      "source": "Las fechas del proyecto.",
+      "es": "Las fechas del proyecto.",
+      "en": ""
+    },
+    {
+      "key": "Su avance suma todo lo que gastes con ese proyecto, sin importar el mes. Para ligar un gasto, elige el proyecto en el campo Presupuesto del gasto.",
+      "source": "Su avance suma todo lo que gastes con ese proyecto, sin importar el mes. Para ligar un gasto, elige el proyecto en el campo Presupuesto del gasto.",
+      "es": "Su avance suma todo lo que gastes con ese proyecto, sin importar el mes. Para ligar un gasto, elige el proyecto en el campo Presupuesto del gasto.",
+      "en": ""
+    },
+    {
+      "key": "Viaje a Oaxaca: Meta 12,000 MXN, del 1 al 10 de diciembre. Cada cena o boleto que ligues suma a su avance.",
+      "source": "Viaje a Oaxaca: Meta 12,000 MXN, del 1 al 10 de diciembre. Cada cena o boleto que ligues suma a su avance.",
+      "es": "Viaje a Oaxaca: Meta 12,000 MXN, del 1 al 10 de diciembre. Cada cena o boleto que ligues suma a su avance.",
+      "en": ""
+    },
+    {
+      "key": "Dinero que sale de una de tus cuentas.",
+      "source": "Dinero que sale de una de tus cuentas.",
+      "es": "Dinero que sale de una de tus cuentas.",
+      "en": ""
+    },
+    {
+      "key": "Dinero que entra a una de tus cuentas.",
+      "source": "Dinero que entra a una de tus cuentas.",
+      "es": "Dinero que entra a una de tus cuentas.",
+      "en": ""
+    },
+    {
+      "key": "Mueve dinero de una cuenta tuya a otra. No es ingreso ni gasto.",
+      "source": "Mueve dinero de una cuenta tuya a otra. No es ingreso ni gasto.",
+      "es": "Mueve dinero de una cuenta tuya a otra. No es ingreso ni gasto.",
+      "en": ""
+    },
+    {
+      "key": "Un banco, una tarjeta, efectivo o una cuenta de ahorro.",
+      "source": "Un banco, una tarjeta, efectivo o una cuenta de ahorro.",
+      "es": "Un banco, una tarjeta, efectivo o una cuenta de ahorro.",
+      "en": ""
+    },
+    {
+      "key": "Un tema para agrupar tus gastos e ingresos.",
+      "source": "Un tema para agrupar tus gastos e ingresos.",
+      "es": "Un tema para agrupar tus gastos e ingresos.",
+      "en": ""
+    },
+    {
+      "key": "Un límite de gasto por periodo para ciertas categorías.",
+      "source": "Un límite de gasto por periodo para ciertas categorías.",
+      "es": "Un límite de gasto por periodo para ciertas categorías.",
+      "en": ""
+    },
+    {
+      "key": "Una cantidad que quieres juntar, con su avance.",
+      "source": "Una cantidad que quieres juntar, con su avance.",
+      "es": "Una cantidad que quieres juntar, con su avance.",
+      "en": ""
+    },
+    {
+      "key": "Un gasto planeado con fecha de inicio y fin.",
+      "source": "Un gasto planeado con fecha de inicio y fin.",
+      "es": "Un gasto planeado con fecha de inicio y fin.",
+      "en": ""
+    }
+  ]
+}

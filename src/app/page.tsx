@@ -3,9 +3,11 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { FiArrowRight, FiArrowUpRight, FiCompass, FiLayers, FiLock, FiSliders } from "react-icons/fi";
 import HomeSections from "./HomeSections";
+import ChapterBridge from "./ChapterBridge";
 import "./home.css";
 import "./home-renders.css";
 import "./home-demo.css";
+import "./home-bridge.css";
 
 export const metadata: Metadata = {
   title: "Gastify | Entiende tu dinero. Planea lo que sigue.",
@@ -22,7 +24,7 @@ export default function Home() {
 
     <HomeSections />
 
-    <section className="home-demo-section home-chapter" id="demo" aria-labelledby="home-demo-title">
+    <section className="home-demo-section home-chapter" id="demo" tabIndex={-1} aria-labelledby="home-demo-title">
       <div className="home-shell home-demo-inner">
         <div className="home-demo-copy">
           <span className="home-eyebrow">GASTIFY INTERACTIVO</span>
@@ -32,6 +34,7 @@ export default function Home() {
             <Link href="/demo" prefetch={false} className="home-button">Abrir demo interactiva <FiArrowRight aria-hidden="true" /></Link>
             <span className="home-demo-safety"><FiLock aria-hidden="true" /> Sin registro ni datos personales</span>
           </div>
+          <ChapterBridge to="siguiente-paso">Sigue con el siguiente paso</ChapterBridge>
         </div>
         <div className="home-demo-capabilities" aria-label="Qué puedes explorar en la demo">
           <article><FiLayers aria-hidden="true" /><div><h3>Un recorrido por la app</h3><p>Dashboard, movimientos, cuentas, categorías e historial.</p></div></article>
@@ -41,7 +44,7 @@ export default function Home() {
       </div>
     </section>
 
-    <section className="home-end home-chapter" aria-labelledby="home-end-title"><div className="home-end-inner home-shell"><div className="home-end-icon"><FiCompass aria-hidden="true" /></div><span className="home-eyebrow">EL SIGUIENTE PASO ES TUYO</span><h2 id="home-end-title">Dale contexto a cada peso.</h2><p>Empieza por registrar un movimiento. Después deja que el panorama completo aparezca.</p><div className="home-end-actions"><Link href="/register" className="home-button">Crear mi cuenta <FiArrowRight aria-hidden="true" /></Link><Link href="/demo" prefetch={false} className="home-text-link">Primero quiero probar Gastify <FiArrowRight aria-hidden="true" /></Link><Link href="/login" className="home-text-link">Ya tengo cuenta</Link></div></div></section>
+    <section className="home-end home-chapter" id="siguiente-paso" tabIndex={-1} aria-labelledby="home-end-title"><div className="home-end-inner home-shell"><div className="home-end-icon"><FiCompass aria-hidden="true" /></div><span className="home-eyebrow">EL SIGUIENTE PASO ES TUYO</span><h2 id="home-end-title">Dale contexto a cada peso.</h2><p>Empieza por registrar un movimiento. Después deja que el panorama completo aparezca.</p><div className="home-end-actions"><Link href="/register" className="home-button">Crear mi cuenta <FiArrowRight aria-hidden="true" /></Link><Link href="/demo" prefetch={false} className="home-text-link">Primero quiero probar Gastify <FiArrowRight aria-hidden="true" /></Link><Link href="/login" className="home-text-link">Ya tengo cuenta</Link></div></div></section>
     <footer className="home-footer"><div className="home-shell home-footer-inner"><Link href="/" className="home-footer-brand">Gastify<span>®</span></Link><p>Finanzas personales con más contexto.</p><div><span>© {new Date().getFullYear()} Gastify</span><a href="https://www.linkedin.com/in/luisjairvazquezn/" target="_blank" rel="noopener noreferrer">Contacto <FiArrowUpRight aria-hidden="true" /></a></div></div></footer>
   </main>;
 }

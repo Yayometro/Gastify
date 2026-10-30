@@ -13,6 +13,7 @@ import { MovementRow } from '@/components/movements/movement-row';
 import { Screen } from '@/components/screen';
 import { useToast } from '@/components/toast';
 import { Card } from '@/components/ui/card';
+import { TourPressable } from '@/components/tour/tour-target';
 import { Colors } from '@/constants/theme';
 import { reloadAfterWrite } from '@/hooks/use-load-app-data';
 import { usePrimaryCurrency } from '@/hooks/use-primary-currency';
@@ -163,8 +164,8 @@ export default function BudgetDetailScreen() {
   };
 
   return (
-    <Screen title={stored.name || t("budgets.alert.defaultName")} subtitle={project ? t("budgets.kind.project") : saving ? t("mobile.meta.de.ahorro") : monthTitle(now, locale)} backLabel={t("budgets.title")} onBack={back}>
-      <Card title={project ? t("mobile.gastado.en.total") : saving ? t("mobile.ahorrado") : t("mobile.gastado.este.mes")}>
+    <Screen tutorial="m-bud-detail" title={stored.name || t("budgets.alert.defaultName")} subtitle={project ? t("budgets.kind.project") : saving ? t("mobile.meta.de.ahorro") : monthTitle(now, locale)} backLabel={t("budgets.title")} onBack={back}>
+      <Card tour="m-bud-detail-spent" title={project ? t("mobile.gastado.en.total") : saving ? t("mobile.ahorrado") : t("mobile.gastado.este.mes")}>
         {goal > 0 && (
           <>
             <View className="flex-row items-center gap-3">
@@ -198,7 +199,7 @@ export default function BudgetDetailScreen() {
       </Card>
 
       {!saving && distribution.length > 0 && (
-        <Card title={t("mobile.distribucion.del.gasto.por.categoria")} info={APP_INFO.distribuci_n_del_gasto}>
+        <Card tour="m-bud-detail-distribution" title={t("mobile.distribucion.del.gasto.por.categoria")} info={APP_INFO.distribuci_n_del_gasto}>
           <View className="flex-row overflow-hidden rounded-full" style={{ height: 14 }} accessibilityLabel={t("mobile.distribucion.del.gasto.por.categoria")}>
             {distribution.map((row) => <View key={row.key} style={{ flex: row.amount, backgroundColor: row.color }} />)}
           </View>
@@ -226,7 +227,7 @@ export default function BudgetDetailScreen() {
       )}
 
       {!saving && (
-        <Card title={project ? t("mobile.movimientos.del.proyecto") : t("mobile.movimientos.que.cuentan")}>
+        <Card tour="m-bud-detail-movements" title={project ? t("mobile.movimientos.del.proyecto") : t("mobile.movimientos.que.cuentan")}>
           {project && (
             <View className="flex-row gap-2">
               <Pressable accessibilityRole="button" onPress={() => setLinkOpen(true)} className="flex-1 items-center rounded-full border border-gf-border py-2.5">
@@ -253,12 +254,13 @@ export default function BudgetDetailScreen() {
       )}
 
       <Card
+        tour="m-budform"
         title={t("mobile.editar")}
         onHeaderPress={() => setEditOpen((open) => !open)}
         action={
-          <Pressable accessibilityRole="button" accessibilityState={{ expanded: editOpen }} accessibilityLabel={editOpen ? t("mobile.ocultar.edicion") : t("mobile.mostrar.edicion")} onPress={() => setEditOpen((open) => !open)} hitSlop={10}>
+          <TourPressable id="m-budform-open" accessibilityRole="button" accessibilityState={{ expanded: editOpen }} accessibilityLabel={editOpen ? t("mobile.ocultar.edicion") : t("mobile.mostrar.edicion")} onPress={() => setEditOpen((open) => !open)} hitSlop={10}>
             <Ionicons name={editOpen ? 'chevron-up' : 'chevron-down'} size={22} color={colors.text} />
-          </Pressable>
+          </TourPressable>
         }>
         {editOpen && (
         <BudgetForm

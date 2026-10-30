@@ -8,7 +8,9 @@ import Navbar from "@/components/Navbar";
 import AllDataProvider from "@/components/Providers/AllDataProvider";
 import ToolsFab from "@/components/multiUsedComp/ToolsFab";
 import IdleStepUpGuard from "@/components/multiUsedComp/IdleStepUpGuard";
+import RecurringPendingGate from "@/components/multiUsedComp/RecurringPendingGate";
 import HistoryLoadingPill from "@/components/multiUsedComp/loaders/HistoryLoadingPill";
+import { TourProvider } from "@/components/tour/TourProvider";
 import { I18nProvider } from "@/i18n/client";
 import { currentLocale, messagesFor } from "@/i18n/server";
 import { NAMESPACES } from "@gastify/core/i18n/catalogs";
@@ -51,7 +53,9 @@ async function DashboardLayout({
   return (
     <I18nProvider locale={locale} messages={messages}>
     <AllDataProvider>
+    <TourProvider account>
     <IdleStepUpGuard />
+    <RecurringPendingGate />
     <HistoryLoadingPill />
     <div
       className={`dashboard-layer-container walllet-bg h-full w-full flex flex-col flex-nowrap sm:flex-row m-0 p-0`}
@@ -61,6 +65,7 @@ async function DashboardLayout({
         {children}
         <ToolsFab mail={sesion.user.email} />
     </div>
+    </TourProvider>
     </AllDataProvider>
     </I18nProvider>
   );

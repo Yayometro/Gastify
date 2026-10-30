@@ -56,6 +56,8 @@ import type { WalletData } from "@/lib/features/walletSlice";
 import type { AppDispatch } from "@/lib/store";
 
 import { InfoTip } from "@/components/multiUsedComp/InfoTip";
+import TitleWithHelp from "@/components/multiUsedComp/TitleWithHelp";
+import TutorialTip from "@/components/tour/TutorialTip";
 import { useLocale, useT, useInfo } from "@/i18n/client";
 
 export interface BudgetsClientProps {
@@ -300,6 +302,7 @@ function BudgetsClient({ mcSession, readOnly = false }: BudgetsClientProps): Rea
       <div className="w-full profile-img py-4 text-center text-white">
         <h1 className="text-2xl sm:text-3xl md:text-4xl font-thin">
           {t("budgets.title")}
+          <span aria-hidden="true" className="mx-2 inline-block h-5 w-px shrink-0 align-middle bg-purple-300/40" /><TutorialTip className="ml-0.5" tour="budgets" label={t("navbar.budgets")} />
         </h1>
       </div>
       {!readOnly && <div className="w-full flex items-center justify-center pt-2">
@@ -311,7 +314,7 @@ function BudgetsClient({ mcSession, readOnly = false }: BudgetsClientProps): Rea
       </div>}
       <div className="content-profile-cont w-full h-full content-wallet-glass items-center mt-[10px] sm:mt-[20px] rounded-t-[60px] rounded-b-2xl px-4 sm:px-8 py-6">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mb-4">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2" data-tour="bud-period">
             <div
               className="gf-glass-card text-purple-100 font-semibold text-xs px-3.5 py-1.5 rounded-2xl flex items-center gap-1.5 select-none"
               title={t("budgets.period.current")}
@@ -330,13 +333,11 @@ function BudgetsClient({ mcSession, readOnly = false }: BudgetsClientProps): Rea
                 <span>{t("budgets.reset")}</span>
               </button>
             </Tooltip>
-            <Tooltip title={t("budgets.period.help")}>
-              <div className="text-purple-500">
-                <UniversalCategoIcon type={"fa/FaRegQuestionCircle"} siz={15} />
-              </div>
-            </Tooltip>
+            
+            <span aria-hidden="true" className="mx-2 inline-block h-5 w-px shrink-0 align-middle bg-purple-300/40" /><TutorialTip tour="budPeriod" label={t("tour.budPeriod.name")} />
           </div>
           {!readOnly && <div
+            data-tour="bud-new"
             className="flex items-center gap-2 gf-glass-button text-white rounded-full px-4 py-2 cursor-pointer"
             onClick={openCreate}
           >
@@ -349,9 +350,9 @@ function BudgetsClient({ mcSession, readOnly = false }: BudgetsClientProps): Rea
           <Skeleton active />
         ) : (
           <>
-            <span className="inline-flex items-center gap-1.5"><h2 className="text-xl text-purple-300 mb-2">{t("budgets.spending.title")}</h2><InfoTip info={APP_INFO.presupuestos} /></span>
+            <span data-tour="bud-spending-title" className="inline-flex items-center gap-1.5"><h2 className="text-xl text-purple-300 mb-2">{t("budgets.spending.title")}</h2><span aria-hidden="true" className="mx-2 inline-block h-5 w-px shrink-0 align-middle bg-purple-300/40" /><InfoTip info={APP_INFO.presupuestos} /></span>
             {(spendingBudgets.length > 0 || (coverage as SpendingSummaryCoverage).totalSpent > 0) && (
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-3" data-tour="bud-summary">
                 <div
                   className="flex-1 bg-gf-accent-soft-bg rounded-2xl p-3 text-center cursor-pointer hover:brightness-110 transition-[filter]"
                   onClick={() => setShowSpendingSummary(true)}
@@ -363,14 +364,14 @@ function BudgetsClient({ mcSession, readOnly = false }: BudgetsClientProps): Rea
                   className="flex-1 bg-gf-accent-soft-bg rounded-2xl p-3 text-center cursor-pointer hover:brightness-110 transition-[filter]"
                   onClick={() => setShowSpendingSummary(true)}
                 >
-                  <span className="inline-flex items-center gap-1.5"><p className="text-xs text-gf-text-muted">{t("budgets.totalSpent")}</p><InfoTip info={APP_INFO.gasto_total} /></span>
+                  <TitleWithHelp as="p" title={t("budgets.totalSpent")} info={APP_INFO.gasto_total} titleClassName="text-xs text-gf-text-muted" className="justify-center" />
                   <p className="text-lg text-purple-300 font-bold">{usdFormatChanger((coverage as SpendingSummaryCoverage).totalSpent)}</p>
                 </div>
                 <div
                   className="flex-1 gf-glass-warning rounded-2xl p-3 text-center cursor-pointer hover:brightness-110 transition-[filter]"
                   onClick={() => setShowSpendingSummary(true)}
                 >
-                  <span className="inline-flex items-center gap-1.5"><p className="text-xs text-amber-400">{t("budgets.unbudgeted")}</p><InfoTip info={APP_INFO.sin_presupuesto} /></span>
+                  <TitleWithHelp as="p" title={t("budgets.unbudgeted")} info={APP_INFO.sin_presupuesto} titleClassName="text-xs text-amber-400" className="justify-center" />
                   <p className="text-lg text-amber-400 font-bold">
                     {usdFormatChanger((coverage as SpendingSummaryCoverage).unbudgetedSpent)}
                     <span className="text-xs font-normal ml-1">
@@ -383,14 +384,15 @@ function BudgetsClient({ mcSession, readOnly = false }: BudgetsClientProps): Rea
             {spendingBudgets.length <= 0 ? (
               <EmptyModule emMessage={t("budgets.spending.none")} />
             ) : (
-              <div className="flex flex-col gap-2 mb-6">
-                {spendingBudgets.map((budget) => (
-                  <BudgetBarRow
-                    key={budget._id}
-                    budget={budget as BudgetBarRowBudgetItem}
-                    actual={actualByBudgetId[budget._id || ""] || 0}
-                    onClick={openDetail}
-                  />
+              <div className="flex flex-col gap-2 mb-6" data-tour="bud-spending-list">
+                {spendingBudgets.map((budget, rowIndex) => (
+                  <div key={budget._id} data-tour={rowIndex === 0 ? "bud-row" : undefined}>
+                    <BudgetBarRow
+                      budget={budget as BudgetBarRowBudgetItem}
+                      actual={actualByBudgetId[budget._id || ""] || 0}
+                      onClick={openDetail}
+                    />
+                  </div>
                 ))}
                 <UnbudgetedSpendingCard
                   coverage={coverage}
@@ -408,6 +410,7 @@ function BudgetsClient({ mcSession, readOnly = false }: BudgetsClientProps): Rea
               </div>
             )}
 
+            <div data-tour="bud-projects">
             <h2 className="text-xl text-purple-300 mb-2">{t("budgets.projects")}</h2>
             <p className="text-xs text-gf-text-muted mb-3">{t("budgets.projects.help")}</p>
             {projectBudgets.length <= 0 ? (
@@ -424,7 +427,9 @@ function BudgetsClient({ mcSession, readOnly = false }: BudgetsClientProps): Rea
                 ))}
               </div>
             )}
+            </div>
 
+            <div data-tour="bud-savings">
             <h2 className="text-xl text-purple-300 mb-2">{t("budgets.savings")}</h2>
             {savingBudgets.length <= 0 ? (
               <EmptyModule emMessage={t("budgets.savings.none")} />
@@ -439,6 +444,7 @@ function BudgetsClient({ mcSession, readOnly = false }: BudgetsClientProps): Rea
                 ))}
               </div>
             )}
+            </div>
           </>
         )}
 

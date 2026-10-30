@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { InfoContent, type InfoSection } from '@/components/info-content';
 import { BottomSheet } from '@/components/ui/bottom-sheet';
+import { useTourTarget } from '@/components/tour/tour-target';
 import { GradientButton } from '@/components/ui/gradient-button';
 import { Colors } from '@/constants/theme';
 import { useT } from "@/i18n/client";
@@ -14,14 +15,16 @@ export type InfoText = { title: string; text: string; sections?: InfoSection[] }
 
 // The "?" at the top right of a card: it opens a sheet that explains what the section shows, like the web's info
 // icons. Tapping outside the sheet closes it too.
-export function InfoTip({ info }: { info: InfoText }) {
+export function InfoTip({ info, tourId }: { info: InfoText; tourId?: string }) {
   const t = useT();
   const [open, setOpen] = useState(false);
   const colors = Colors[useColorScheme() === 'dark' ? 'dark' : 'light'];
+  // Every "?" answers to the same id: the tutorial's card about them points at the topmost one on the screen.
+  const ref = useTourTarget(tourId ?? 'm-info-tip');
 
   return (
     <>
-      <Pressable accessibilityRole="button" accessibilityLabel={t("mobile.infoLabel", { p1: info.title })} onPress={() => setOpen(true)} hitSlop={10}>
+      <Pressable ref={ref} collapsable={false} accessibilityRole="button" accessibilityLabel={t("mobile.infoLabel", { p1: info.title })} onPress={() => setOpen(true)} hitSlop={10}>
         <Ionicons name="help-circle-outline" size={22} color={colors.textSecondary} />
       </Pressable>
       <BottomSheet visible={open} onClose={() => setOpen(false)} maxHeight="88%">

@@ -1,5 +1,6 @@
 "use client";
 
+import TutorialTip from "@/components/tour/TutorialTip";
 import React from "react";
 import CategoIcon from "@/components/multiUsedComp/CategoIcon";
 import { formatMoneyMajor } from "@gastify/core/money/currencies";
@@ -78,10 +79,10 @@ function BudgetPeriodDetailModal({
   return (
     <div className="content absolute gf-glass-violet flex flex-col w-full h-full max-w-[640px] max-h-[80%] rounded-2xl items-center overflow-hidden z-[1001]">
       <header className="w-full text-white px-6 py-4">
-        <p className="text-lg">{budget?.name || row.category}</p>
-        <p className="text-xs text-white/80">{t("analyzer.compliance.title")}</p>
+        <p className="flex items-center text-lg">{budget?.name || row.category}<span aria-hidden="true" className="mx-2 inline-block h-5 w-px shrink-0 align-middle bg-purple-300/40" /><TutorialTip tour="hisBudgetPeriod" label={budget?.name || row.category} /></p>
+        <p data-tour="bp-summary" className="text-xs text-white/80">{t("analyzer.compliance.title")}</p>
       </header>
-      <div className="w-full flex-1 overflow-y-auto px-6 py-5 flex flex-col gap-5">
+      <div data-tour="bp-tables" className="w-full flex-1 overflow-y-auto px-6 py-5 flex flex-col gap-5">
         <PeriodTable label={labelB} periodData={row.periodB} walletPrimaryCurrency={walletPrimaryCurrency} />
         <PeriodTable label={labelA} periodData={row.periodA} walletPrimaryCurrency={walletPrimaryCurrency} />
       </div>

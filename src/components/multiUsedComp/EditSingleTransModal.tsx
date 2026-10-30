@@ -1,7 +1,9 @@
 "use client";
+import TutorialTip from "@/components/tour/TutorialTip";
 import type { TranslateFn } from "@gastify/core/i18n/translate";
 
 import React, { useState, useEffect, useContext } from "react";
+import { createPortal } from "react-dom";
 import { Switch, ConfigProvider, Space, Spin } from "antd";
 import dayjs, { type Dayjs } from "dayjs";
 import { DemoContainer, DemoItem } from "@mui/x-date-pickers/internals/demo";
@@ -397,13 +399,17 @@ function EditSingleTransModalInner({ trans, onClose }: { trans: EditSingleTransI
           </div>
         )}
 
-        <h1 className="text-center py-[10px] text-2xl text-white">{tr("movements.edit.title")}</h1>
+        <div data-tour="mov-edit-title" className="flex items-center justify-center gap-2 py-[10px]">
+          <h1 className="text-center text-2xl text-white">{tr("movements.edit.title")}</h1>
+          <span aria-hidden="true" className="mx-2 inline-block h-5 w-px shrink-0 align-middle bg-purple-300/40" />
+          <TutorialTip tour="movEdit" label={tr("movements.edit.title")} />
+        </div>
 
         <form
           onSubmit={handleSubmit}
           className="form-trans-edit w-full h-full flex flex-col gap-2 items-start justify-start px-10 rounded-t-[60px] pt-[30px] pb-20 overflow-y-scroll"
         >
-          <p className="label-tfp">{tr("movements.columns.name")}</p>
+          <p data-tour="mov-edit-name" className="label-tfp">{tr("movements.columns.name")}</p>
           <input
             type="text"
             name="name"
@@ -412,7 +418,7 @@ function EditSingleTransModalInner({ trans, onClose }: { trans: EditSingleTransI
             placeholder={tr("movements.edit.name")}
           />
 
-          <p className="label-tfp">{tr("movements.edit.amount", { p1: needsCurrencyStrategy ? selectedAccountCurrency : originalAccountCurrency })}</p>
+          <p data-tour="mov-edit-amount" className="label-tfp">{tr("movements.edit.amount", { p1: needsCurrencyStrategy ? selectedAccountCurrency : originalAccountCurrency })}</p>
           <input
             type="number"
             name="amount"
@@ -508,7 +514,7 @@ function EditSingleTransModalInner({ trans, onClose }: { trans: EditSingleTransI
             </ConfigProvider>
           </div>
 
-          <p className="label-tfp">{tr("movements.columns.date")}</p>
+          <p data-tour="mov-edit-date" className="label-tfp">{tr("movements.columns.date")}</p>
           <div className="date-container w-full h-[100px]">
             <LocalizationProvider dateAdapter={AdapterDayjs}>
               <DemoContainer components={["MobileDateTimePicker"]}>
@@ -536,7 +542,7 @@ function EditSingleTransModalInner({ trans, onClose }: { trans: EditSingleTransI
             </LocalizationProvider>
           </div>
 
-          <p className="label-tfp">{tr("movements.columns.category")}</p>
+          <p data-tour="mov-edit-category" className="label-tfp">{tr("movements.columns.category")}</p>
           <TypedBtnSelectCategoryContext onClose={handleClose} />
           {close && (
             <BasicModal
@@ -546,7 +552,7 @@ function EditSingleTransModalInner({ trans, onClose }: { trans: EditSingleTransI
             />
           )}
 
-          <p className="label-tfp">{tr("movements.edit.tags")}</p>
+          <p data-tour="mov-edit-tags" className="label-tfp">{tr("movements.edit.tags")}</p>
           <input
             type="text"
             name="tags"
@@ -555,7 +561,7 @@ function EditSingleTransModalInner({ trans, onClose }: { trans: EditSingleTransI
             placeholder={tr("movements.edit.tagsHint")}
           />
 
-          <p className="label-tfp">{tr("movements.bulk.account")}</p>
+          <p data-tour="mov-edit-account" className="label-tfp">{tr("movements.bulk.account")}</p>
           <div className="etm-selector bg-gf-surface text-gf-text w-full flex items-center justify-center px-[4px] py-[2px]">
             <select
               className="bg-transparent appearance-none w-full pr-4"
@@ -592,7 +598,7 @@ function EditSingleTransModalInner({ trans, onClose }: { trans: EditSingleTransI
             </div>
           )}
 
-          <p className="label-tfp">{tr("movements.edit.project")}</p>
+          <p data-tour="mov-edit-budget" className="label-tfp">{tr("movements.edit.project")}</p>
           <div className="etm-selector bg-gf-surface text-gf-text w-full flex items-center justify-center px-[4px] py-[2px]">
             <select
               className="bg-transparent appearance-none w-full pr-4"
@@ -618,7 +624,7 @@ function EditSingleTransModalInner({ trans, onClose }: { trans: EditSingleTransI
                   ? "gf-glass-button opacity-60 cursor-not-allowed"
                   : "gf-glass-button"
               }`}
-              type="submit"
+              type="submit" data-tour="mov-edit-save"
               disabled={needsCurrencyStrategy && !currencyStrategy}
             >
               {isLoading ? <Spin /> : t("web.save.changes")}
@@ -634,12 +640,17 @@ function EditSingleTransModalInner({ trans, onClose }: { trans: EditSingleTransI
   );
 }
 
+// Opened from another modal (a budget, a project, the unbudgeted window), this fixed layer used to render inside that modal's glass
+// card: the card's backdrop-filter makes it the containing block, so it stacked under the BasicModal portal (z-5000) at body level.
+// It is portaled to document.body like BasicModal, so its own z-[10000] wins over the modal it was opened from.
 function EditSingleTransModal({ trans, onClose }: EditSingleTransModalProps): React.JSX.Element | null {
-  if (!trans) return null;
-  return (
+  // It is only opened by a click, so the document exists; the guard keeps a server render from touching it.
+  if (!trans || typeof document === "undefined") return null;
+  return createPortal(
     <SelectCategories>
       <EditSingleTransModalInner trans={trans} onClose={onClose} />
-    </SelectCategories>
+    </SelectCategories>,
+    document.body
   );
 }
 

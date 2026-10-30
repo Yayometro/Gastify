@@ -7,6 +7,7 @@ import { updateUser, type UserData } from "@/lib/features/userSlice";
 import type { AppDispatch, RootState } from "@/lib/store";
 import { useLocale, useT } from "@/i18n/client";
 import { countryOptions, normalizeCountry } from "@gastify/core/i18n/countries";
+import TutorialTip from "@/components/tour/TutorialTip";
 import { ProfileCard, errorMessage, saveAccount } from "./ProfileParts";
 
 // The country the person picks. While the language is automatic, it decides the language. It is their own choice, saved on the
@@ -36,8 +37,9 @@ export default function ProfileCountryCard() {
   };
 
   return (
-    <ProfileCard title={t("profile.country.title")}>
+    <ProfileCard title={t("profile.country.title")} tour="prof-country" help={<><span aria-hidden="true" className="mx-2 inline-block h-5 w-px shrink-0 align-middle bg-purple-300/40" /><TutorialTip tour="profCountry" label={t("profile.country.title")} /></>}>
       <select
+        data-tour="prof-country-select"
         aria-label={t("profile.country.title")}
         value={current ?? ""}
         disabled={busy}

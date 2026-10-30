@@ -323,6 +323,44 @@ describe("detectSubscriptions", () => {
   });
 });
 
+describe("new category and subscription signals", () => {
+  it("does not call a category new when it only had a quiet previous month", () => {
+    const transactions = [
+      tx({ amount: 100, date: new Date(2026, 7, 5), category: CAT_FOOD }),
+      tx({ amount: 60, date: new Date(2026, 2, 5), category: CAT_FOOD }),
+    ];
+    const [row] = compareCategoriesAcrossMonths(text, transactions, true, getMonthRange(new Date(2026, 7, 1)), getMonthRange(new Date(2026, 6, 1)));
+    expect(row).toMatchObject({ current: 100, previous: 0, isNew: false });
+    expect(row.count).toBe(1);
+    expect(row.sample[0]).toMatchObject({ amount: 100 });
+    expect(new Date(row.firstSeen)).toEqual(new Date(2026, 2, 5));
+  });
+
+  it("groups charges that only differ in wording (mensual, renovación, month names)", () => {
+    const transactions = [
+      tx({ amount: 199, date: new Date(2026, 7, 3), category: CAT_FOOD, name: "Netflix" }),
+      tx({ amount: 199, date: new Date(2026, 6, 3), category: CAT_FOOD, name: "Netflix mensual" }),
+      tx({ amount: 199, date: new Date(2026, 5, 3), category: CAT_FOOD, name: "Renovación Netflix junio" }),
+    ];
+    const subs = detectSubscriptions(text, transactions, new Date(2026, 7, 20), 3, 6);
+    expect(subs).toHaveLength(1);
+    expect(subs[0].occurrences).toHaveLength(3);
+  });
+
+  it("keeps a subscription whose price moved and reports the change, and is not new when it is old", () => {
+    const transactions = [
+      tx({ amount: 5000, date: new Date(2026, 0, 3), category: CAT_FOOD, name: "Renta" }),
+      tx({ amount: 5000, date: new Date(2026, 6, 3), category: CAT_FOOD, name: "Renta" }),
+      tx({ amount: 6500, date: new Date(2026, 7, 3), category: CAT_FOOD, name: "Renta" }),
+      tx({ amount: 6500, date: new Date(2026, 8, 3), category: CAT_FOOD, name: "Renta" }),
+    ];
+    const [sub] = detectSubscriptions(text, transactions, new Date(2026, 8, 20), 3, 6);
+    expect(sub).toMatchObject({ amount: 6500, isNew: false });
+    expect(sub.priceChange).toEqual({ from: 5000, to: 6500 });
+    expect(new Date(sub.firstSeen)).toEqual(new Date(2026, 0, 3));
+  });
+});
+
 describe("findBiggestSpendPatterns", () => {
   it("returns null when there's nothing in the lookback window", () => {
     expect(findBiggestSpendPatterns(text, [], new Date(2026, 7, 20), 12)).toBeNull();

@@ -1,7 +1,7 @@
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { authClient } from '@/auth-client';
@@ -29,6 +29,7 @@ import { longDate } from "@gastify/core/i18n/dates";
 import { PROFILE_NAME_MAX, buildProfileBody, initialsOf, profileToValues, validateProfile, type ProfileErrors } from '@gastify/core/profile/profileForm';
 import { useT, useLocale } from "@/i18n/client";
 
+import { TourPressable, TourTarget } from '@/components/tour/tour-target';
 const AVATAR = 96;
 
 function InfoRow({ label, value }: { label: string; value: string }) {
@@ -91,7 +92,7 @@ export default function ProfileScreen() {
 
   return (
     <Screen title={t("mobile.perfil")} backLabel={t("mobile.mas")} onBack={() => router.back()}>
-      <View className="items-center gap-3">
+      <TourTarget id="m-prof-header" className="items-center gap-3">
         {user?.image ? (
           <Image source={{ uri: user.image }} style={{ width: AVATAR, height: AVATAR, borderRadius: AVATAR / 2 }} contentFit="cover" alt={t("mobile.tu.foto.de.perfil")} />
         ) : (
@@ -103,9 +104,9 @@ export default function ProfileScreen() {
           <Text className="font-inter-bold text-xl text-gf-text">{user?.fullName || t("errors.api.yourAccount")}</Text>
           <Text className="font-inter text-sm text-gf-text-muted">{email}</Text>
         </View>
-      </View>
+      </TourTarget>
 
-      <Card title={t("mobile.tus.datos")}>
+      <Card tour="m-prof-data" title={t("mobile.tus.datos")}>
         <View className="gap-2">
           <TextField label={t("mobile.nombre")} value={fullName} onChangeText={setFullName} maxLength={PROFILE_NAME_MAX} autoCapitalize="words" textContentType="name" />
           {errors.fullName && <Text className="font-inter text-sm text-red-500">{t(errors.fullName, { p1: PROFILE_NAME_MAX })}</Text>}
@@ -118,37 +119,37 @@ export default function ProfileScreen() {
         <GradientButton label={t("mobile.guardar.cambios")} onPress={save} loading={saving} disabled={saving || unchanged} />
       </Card>
 
-      <AccessCard email={email} />
+      <TourTarget id="m-prof-access"><AccessCard email={email} /></TourTarget>
 
-      <CurrencyCard />
+      <TourTarget id="m-prof-currency"><CurrencyCard /></TourTarget>
 
-      <AppearanceCard />
+      <TourTarget id="m-prof-appearance"><AppearanceCard /></TourTarget>
 
-      <LanguageCard />
+      <TourTarget id="m-prof-language"><LanguageCard /></TourTarget>
 
-      <CountryCard />
+      <TourTarget id="m-prof-country"><CountryCard /></TourTarget>
 
-      <Card title={t("mobile.cuenta")}>
+      <Card tour="m-prof-account" title={t("mobile.cuenta")}>
         <InfoRow label={t("mobile.correo")} value={email || '—'} />
         <InfoRow label={t("mobile.moneda.principal")} value={currency} />
         {created && !Number.isNaN(created.getTime()) && <InfoRow label={t("mobile.miembro.desde")} value={longDate(created, locale)} />}
       </Card>
 
-      <TwoFactorCard />
-      <PasskeysCard />
-      <ApiTokensCard />
+      <TourTarget id="m-prof-twofactor"><TwoFactorCard /></TourTarget>
+      <TourTarget id="m-prof-passkeys"><PasskeysCard /></TourTarget>
+      <TourTarget id="m-prof-tokens"><ApiTokensCard /></TourTarget>
 
       <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.la.foto.de.perfil.se")}</Text>
 
-      <Pressable
+      <TourPressable id="m-prof-signout"
         accessibilityRole="button"
         accessibilityLabel={t("mobile.cerrar.sesion")}
         onPress={() => authClient.signOut()}
         className="items-center rounded-3xl bg-gf-surface p-4">
         <Text className="font-inter-semibold text-base text-red-500">{t("mobile.cerrar.sesion")}</Text>
-      </Pressable>
+      </TourPressable>
 
-      <DeleteAccountCard email={email} twoFactorEnabled={Boolean((session?.user as { twoFactorEnabled?: boolean } | undefined)?.twoFactorEnabled)} />
+      <TourTarget id="m-prof-delete"><DeleteAccountCard email={email} twoFactorEnabled={Boolean((session?.user as { twoFactorEnabled?: boolean } | undefined)?.twoFactorEnabled)} /></TourTarget>
     </Screen>
   );
 }

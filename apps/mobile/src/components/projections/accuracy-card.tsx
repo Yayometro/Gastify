@@ -8,7 +8,10 @@ import { localMonthLabel } from '@/lib/month-label';
 import { formatMoneyMajor } from '@gastify/core/money/currencies';
 
 import { useT, useInfo } from "@/i18n/client";
+import { MonthPrecision, RangePrecision } from '@/components/projections/precision';
+import type { AccuracyMonthInput } from '@gastify/core/transformers/projectionAccuracy';
 
+import { TourPressable, TourTarget } from '@/components/tour/tour-target';
 export type AccuracyRow = {
   monthName: string;
   projectedIncome?: number;
@@ -18,6 +21,10 @@ export type AccuracyRow = {
   varianceIncome?: number;
   varianceExpense?: number;
 };
+
+function toMonthInput(row: AccuracyRow): AccuracyMonthInput {
+  return { monthName: row.monthName, projectedIncome: row.projectedIncome ?? 0, actualIncome: row.actualIncome ?? 0, projectedExpense: row.projectedExpense ?? 0, actualExpense: row.actualExpense ?? 0 };
+}
 
 // "Precisión de tus proyecciones": for each closed month, what was projected against what really happened and the
 // difference, laid out as a small table (rows: income and spending; columns: projected, real, difference). A positive
@@ -51,7 +58,7 @@ export function AccuracyBody({ rows, currency, onMonthPress }: { rows: AccuracyR
     <>
       {rows.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.todavia.no.hay.referencias.guardadas")}</Text>}
       {rows.map((row, rowIndex) => (
-        <Pressable key={row.monthName} accessibilityRole="button" onPress={() => onMonthPress?.(row.monthName)} className="rounded-xl px-3 py-3" style={zebra(rowIndex, scheme === 'dark')}>
+        <TourPressable id={rowIndex === 0 ? "m-proj-accuracy-row" : undefined} key={row.monthName} accessibilityRole="button" onPress={() => onMonthPress?.(row.monthName)} className="rounded-xl px-3 py-3" style={zebra(rowIndex, scheme === 'dark')}>
           <Text className="font-inter-semibold text-base text-gf-text">{localMonthLabel(row.monthName)}</Text>
           <View className="flex-row items-center gap-2 pt-1">
             <Text className="w-14" />
@@ -61,8 +68,13 @@ export function AccuracyBody({ rows, currency, onMonthPress }: { rows: AccuracyR
           </View>
           {line(t("analyzer.income"), row.projectedIncome, row.actualIncome, row.varianceIncome, true, colors.income)}
           {line(t("analyzer.bill"), row.projectedExpense, row.actualExpense, row.varianceExpense, false, colors.expense)}
-        </Pressable>
+          <View className="gap-1 pt-1.5">
+            <Text className={`font-inter-medium ${big ? 'text-sm' : 'text-[10px]'} uppercase text-gf-text-muted`}>{t('projections.precision.monthlyColumn')}</Text>
+            <MonthPrecision month={toMonthInput(row)} />
+          </View>
+        </TourPressable>
       ))}
+      {rows.length > 0 && <RangePrecision months={rows.map(toMonthInput)} />}
       <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.solo.se.muestran.meses.cerrados")}</Text>
     </>
   );

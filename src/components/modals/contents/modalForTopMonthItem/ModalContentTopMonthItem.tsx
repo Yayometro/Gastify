@@ -40,6 +40,7 @@ import {
 import { useT } from "@/i18n/client";
 import type { TranslateFn } from "@gastify/core/i18n/translate";
 
+import TutorialTip from "@/components/tour/TutorialTip";
 export interface QuickActionItem {
   key: string;
   label: string;
@@ -316,7 +317,7 @@ function ModalContentTopMonthItem({ item, close, onBack }: ModalContentTopMonthI
       <div className="content absolute gf-glass-violet flex flex-col w-full h-full max-w-[500px] max-h-[90%] rounded-2xl items-center justify-center overflow-hidden z-[10002]">
         {/* Header */}
         <header className="pt-2 w-full h-fit flex flex-col justify-between items-center text-white sticky top-0 z-10">
-          <span className="w-full flex gap-2 items-center justify-center font-bold text-3xl px-8">
+          <span data-tour="top-modal-header" className="w-full flex gap-2 items-center justify-center font-bold text-3xl px-8">
             <span
               className="h-11 w-11 rounded-full flex items-center justify-center shrink-0"
               style={{ backgroundColor: headerColor }}
@@ -332,17 +333,18 @@ function ModalContentTopMonthItem({ item, close, onBack }: ModalContentTopMonthI
                 {tr("dashboard.detail", { p1: item?.name || item?.type || t("analyzer.noName") })}
               </h1>
             </Tooltip>
+            <span aria-hidden="true" className="mx-2 inline-block h-5 w-px shrink-0 align-middle bg-purple-300/40" /><TutorialTip className="ml-0.5" tour="topModal" label={tr("tour.topModal.name")} />
           </span>
           {isSingleTransaction && item?.category?.name && (
             <p className="text-sm text-white/80 -mt-1">{item.category.name}{item.subCategory?.name ? ` · ${item.subCategory.name}` : ""}</p>
           )}
-          <p className="font-semibold">
+          <p className="font-semibold" data-tour="top-modal-total">
             <b>{formatMoneyMajor(getPrimaryAmount(item), walletPrimaryCurrency) || t("web.no.total.info")}</b>
           </p>
 
           {/* Selection controls — only when multiple items */}
           {isMulti && (
-            <div className="w-full px-3 pb-1 mt-1 flex flex-col gap-1">
+            <div data-tour="top-modal-select" className="w-full px-3 pb-1 mt-1 flex flex-col gap-1">
               {/* Row 1: select-all, count, delete */}
               <div className="flex flex-wrap items-center gap-2">
                 <button
@@ -565,7 +567,7 @@ function ModalContentTopMonthItem({ item, close, onBack }: ModalContentTopMonthI
           {isMulti && (
             <div className="w-full flex items-center justify-end gap-1.5 px-2 pt-1.5 pb-0.5 text-xs text-gf-text-muted">
               <span>{tr("dashboard.sortBy")}</span>
-              <select
+              <select data-tour="top-modal-sort"
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
                 className="bg-gf-surface border border-gf-border rounded-lg px-1.5 py-0.5 text-xs outline-none"
@@ -583,7 +585,7 @@ function ModalContentTopMonthItem({ item, close, onBack }: ModalContentTopMonthI
               </button>
             </div>
           )}
-          <section className="w-full h-full flex flex-col items-center gap-1 p-1">
+          <section data-tour="top-modal-list" className="w-full h-full flex flex-col items-center gap-1 p-1">
             {dupMode && displayItems.length === 0 && (
               <div className="w-full text-center py-4 text-gf-text-muted text-sm font-light">
                 {tr("dashboard.dup.none")}

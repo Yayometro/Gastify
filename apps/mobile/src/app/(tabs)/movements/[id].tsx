@@ -86,7 +86,7 @@ export default function MovementDetailScreen() {
   // The tags as chips (the form below keeps them editable as text).
   const tagList = tagNames(movement.tags);
   return (
-    <Screen title={t("mobile.movimiento")} subtitle={movement.name || undefined} backLabel={backLabel} onBack={back}>
+    <Screen tutorial="m-movform" title={t("mobile.movimiento")} subtitle={movement.name || undefined} backLabel={backLabel} onBack={back}>
       {kind === 'transfer' ? (
         <Card title={t("mobile.transferencia")}>
           <Text className="font-inter text-base text-gf-text-muted">

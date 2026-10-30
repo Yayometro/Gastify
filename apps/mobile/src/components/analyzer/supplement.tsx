@@ -13,6 +13,7 @@ import { getBudgetBarColor } from '@gastify/core/transformers/budgetHistory';
 import type { ProjectionMonthComparison } from '@gastify/core/transformers/projectionsChange';
 import type { WalletAnalyzerBudgetRow, WalletAnalyzerInsightItem, WalletAnalyzerSnapshotData } from '@gastify/core/transformers/walletAnalyzer';
 
+import { MonthPrecision } from '@/components/projections/precision';
 import { useT, useInfo } from "@/i18n/client";
 import { tNow } from '@/i18n/now';
 
@@ -95,6 +96,14 @@ export function AnalyzerProjection({ comparison, loading, error, missing, curren
             </View>
           ))}
         </View>
+        {comparison.type === 'closed' ? (
+          <View className="gap-1.5">
+            <Text className="font-inter-semibold text-sm text-gf-text">{t("projections.precision.title")}</Text>
+            <MonthPrecision withSentence month={{ projectedIncome: comparison.projectedIncome, actualIncome: comparison.actualIncome, projectedExpense: comparison.projectedExpense, actualExpense: comparison.actualExpense }} />
+          </View>
+        ) : (
+          <Text className="font-inter text-xs text-gf-text-muted">{t("projections.precision.inProgress")}</Text>
+        )}
       </>}
       {missing.length > 0 && <Text className="font-inter text-xs text-gf-text-muted">{t("mobile.sin.tipo.de.cambio.para", { p1: missing.join(', ') })}</Text>}
     </Card>

@@ -35,6 +35,7 @@ import type { TransactionData } from '@gastify/core/features/transacctionsSlice'
 
 import { useT, useInfo, useLocale } from "@/i18n/client";
 
+import { TourPressable, TourTarget } from '@/components/tour/tour-target';
 function Muted({ children }: { children: string }) {
   return <Text className="font-inter text-sm text-gf-text-muted">{children}</Text>;
 }
@@ -205,14 +206,14 @@ export default function BudgetsScreen() {
         <Text className="font-inter text-sm text-red-500">{t("mobile.no.pudimos.cargar.tus.presupuestos")}</Text>
       )}
 
-      <View className="flex-row gap-2">
+      <TourTarget id="m-bud-new" style={{ flexDirection: 'row', gap: 8 }}>
         <NewButton label={t("mobile.presupuesto")} kind="spending" />
         <NewButton label={t("mobile.ahorro")} kind="saving" />
         <NewButton label={t("mobile.proyecto")} kind="project" />
-      </View>
+      </TourTarget>
 
       {/* The period: arrows move by month, tapping the month picks any month; "Personalizado" takes a range. */}
-      <View className="gap-3">
+      <TourTarget id="m-bud-period" style={{ gap: 12 }}>
         {!custom && <MonthSwitcher value={month} onChange={setMonth} latest={now} />}
         <View className="flex-row gap-2">
           <PeriodChip label={t("mobile.mes")} selected={!custom} onPress={() => setCustom(false)} />
@@ -224,10 +225,10 @@ export default function BudgetsScreen() {
             <DateField label={t("mobile.fecha.final")} value={toText} onChange={setToText} />
           </View>
         )}
-      </View>
+      </TourTarget>
 
       {/* Two tiles, as the web's summary: the total spending and the part no budget covers. Each opens its detail. */}
-      <View className="flex-row gap-3">
+      <TourTarget id="m-bud-summary" style={{ flexDirection: 'row', gap: 12 }}>
         <Pressable accessibilityRole="button" onPress={() => setSheet('total')} className="flex-1">
           <Card title={t("mobile.gasto.total")} style={{ minHeight: 160, flex: 1 }} info={APP_INFO.gasto_total}>
             <Text className="font-inter-bold text-xl text-gf-text">{formatMoneyMajor(coverage.totalSpent, currency)}</Text>
@@ -235,13 +236,13 @@ export default function BudgetsScreen() {
           </Card>
         </Pressable>
         <Pressable accessibilityRole="button" onPress={() => setSheet('unbudgeted')} className="flex-1">
-          <Card title={t("mobile.sin.presupuesto")} style={{ minHeight: 160, flex: 1 }} info={APP_INFO.sin_presupuesto}>
+          <Card tour="m-bud-unbudgeted-card" title={t("mobile.sin.presupuesto")} style={{ minHeight: 160, flex: 1 }} info={APP_INFO.sin_presupuesto}>
             <Text className="font-inter-bold text-xl text-gf-text">{formatMoneyMajor(coverage.unbudgetedSpent, currency)}</Text>
             <ProgressBar ratio={Math.min(1, coverage.unbudgetedPercentage / 100)} color={colors.accent} />
             <Text className="font-inter text-xs text-gf-text-muted">{t("mobile.p1.del.gasto", { p1: Math.round(coverage.unbudgetedPercentage) })}</Text>
           </Card>
         </Pressable>
-      </View>
+      </TourTarget>
 
       <BudgetSummarySheet
         kind={sheet}
@@ -259,10 +260,10 @@ export default function BudgetsScreen() {
         }}
       />
 
-      <Pressable accessibilityRole="button" onPress={() => setOrderOpen(true)} className="flex-row items-center justify-between rounded-full px-5 py-3" style={glassFill(scheme === 'dark', colors.backgroundElement)}>
+      <TourPressable id="m-bud-order" accessibilityRole="button" onPress={() => setOrderOpen(true)} className="flex-row items-center justify-between rounded-full px-5 py-3" style={glassFill(scheme === 'dark', colors.backgroundElement)}>
         <Text className="font-inter-medium text-sm text-gf-text-muted">{t("mobile.ordenar.por")}</Text>
         <Text className="font-inter-semibold text-sm text-gf-text">{budgetOrders().find((item) => item.id === order)?.label} ▾</Text>
-      </Pressable>
+      </TourPressable>
       <OptionSheet visible={orderOpen} title={t("mobile.ordenar.presupuestos")} options={budgetOrders()} isSelected={(id) => id === order} onSelect={(id) => setOrder(id as BudgetOrder)} onClose={() => setOrderOpen(false)} />
 
       {loading ? (
@@ -273,24 +274,20 @@ export default function BudgetsScreen() {
           {spendingRows.length === 0 ? (
             <Muted>{t("mobile.no.tienes.presupuestos.de.gasto.2")}</Muted>
           ) : (
-            sortedSpending.map((row) => <BudgetCard key={idOf(row.budget)} row={row} currency={currency} saving={false} />)
+            sortedSpending.map((row, index) => index === 0 ? <TourTarget key={idOf(row.budget)} id="m-bud-spending"><BudgetCard row={row} currency={currency} saving={false} /></TourTarget> : <BudgetCard key={idOf(row.budget)} row={row} currency={currency} saving={false} />)
           )}
 
           {savingRows.length > 0 && (
             <>
               <Text className="font-inter-semibold text-lg text-gf-text">{t("mobile.ahorro")}</Text>
-              {sortedSaving.map((row) => (
-                <BudgetCard key={idOf(row.budget)} row={row} currency={currency} saving />
-              ))}
+              {sortedSaving.map((row, index) => index === 0 ? <TourTarget key={idOf(row.budget)} id="m-bud-savings"><BudgetCard row={row} currency={currency} saving /></TourTarget> : <BudgetCard key={idOf(row.budget)} row={row} currency={currency} saving />)}
             </>
           )}
 
           {projectRows.length > 0 && (
             <>
               <Text className="font-inter-semibold text-lg text-gf-text">{t("mobile.proyectos")}</Text>
-              {sortedProjects.map((row) => (
-                <BudgetCard key={idOf(row.budget)} row={row} currency={currency} saving={false} />
-              ))}
+              {sortedProjects.map((row, index) => index === 0 ? <TourTarget key={idOf(row.budget)} id="m-bud-projects"><BudgetCard row={row} currency={currency} saving={false} /></TourTarget> : <BudgetCard key={idOf(row.budget)} row={row} currency={currency} saving={false} />)}
             </>
           )}
         </>

@@ -25,6 +25,7 @@ import { dateText, parseDateText } from '@gastify/core/transactions/movementForm
 import { filterBillsOrIncomes, getPrimaryAmount, orderByHighestValue, reduceTransCategoriesSliced } from '@gastify/core/transformers/transactionsChange';
 import { useT, useLocale } from "@/i18n/client";
 
+import { TourPressable, TourTarget } from '@/components/tour/tour-target';
 // The web's "Top" sizes (the switch 3 / 6 / 12 / 24).
 export const TOP_SIZES = [3, 6, 12, 24] as const;
 export type TopSize = (typeof TOP_SIZES)[number];
@@ -38,6 +39,7 @@ export function TopRanking({
   defaultPreset,
   returnTo,
   showComparison = false,
+  withInfo = true,
 }: {
   movements: TransactionData[];
   currency: string;
@@ -45,6 +47,8 @@ export function TopRanking({
   defaultPreset: HistoryPreset;
   returnTo?: string;
   showComparison?: boolean;
+  // The question mark of the card: the history turns it off, its tutorial explains the same.
+  withInfo?: boolean;
 }) {
   const locale = useLocale();
   const t = useT();
@@ -76,7 +80,7 @@ export function TopRanking({
   const previousCategories = useMemo(() => orderByHighestValue(reduceTransCategoriesSliced(previousList)).slice(0, size), [previousList, size]);
   const previousBiggest = useMemo(() => [...previousList].sort((a, b) => getPrimaryAmount(b) - getPrimaryAmount(a)).slice(0, size), [previousList, size]);
   const categoryMovements = useMemo(
-    () => (openCategory === null ? [] : (openCategory.previous ? previousList : list).filter((movement) => (movement.category?.name || t("history.noCategory")) === openCategory.name).sort((a, b) => getPrimaryAmount(b) - getPrimaryAmount(a))),
+    () => (openCategory === null ? [] : (openCategory.previous ? previousList : list).filter((movement) => (movement.category?.name || t("mobile.sin.categoria")) === openCategory.name).sort((a, b) => getPrimaryAmount(b) - getPrimaryAmount(a))),
     [openCategory, list, previousList, t]
   );
   // Wide screens, History: a period of a few months is also shown month by month, in columns side by side so the months compare at a glance.
@@ -103,7 +107,7 @@ export function TopRanking({
   const sizeOptions = TOP_SIZES.map((n) => ({ value: String(n) as `${TopSize}`, label: String(n) }));
 
   return (
-    <Card title={t("mobile.topLabel", { p1: size })} info={info ?? { title: t("mobile.topLabel", { p1: size }), text: t("mobile.las.categorias.o.transacciones.con") }}>
+    <Card tour="m-home-top" title={t("mobile.topLabel", { p1: size })} info={withInfo ? (info ?? { title: t("mobile.topLabel", { p1: size }), text: t("mobile.las.categorias.o.transacciones.con") }) : undefined}>
       <CompactTimeFilter preset={preset} onPreset={(value) => { if (value !== 'dashboard') setPreset(value); }} month={month} onMonth={setMonth} latest={now} customFrom={customFrom} onCustomFrom={setCustomFrom} customTo={customTo} onCustomTo={setCustomTo} periodSelect={showComparison} extra={showComparison ? (
         <>
         <View className="flex-row items-center justify-between gap-3 border-t border-gf-border pt-3">
@@ -127,28 +131,28 @@ export function TopRanking({
         )}
         </>
       ) : undefined} />
-      <Segmented options={sizeOptions} value={String(size) as `${TopSize}`} onChange={(next) => setSize(Number(next) as TopSize)} />
+      <TourTarget id="m-home-top-size"><Segmented options={sizeOptions} value={String(size) as `${TopSize}`} onChange={(next) => setSize(Number(next) as TopSize)} /></TourTarget>
       <Segmented options={[{ value: 'bills', label: t("mobile.gastos") }, { value: 'incomes', label: t("mobile.ingresos") }]} value={kind} onChange={setKind} />
-      {(!tablet || byMonth) && <Segmented options={[{ value: 'categories', label: t("mobile.por.categoria") }, { value: 'movements', label: t("mobile.movimientos") }]} value={by} onChange={setBy} />}
+      {(!tablet || byMonth) && <Segmented options={[{ value: 'categories', label: t("mobile.por.categoria") }, { value: 'movements', label: t("mobile.movimientos") }]} value={by} onChange={setBy} tourIds={{ movements: 'm-home-top-tab-movements' }} />}
       {!byMonth && (
-        <>
+        <TourTarget id="m-home-top-list" className="gap-1">
       {list.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">{t("mobile.sin.movimientos.en.este.periodo")}</Text>}
       {tablet ? (
         <View className="flex-row items-start gap-6">
-          <View className="flex-1 gap-1">
+          <TourTarget id="m-home-top-cats" className="flex-1 gap-1">
             <Text className="pb-1 font-inter-semibold text-sm uppercase text-gf-text-muted">{t("mobile.categorias")}</Text>
       {categories.map((row, index) => (
             <RankedRow key={row.type} rank={index + 1} last={index === categories.length - 1}>
-            <Pressable accessibilityRole="button" onPress={() => setOpenCategory({ name: row.type, previous: false })} className="flex-row items-center gap-3">
+            <TourPressable id={index === 0 ? "m-home-top-row" : undefined} accessibilityRole="button" onPress={() => setOpenCategory({ name: row.type, previous: false })} className="flex-row items-center gap-3">
               <CategoryBadge icon={row.icon} color={row.color} size={44} />
-              <Text className="flex-1 font-inter-medium text-base text-gf-text" numberOfLines={1}>{row.type === t("history.noCategory") ? t("history.noCategory") : row.type}</Text>
+              <Text className="flex-1 font-inter-medium text-base text-gf-text" numberOfLines={1}>{row.type === t("mobile.sin.categoria") ? t("mobile.sin.categoria") : row.type}</Text>
               <Text className="font-inter-semibold text-base text-gf-text">{formatMoneyMajor(row.value, currency)}</Text>
               <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />
-            </Pressable>
+            </TourPressable>
             </RankedRow>
           ))}
-          </View>
-          <View className="flex-1 gap-1">
+          </TourTarget>
+          <TourTarget id="m-home-top-txs" className="flex-1 gap-1">
             <Text className="pb-1 font-inter-semibold text-sm uppercase text-gf-text-muted">{t("mobile.movimientos")}</Text>
       {biggest.map((movement, index) => (
             <RankedRow key={String(movement._id)} rank={index + 1} last={index === biggest.length - 1}>
@@ -160,22 +164,22 @@ export function TopRanking({
             />
             </RankedRow>
           ))}
-          </View>
+          </TourTarget>
         </View>
       ) : (
         <>
       {by === 'categories'
-        ? categories.map((row, index) => (
+        ? <TourTarget id="m-home-top-cats" className="gap-1">{categories.map((row, index) => (
             <RankedRow key={row.type} rank={index + 1} last={index === categories.length - 1}>
-            <Pressable accessibilityRole="button" onPress={() => setOpenCategory({ name: row.type, previous: false })} className="flex-row items-center gap-3">
+            <TourPressable id={index === 0 ? "m-home-top-row" : undefined} accessibilityRole="button" onPress={() => setOpenCategory({ name: row.type, previous: false })} className="flex-row items-center gap-3">
               <CategoryBadge icon={row.icon} color={row.color} size={44} />
-              <Text className="flex-1 font-inter-medium text-base text-gf-text" numberOfLines={1}>{row.type === t("history.noCategory") ? t("history.noCategory") : row.type}</Text>
+              <Text className="flex-1 font-inter-medium text-base text-gf-text" numberOfLines={1}>{row.type === t("mobile.sin.categoria") ? t("mobile.sin.categoria") : row.type}</Text>
               <Text className="font-inter-semibold text-base text-gf-text">{formatMoneyMajor(row.value, currency)}</Text>
               <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />
-            </Pressable>
+            </TourPressable>
             </RankedRow>
-          ))
-        : biggest.map((movement, index) => (
+          ))}</TourTarget>
+        : <TourTarget id="m-home-top-txs" className="gap-1">{biggest.map((movement, index) => (
             <RankedRow key={String(movement._id)} rank={index + 1} last={index === biggest.length - 1}>
             <MovementRow
               bare
@@ -184,10 +188,10 @@ export function TopRanking({
               onPress={() => router.push({ pathname: '/movements/[id]', params: { id: String(movement._id), ...(returnTo ? { returnTo } : {}) } })}
             />
             </RankedRow>
-          ))}
+          ))}</TourTarget>}
         </>
       )}
-        </>
+        </TourTarget>
       )}
       {byMonth && (
         <View className="flex-row items-start gap-4 border-t border-gf-border pt-3">
@@ -200,7 +204,7 @@ export function TopRanking({
                     <RankedRow key={row.type} rank={index + 1} last={index === column.categories.length - 1}>
                       <Pressable accessibilityRole="button" onPress={() => setOpenCategory({ name: row.type, previous: false })} className="flex-row items-center gap-2 py-1">
                         <CategoryBadge icon={row.icon} color={row.color} size={30} />
-                        <Text className="flex-1 font-inter-medium text-sm text-gf-text" numberOfLines={1}>{row.type === t("history.noCategory") ? t("history.noCategory") : row.type}</Text>
+                        <Text className="flex-1 font-inter-medium text-sm text-gf-text" numberOfLines={1}>{row.type === t("mobile.sin.categoria") ? t("mobile.sin.categoria") : row.type}</Text>
                         <Text className="font-inter-semibold text-sm text-gf-text">{formatMoneyMajor(row.value, currency)}</Text>
                       </Pressable>
                     </RankedRow>
@@ -222,7 +226,7 @@ export function TopRanking({
             <RankedRow key={row.type} rank={index + 1} last={index === previousCategories.length - 1}>
             <Pressable accessibilityRole="button" onPress={() => setOpenCategory({ name: row.type, previous: true })} className="flex-row items-center gap-3 py-1">
               <CategoryBadge icon={row.icon} color={row.color} size={32} />
-              <Text className="flex-1 font-inter-medium text-sm text-gf-text" numberOfLines={1}>{row.type === t("history.noCategory") ? t("history.noCategory") : row.type}</Text>
+              <Text className="flex-1 font-inter-medium text-sm text-gf-text" numberOfLines={1}>{row.type === t("mobile.sin.categoria") ? t("mobile.sin.categoria") : row.type}</Text>
               <Text className="font-inter-semibold text-sm text-gf-text">{formatMoneyMajor(row.value, currency)}</Text>
             </Pressable>
             </RankedRow>
@@ -236,7 +240,7 @@ export function TopRanking({
 
       <CategoryDetailSheet
         visible={openCategory !== null}
-        name={openCategory?.name === t("history.noCategory") ? t("history.noCategory") : openCategory?.name ?? ''}
+        name={openCategory?.name === t("mobile.sin.categoria") ? t("mobile.sin.categoria") : openCategory?.name ?? ''}
         prefix={openCategory?.previous ? t("history.compare.previous") : undefined}
         movements={categoryMovements}
         currency={currency}

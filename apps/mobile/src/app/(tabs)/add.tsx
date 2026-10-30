@@ -9,6 +9,7 @@ import { BudgetForm } from '@/components/forms/budget-form';
 import { CategoryForm } from '@/components/forms/category-form';
 import { MovementForm } from '@/components/movement-form';
 import { Screen } from '@/components/screen';
+import type { MobileComponentTourId } from '@gastify/core/tour/mobileSteps';
 import { Card } from '@/components/ui/card';
 import { useToast } from '@/components/toast';
 import { TransferForm } from '@/components/transfer-form';
@@ -25,6 +26,18 @@ import type { TranslateFn } from "@gastify/core/i18n/translate";
 type Kind = CreateKind;
 type IconName = ComponentProps<typeof Ionicons>['name'];
 
+// The tutorial of the form that is open: the title's compass explains it.
+const FORM_TOUR: Record<Kind, MobileComponentTourId> = {
+  expense: 'm-movform',
+  income: 'm-movform',
+  transfer: 'm-transferform',
+  account: 'm-accform',
+  category: 'm-catform',
+  budget: 'm-budform',
+  saving: 'm-budform',
+  project: 'm-budform',
+};
+
 const KINDS = (t: TranslateFn): { value: Kind; label: string; icon: IconName }[] => ([
   { value: 'expense', label: t("mobile.gasto"), icon: 'arrow-down-circle-outline' },
   { value: 'income', label: t("mobile.ingreso"), icon: 'arrow-up-circle-outline' },
@@ -39,7 +52,7 @@ const KINDS = (t: TranslateFn): { value: Kind; label: string; icon: IconName }[]
 // The "+" of the bottom bar: a quick way to create anything, not only movements. Pick what to create
 // and its form appears below; what is saved goes to the same API routes the web uses.
 export default function AddScreen() {
-  const { CREATE_KIND_INFO, CREATE_KIND_SUMMARY, CREATE_SCREEN_INFO } = useInfo();
+  const { CREATE_KIND_INFO, CREATE_KIND_SUMMARY } = useInfo();
   const t = useT();
   const dispatch = useDispatch<AppDispatch>();
   const toast = useToast();
@@ -64,9 +77,29 @@ export default function AddScreen() {
             key={`${kind}-${round}`}
             hideType
             type={kind}
+            allowRecurring
             submitLabel={t("mobile.guardar.movimiento")}
-            onSubmit={async (body) => {
-              await sendWrite('general-data/transactions/new-transaction', body);
+            onSubmit={async (body, recurring) => {
+              const created = await sendWrite<{ _id?: string; date?: string }>('general-data/transactions/new-transaction', body);
+              if (recurring) {
+                try {
+                  await sendWrite('general-data/recurring/new', {
+                    name: body.name,
+                    amount: body.amount,
+                    account: body.account || null,
+                    category: body.category || null,
+                    subCategory: body.subCategory || null,
+                    budget: body.budget || null,
+                    tags: body.tags,
+                    frequency: recurring.frequency,
+                    isVariable: recurring.isVariable,
+                    anchorDate: created?.date || body.date,
+                    sourceTransactionId: created?._id,
+                  });
+                } catch {
+                  toast.show(t('movements.new.recurringError'));
+                }
+              }
               done(kind === 'income' ? t("mobile.ingreso.guardado") : t("mobile.gasto.guardado"));
             }}
           />
@@ -119,7 +152,7 @@ export default function AddScreen() {
   };
 
   return (
-    <Screen title={t("mobile.crear")} subtitle={t("mobile.elige.que.quieres.agregar")} titleInfo={CREATE_SCREEN_INFO}>
+    <Screen tutorial={FORM_TOUR[kind]} title={t("mobile.crear")} subtitle={t("mobile.elige.que.quieres.agregar")}>
       {/* The same import as in Movimientos and on the web's Crear button: the Excel template, filled and uploaded. */}
       <Pressable accessibilityRole="button" onPress={() => router.push('/movements/import')} className="flex-row items-center justify-center gap-2 rounded-full py-3" style={{ backgroundColor: colors.accentSoft, borderWidth: 1, borderColor: colors.border }}>
         <Ionicons name="document-attach-outline" size={18} color={colors.accent} />

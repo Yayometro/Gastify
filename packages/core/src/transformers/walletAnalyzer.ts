@@ -11,6 +11,13 @@ import type { TranslateFn } from "../i18n/translate";
 import { monthName, monthTitle } from "../i18n/dates";
 import type { TransactionData } from "../features/transacctionsSlice";
 import type { BudgetData } from "../features/budgetSlice";
+import {
+  buildWeeklySpending,
+  formatWeekRange,
+  type SpendingDay,
+  type SpendingWeek,
+  type WeeklySpending,
+} from "./spendingWeeksCalendar";
 
 // The analyzer reads movements as loosely typed lists (the web passes whatever the store holds). These two wrappers
 // accept such lists and call the typed helpers: nothing changes at runtime, they only keep the strict compiler (the
@@ -119,7 +126,13 @@ export interface WalletAnalyzerCategoryBill {
   current: number;
   previous: number;
   changePct: number | null;
+  // True only when the category has NO movement at all before the current period (not just a quiet previous month).
   isNew: boolean;
+  // Earliest movement of the category on record and the movements of the current period (biggest first, up to 6): what the
+  // "new category" signal is built from, so the person can check it.
+  firstSeen?: Date | string | null;
+  count?: number;
+  sample?: SubscriptionOccurrence[];
   [key: string]: unknown;
 }
 
@@ -217,6 +230,9 @@ export interface WalletAnalyzerSubscription {
   isNew: boolean;
   possibleDuplicateInMonth: boolean;
   occurrences: SubscriptionOccurrence[];
+  // Earliest charge with this name on record (any date) and, when the price moved, the old and the new amount.
+  firstSeen?: Date | string | null;
+  priceChange?: { from: number; to: number } | null;
   [key: string]: unknown;
 }
 
@@ -375,10 +391,25 @@ export interface WalletAnalyzerWeekdayWeek {
 
 export interface WalletAnalyzerWeekdayDailyBreakdownMonth {
   dayOfMonth: number;
+  date: Date;
   dayName: string;
   total: number;
   count: number;
   [key: string]: unknown;
+}
+
+// Weekly bars: ISO Monday-Sunday weeks clipped to the period. `weekly` is
+// additive; the day-range `weeks` above stays as it was for mobile.
+export interface WalletAnalyzerWeeklySpendingWeek extends SpendingWeek {
+  label: string;
+}
+
+export interface WalletAnalyzerWeeklySpending {
+  weeks: WalletAnalyzerWeeklySpendingWeek[];
+  totalWeeks: number;
+  truncated: boolean;
+  periodTotal: number;
+  periodDays: number;
 }
 
 export interface WalletAnalyzerWeekdayDailyBreakdownRange {
@@ -396,6 +427,7 @@ export interface WalletAnalyzerWeekdaySpendingData {
   weekendAvg: number;
   overallMean: number;
   weeks: WalletAnalyzerWeekdayWeek[];
+  weekly: WalletAnalyzerWeeklySpending;
   dailyBreakdown: WalletAnalyzerWeekdayDailyBreakdownMonth[];
   [key: string]: unknown;
 }
@@ -407,6 +439,7 @@ export interface WalletAnalyzerWeekdaySpendingDataForRange {
   weekendAvg: number;
   overallMean: number;
   weeks: WalletAnalyzerWeekdayWeek[];
+  weekly: WalletAnalyzerWeeklySpending;
   dailyBreakdown: WalletAnalyzerWeekdayDailyBreakdownRange[];
   [key: string]: unknown;
 }
@@ -705,6 +738,19 @@ function formatShortDate(date: Date): string {
   return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
 }
 
+// Numbers come from spendingWeeksCalendar; only the wording is localised here,
+// e.g. "Sem 2 (8-14 oct)".
+function buildWeeklyWithLabels(text: WalletText, days: SpendingDay[]): WalletAnalyzerWeeklySpending {
+  const weekly: WeeklySpending = buildWeeklySpending(days);
+  return {
+    ...weekly,
+    weeks: weekly.weeks.map((week) => ({
+      ...week,
+      label: text.t("analyzer.weekly.label", { p1: week.weekNumber, p2: formatWeekRange(week.start, week.end, text.locale) }),
+    })),
+  };
+}
+
 // A period's display label: "Julio 2026" when it happens to be exactly one
 // calendar month (the common case - matches the existing month-based
 // labeling convention elsewhere in this file), a short date range otherwise.
@@ -829,9 +875,21 @@ export function compareCategoriesAcrossMonths(
   const currentMap = sumByCategory(currentRange);
   const previousMap = sumByCategory(previousRange);
 
+  // A category is new only if it has no movement at all before this period: a category that was just quiet last month is
+  // not "new". `firstSeen` is its earliest movement on record (this period included).
+  const beforeTx = getTransactionsFromTimeRange(transactions, new Date(0), new Date(currentRange.start.getTime() - 1));
+  const beforeSet = (isBill ? filterBillsOrIncomes(beforeTx).bills : filterBillsOrIncomes(beforeTx).incomes) as WalletAnalyzerTransaction[];
+  const knownBefore = new Set(beforeSet.map((t) => t.category?.name || text.t("history.noCategory")));
+  const whenOf = (t: WalletAnalyzerTransaction): number => new Date((t.date || t.createdAt) as string | number | Date).getTime();
+  const currentTx = getTransactionsFromTimeRange(transactions, currentRange.start, currentRange.end);
+  const currentSet = (isBill ? filterBillsOrIncomes(currentTx).bills : filterBillsOrIncomes(currentTx).incomes) as WalletAnalyzerTransaction[];
+
   return Array.from(currentMap.values())
     .map((c) => {
       const previous = previousMap.get(c.name)?.value || 0;
+      const mine = currentSet.filter((t) => (t.category?.name || text.t("history.noCategory")) === c.name);
+      const earliestBefore = beforeSet.filter((t) => (t.category?.name || text.t("history.noCategory")) === c.name).map(whenOf);
+      const firstMs = Math.min(...earliestBefore, ...mine.map(whenOf));
       return {
         name: c.name,
         color: c.color,
@@ -839,7 +897,13 @@ export function compareCategoriesAcrossMonths(
         current: c.value,
         previous,
         changePct: previous > 0 ? ((c.value - previous) / previous) * 100 : null,
-        isNew: previous === 0,
+        isNew: previous === 0 && !knownBefore.has(c.name),
+        firstSeen: Number.isFinite(firstMs) ? new Date(firstMs) : null,
+        count: mine.length,
+        sample: [...mine]
+          .sort((a, b) => getPrimaryAmount(b) - getPrimaryAmount(a))
+          .slice(0, 6)
+          .map((t) => ({ _id: (t as { _id?: unknown })._id, name: t.name || "", date: (t.date || t.createdAt) as string | Date, amount: getPrimaryAmount(t) })),
       };
     })
     .sort((a, b) => b.current - a.current)
@@ -1069,6 +1133,26 @@ function normalizeTxName(name?: string | null): string {
   return (name || "").trim().toLowerCase();
 }
 
+// Words that change from one charge to the next without changing what is being paid for ("Netflix", "Netflix mensual",
+// "Renovación Netflix octubre"). They are ignored when charges are grouped.
+const SUBSCRIPTION_NOISE = new Set([
+  "renovacion", "renovación", "renewal", "mensual", "mensualidad", "monthly", "suscripcion", "suscripción", "subscription", "pago", "payment", "cargo", "charge",
+  "de", "del", "la", "el", "los", "las", "por", "of", "the", "a", "mes", "month",
+  "enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "setiembre", "octubre", "noviembre", "diciembre",
+  "january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december",
+  "ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic",
+]);
+
+export function subscriptionKey(name?: string | null): string {
+  const base = normalizeTxName(name)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[0-9]+/g, " ")
+    .replace(/[^a-z\s]/g, " ");
+  const words = base.split(/\s+/).filter((word) => word.length > 0 && !SUBSCRIPTION_NOISE.has(word));
+  return words.length > 0 ? words.join(" ") : normalizeTxName(name);
+}
+
 export function detectSubscriptions(
   text: WalletText,
   transactions: (TransactionData | WalletAnalyzerTransaction | unknown)[],
@@ -1083,31 +1167,59 @@ export function detectSubscriptions(
 
   const byName = new Map<string, WalletAnalyzerTransaction[]>();
   bills.forEach((t) => {
-    const key = normalizeTxName(t.name);
+    const key = subscriptionKey(t.name);
     if (!key) return;
     if (!byName.has(key)) byName.set(key, []);
     byName.get(key)!.push(t);
   });
 
+  // Everything the person ever paid, grouped the same way: "new" must not depend on the short history window above.
+  const allBills = filterBillsOrIncomes(getTransactionsFromTimeRange(transactions, new Date(0), historyEnd)).bills as WalletAnalyzerTransaction[];
+  const everByKey = new Map<string, WalletAnalyzerTransaction[]>();
+  allBills.forEach((t) => {
+    const key = subscriptionKey(t.name);
+    if (!key) return;
+    if (!everByKey.has(key)) everByKey.set(key, []);
+    everByKey.get(key)!.push(t);
+  });
+
   const lookbackStart = new Date(ref.getFullYear(), ref.getMonth() - (lookbackMonths - 1), 1);
   const results: WalletAnalyzerSubscription[] = [];
 
-  byName.forEach((allTx) => {
-    const recentTx = allTx.filter((t) => new Date((t.date || t.createdAt) as string | number | Date).getTime() >= lookbackStart.getTime());
-    const monthsTouched = new Set(
-      recentTx.map((t) => {
-        const d = new Date((t.date || t.createdAt) as string | number | Date);
-        return `${d.getFullYear()}-${d.getMonth()}`;
-      })
-    );
-    if (monthsTouched.size < 2) return;
+  byName.forEach((allTx, key) => {
+    const whenMs = (t: WalletAnalyzerTransaction): number => new Date((t.date || t.createdAt) as string | number | Date).getTime();
+    let recentTx = allTx.filter((t) => whenMs(t) >= lookbackStart.getTime()).sort((a, b) => whenMs(a) - whenMs(b));
+    const monthsOf = (list: WalletAnalyzerTransaction[]) => new Set(list.map((t) => { const d = new Date(whenMs(t)); return `${d.getFullYear()}-${d.getMonth()}`; }));
+    if (monthsOf(recentTx).size < 2) return;
+
+    const stable = (list: WalletAnalyzerTransaction[]) => {
+      const values = list.map((t) => getPrimaryAmount(t));
+      const mean = values.reduce((a: number, b: number) => a + b, 0) / values.length;
+      return mean > 0 && values.every((a: number) => Math.abs(a - mean) / mean <= 0.15);
+    };
+    let priceChange: { from: number; to: number } | null = null;
+    if (!stable(recentTx)) {
+      // The price moved (a rent raise, a plan change): if the latest charges, over at least two months, agree with each other,
+      // it is still the same subscription at its new price.
+      let tailStart = -1;
+      for (let i = recentTx.length - 2; i >= 0; i--) {
+        const tail = recentTx.slice(i);
+        if (stable(tail) && monthsOf(tail).size >= 2) tailStart = i;
+        else if (tailStart !== -1) break;
+      }
+      if (tailStart === -1) return;
+      const before = recentTx.slice(0, tailStart);
+      const tail = recentTx.slice(tailStart);
+      const mean = (list: WalletAnalyzerTransaction[]) => list.reduce((a, t) => a + getPrimaryAmount(t), 0) / (list.length || 1);
+      if (before.length > 0) priceChange = { from: mean(before), to: mean(tail) };
+      recentTx = tail;
+    }
 
     const amounts = recentTx.map((t) => getPrimaryAmount(t));
     const avg = amounts.reduce((a: number, b: number) => a + b, 0) / amounts.length;
-    const withinVariance = avg > 0 && amounts.every((a: number) => Math.abs(a - avg) / avg <= 0.15);
-    if (!withinVariance) return;
-
-    const isNew = !allTx.some((t) => new Date((t.date || t.createdAt) as string | number | Date).getTime() < lookbackStart.getTime());
+    const ever = everByKey.get(key) ?? allTx;
+    const firstMs = Math.min(...ever.map(whenMs));
+    const isNew = !ever.some((t) => whenMs(t) < lookbackStart.getTime());
     const latest = [...recentTx].sort((a, b) => new Date((b.date || b.createdAt) as string | number | Date).getTime() - new Date((a.date || a.createdAt) as string | number | Date).getTime())[0];
     const occurrences: SubscriptionOccurrence[] = [...recentTx]
       .sort((a, b) => new Date((a.date || a.createdAt) as string | number | Date).getTime() - new Date((b.date || b.createdAt) as string | number | Date).getTime())
@@ -1145,6 +1257,8 @@ export function detectSubscriptions(
       isNew,
       possibleDuplicateInMonth,
       occurrences,
+      firstSeen: Number.isFinite(firstMs) ? new Date(firstMs) : null,
+      priceChange,
     });
   });
 
@@ -1624,7 +1738,7 @@ export function computeSpendingByWeekday(
   for (let day = 1; day <= lastDay; day++) {
     const jsDay = new Date(ref.getFullYear(), ref.getMonth(), day).getDay();
     const entry = dailyTotalsByDay.get(day) || { total: 0, count: 0 };
-    dailyBreakdown.push({ dayOfMonth: day, dayName: weekdayNames(text)[mondayFirstIndex(jsDay)], total: entry.total, count: entry.count });
+    dailyBreakdown.push({ dayOfMonth: day, date: new Date(ref.getFullYear(), ref.getMonth(), day), dayName: weekdayNames(text)[mondayFirstIndex(jsDay)], total: entry.total, count: entry.count });
   }
 
   // Simple day-range weeks (1-7, 8-14, ...) rather than calendar weeks,
@@ -1643,7 +1757,7 @@ export function computeSpendingByWeekday(
     });
   }
 
-  return { days, insight, weekdayAvg, weekendAvg, overallMean, weeks, dailyBreakdown };
+  return { days, insight, weekdayAvg, weekendAvg, overallMean, weeks, weekly: buildWeeklyWithLabels(text, dailyBreakdown), dailyBreakdown };
 }
 
 // Arbitrary-width sibling - iterates the whole `range` day by day instead
@@ -1738,7 +1852,7 @@ export function computeSpendingByWeekdayForRange(
     });
   }
 
-  return { days, insight, weekdayAvg, weekendAvg, overallMean, weeks, dailyBreakdown };
+  return { days, insight, weekdayAvg, weekendAvg, overallMean, weeks, weekly: buildWeeklyWithLabels(text, dailyBreakdown), dailyBreakdown };
 }
 
 // 8. Rule-based highlight cards - deliberately NOT an LLM call: every

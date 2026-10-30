@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import { Tooltip } from "antd";
 import SelecterFilter, { SelecterPeriod } from "@/components/Filters/selecterFilter/SelecterFilter";
 
 import { InfoTip } from "@/components/multiUsedComp/InfoTip";
@@ -9,6 +8,8 @@ import TimeRange from "@/components/Filters/timeRange/TimeRange";
 import UniversalCategoIcon from "../UniversalCategoIcon";
 import { getDateInYearMonthDay } from "@gastify/core/time/timeFunctions";
 import { useT, useInfo } from "@/i18n/client";
+import TutorialTip from "@/components/tour/TutorialTip";
+import type { ComponentTourId } from "@gastify/core/tour/tourSteps";
 
 export interface PeriodFiltersWithCompareProps {
   timePeriod?: (Date | string | number | null | undefined)[] | [Date, Date] | null;
@@ -24,6 +25,10 @@ export interface PeriodFiltersWithCompareProps {
   getCompareValueFromSelecter?: (v: string) => void;
   handleCompareRangeDate?: (startDate: Date | null, endDate: Date | null) => void;
   timePeriodsForCompareSelecter?: SelecterPeriod[];
+  // The guided tutorial: the prefix of the data-tour anchors of this filter ("<tour>-filters", "-compare", "-main", "-second"), and the
+  // tutorial the compass button at the end of the first row starts. Every section of the History page has its own filter.
+  tour?: string;
+  tutorial?: ComponentTourId;
 }
 
 const FILTER_PILL_STYLE =
@@ -56,29 +61,27 @@ function PeriodFiltersWithCompare({
   getCompareValueFromSelecter,
   handleCompareRangeDate,
   timePeriodsForCompareSelecter,
+  tour,
+  tutorial,
 }: PeriodFiltersWithCompareProps): React.JSX.Element {
   const { APP_INFO } = useInfo();
   const t = useT();
   const showCompareToggle = typeof setCompareEnabled === "function";
 
   return (
-    <div className="filters flex flex-col justify-center items-center gap-2 w-full">
+    <div className="filters flex flex-col justify-center items-center gap-2 w-full" data-tour={tour ? `${tour}-filters` : undefined}>
       {showCompareToggle && (
-        <label className="flex items-center gap-1.5 text-xs cursor-pointer select-none">
+        <label className="flex items-center gap-1.5 text-xs cursor-pointer select-none" data-tour={tour ? `${tour}-compare` : undefined}>
           <input
             type="checkbox"
             checked={compareEnabled}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCompareEnabled?.(e.target.checked)}
             className="appearance-none w-4 h-4 rounded-full border-2 border-purple-300 checked:bg-purple-600 checked:border-purple-600 cursor-pointer transition-colors"
           />
-          <Tooltip title={t(COMPARE_TOOLTIP_KEY)}>
+          
             <span className="text-purple-300 font-medium">{t("history.compare")}</span>
-          </Tooltip>
-          <Tooltip title={t(COMPARE_TOOLTIP_KEY)}>
-            <span className="text-purple-400 flex items-center">
-              <UniversalCategoIcon type="fa/FaRegQuestionCircle" siz={13} />
-            </span>
-          </Tooltip>
+          
+          
         </label>
       )}
 
@@ -87,7 +90,7 @@ function PeriodFiltersWithCompare({
           compareEnabled ? "lg:flex-row" : ""
         } items-center justify-center gap-3`}
       >
-        <div className="flex flex-col items-center gap-1">
+        <div className="flex flex-col items-center gap-1" data-tour={tour ? `${tour}-main` : undefined}>
           <span className="text-xs">
             {t("history.from")}{" "}
             <b>
@@ -97,12 +100,7 @@ function PeriodFiltersWithCompare({
             <b>{!timePeriod?.[1] ? t("web.no.time.selected") : getDateInYearMonthDay(timePeriod[1])}</b>
           </span>
           <div className="flex items-center justify-center flex-wrap gap-2">
-            <InfoTip info={APP_INFO.periodo} />
-            <Tooltip title={t("history.dateTip")}>
-              <div className="text-gf-text w-[10px]">
-                <UniversalCategoIcon type="fa/FaRegQuestionCircle" siz={15} />
-              </div>
-            </Tooltip>
+            
             <SelecterFilter
               getValue={getValueFromSelecter}
               periodFromFather={periodFromFather}
@@ -111,13 +109,14 @@ function PeriodFiltersWithCompare({
             />
             <TimeRange rpDate={handleRangeDate} rpResponse={rangePickerResponse as string | undefined} />
             {extraControls}
+            {tutorial ? (<><span aria-hidden="true" className="mx-2 inline-block h-5 w-px shrink-0 align-middle bg-purple-300/40" /><InfoTip info={APP_INFO.periodo} /><TutorialTip tour={tutorial} label={t(`tour.${tutorial}.name`)} /></>) : <InfoTip info={APP_INFO.periodo} />}
           </div>
         </div>
 
         {showCompareToggle && compareEnabled && (
           <>
             <span className="text-purple-600 font-bold text-sm shrink-0">{t("history.vs")}</span>
-            <div className="flex flex-col items-center gap-1">
+            <div className="flex flex-col items-center gap-1" data-tour={tour ? `${tour}-second` : undefined}>
               {/* Mirrors the primary block's From/To line above its controls -
                   without it, this block was one line shorter than the primary
                   one, so `items-center` on the row centered it a few px off,

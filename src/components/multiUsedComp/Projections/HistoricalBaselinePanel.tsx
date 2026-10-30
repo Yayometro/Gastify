@@ -15,6 +15,7 @@ import { formatMoneyMajor, isSupportedCurrency, minorToMajor, SUPPORTED_CURRENCI
 import type { ProjectionBaselineData } from "@/hooks/useProjectionTable";
 
 import { InfoTip } from "@/components/multiUsedComp/InfoTip";
+import TutorialTip from "@/components/tour/TutorialTip";
 import { useLocale, useT, useInfo } from "@/i18n/client";
 
 export interface BaselineTimelineEntry {
@@ -166,7 +167,7 @@ function BaselineTimelineEditor({
   };
 
   return (
-    <div className="mb-4 last:mb-0">
+    <div className="mb-4 last:mb-0" data-tour={`proj-baseline-${kind}`}>
       <p className="text-purple-300 font-medium mb-2">{label}</p>
       {sorted.length > 0 && (
         <ul className="flex flex-col gap-2 mb-3">
@@ -205,7 +206,7 @@ function BaselineTimelineEditor({
         onSubmit={handleSubmit}
         className="form-trans-edit flex flex-col sm:flex-row gap-2 items-stretch sm:items-end bg-gf-surface rounded-2xl p-3"
       >
-        <div className="flex flex-col">
+        <div className="flex flex-col" data-tour={`proj-baseline-${kind}-from`}>
           <p className="label-tfp mb-1">{t("projections.reference.from")}</p>
           <ConfigProvider locale={esES} theme={pickerTheme}>
             <DatePicker
@@ -220,7 +221,7 @@ function BaselineTimelineEditor({
             />
           </ConfigProvider>
         </div>
-        <div className="flex flex-col">
+        <div className="flex flex-col" data-tour={`proj-baseline-${kind}-to`}>
           <p className="label-tfp mb-1">{t("projections.reference.toOptional")}</p>
           <ConfigProvider locale={esES} theme={pickerTheme}>
             <DatePicker
@@ -236,7 +237,7 @@ function BaselineTimelineEditor({
             />
           </ConfigProvider>
         </div>
-        <div className="flex flex-col flex-1">
+        <div className="flex flex-col flex-1" data-tour={`proj-baseline-${kind}-amount`}>
           <p className="label-tfp mb-1">{t("projections.reference.approxMonthly")}</p>
           <input
             type="number"
@@ -246,7 +247,7 @@ function BaselineTimelineEditor({
             required
           />
         </div>
-        <div className="flex flex-col">
+        <div className="flex flex-col" data-tour={`proj-baseline-${kind}-currency`}>
           <p className="label-tfp mb-1">{t("projections.reference.currency")}</p>
           <select
             className="etm-selector"
@@ -263,6 +264,7 @@ function BaselineTimelineEditor({
         <button
           type="submit"
           className="gf-glass-button text-white rounded-full px-4 py-2 shrink-0"
+          data-tour={`proj-baseline-${kind}-submit`}
         >
           {isLoading ? <Spin /> : editingId ? t("common.save") : t("budgets.add")}
         </button>
@@ -298,19 +300,20 @@ function HistoricalBaselinePanel({
   const totalEntries = (baseline?.incomeHistory?.length || 0) + (baseline?.expenseHistory?.length || 0);
 
   return (
-    <div className="historical-baseline-panel w-full bg-gf-accent-soft-bg rounded-3xl p-4 mb-4">
+    <div className="historical-baseline-panel w-full bg-gf-accent-soft-bg rounded-3xl p-4 mb-4" data-tour="proj-baseline">
       <div
         className="flex justify-between items-center cursor-pointer"
         onClick={() => setIsOpen(!isOpen)}
+        data-tour="proj-baseline-header"
       >
         <h2 className="text-xl text-purple-300 font-normal">
-          {t("projections.reference.title")}{totalEntries})<InfoTip info={APP_INFO.referencias_hist_ricas} />
+          {t("projections.reference.title")}{totalEntries})<span aria-hidden="true" className="mx-2 inline-block h-5 w-px shrink-0 align-middle bg-purple-300/40" /><TutorialTip className="ml-0.5" tour="projBaseline" label={t("tour.projBaseline.name")} />
         </h2>
         <CategoIcon type={isOpen ? "MdExpandLess" : "MdExpandMore"} siz={24} />
       </div>
       {isOpen && (
-        <div className="mt-3">
-          <p className="text-xs text-gf-text-muted mb-3">
+        <div className="mt-3" data-tour="proj-baseline-body">
+          <p className="text-xs text-gf-text-muted mb-3" data-tour="proj-baseline-help">
             {t("projections.reference.help")}
           </p>
           <BaselineTimelineEditor

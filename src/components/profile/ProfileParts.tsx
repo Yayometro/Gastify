@@ -22,10 +22,13 @@ export function errorMessage(error: unknown): string {
 }
 
 // A rounded card, the same as the phone's: a title on the left, the content under it.
-export function ProfileCard({ title, children }: { title: string; children: ReactNode }) {
+export function ProfileCard({ title, children, tour, help }: { title: string; children: ReactNode; tour?: string; help?: ReactNode }) {
   return (
-    <section className="gf-glass-card flex flex-col gap-4 rounded-3xl p-5">
-      <h2 className="text-base font-semibold text-gf-text">{title}</h2>
+    <section className="gf-glass-card flex flex-col gap-4 rounded-3xl p-5" data-tour={tour}>
+      <div className="flex items-center gap-2">
+        <h2 className="text-base font-semibold text-gf-text">{title}</h2>
+        {help}
+      </div>
       {children}
     </section>
   );

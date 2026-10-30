@@ -6,7 +6,7 @@ import { DemoContainer, DemoItem } from "@mui/x-date-pickers/internals/demo";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { MobileDateTimePicker } from "@mui/x-date-pickers/MobileDateTimePicker";
-import { Spin } from "antd";
+import { Spin, Switch } from "antd";
 import fetcher from "@/helpers/fetcher";
 import { useDispatch } from "react-redux";
 import type { AppDispatch } from "@/lib/store";
@@ -24,6 +24,7 @@ import AmountEquivalentPreview from "./AmountEquivalentPreview";
 import ChargedElsewhereSection from "./ChargedElsewhereSection";
 import { majorToMinor, minorToMajor } from "@gastify/core/money/currencies";
 import { useT } from "@/i18n/client";
+import { RECURRENCE_FREQUENCIES, type RecurrenceFrequency } from "@gastify/core/recurring/recurrence";
 
 export interface AddTransactionCompProps {
   initialBudgetId?: string;
@@ -122,6 +123,10 @@ function AddTransactionComp({ initialBudgetId = "", defaultIncome = false, onCre
   // charged in a different currency, and auto-suggests the Account Amount
   // via a live FX estimate so the user doesn't have to compute it by hand.
   const [chargedElsewhere, setChargedElsewhere] = useState(false);
+  // A repeating expense: how often, and whether its amount changes (then each charge is confirmed when it falls due).
+  const [recurring, setRecurring] = useState(false);
+  const [recurringFrequency, setRecurringFrequency] = useState<RecurrenceFrequency>("monthly");
+  const [recurringVariable, setRecurringVariable] = useState(false);
   const [merchantAmount, setMerchantAmount] = useState("");
   const [merchantCurrency, setMerchantCurrency] = useState("USD");
   const [amountTouchedManually, setAmountTouchedManually] = useState(false);
@@ -241,6 +246,25 @@ function AddTransactionComp({ initialBudgetId = "", defaultIncome = false, onCre
       );
       if (response.data) {
         runNotify("ok", response.message);
+        if (recurring && !newTrans.isIncome) {
+          try {
+            await toFetch.post("general-data/recurring/new", {
+              name: trimmedName,
+              amount: newTrans.amount,
+              account: newTrans.account || null,
+              category: newTrans.category || null,
+              subCategory: newTrans.subCategory || null,
+              budget: newTrans.budget || null,
+              tags: tagsArrCleaned.filter(Boolean),
+              frequency: recurringFrequency,
+              isVariable: recurringVariable,
+              anchorDate: response.data.date || newTrans.date,
+              sourceTransactionId: response.data._id,
+            });
+          } catch {
+            runNotify("error", tr("movements.new.recurringError"));
+          }
+        }
         //UPDATE FRON END
         dispatch(addNewTransacction(response.data));
         onCreated?.(response.data);
@@ -278,6 +302,9 @@ function AddTransactionComp({ initialBudgetId = "", defaultIncome = false, onCre
       wallet: (user?.wallet as string) || "",
     });
     setChargedElsewhere(false);
+    setRecurring(false);
+    setRecurringVariable(false);
+    setRecurringFrequency("monthly");
     setMerchantAmount("");
     setMerchantCurrency("USD");
     setAmountTouchedManually(false);
@@ -306,7 +333,7 @@ function AddTransactionComp({ initialBudgetId = "", defaultIncome = false, onCre
   const projectSelector = (
     <>
       <p className="label-tfp">{tr("movements.new.project")}</p>
-      <div className="etm-selector bg-gf-surface text-gf-text w-full flex items-center justify-center px-[4px] py-[2px]">
+      <div data-tour="add-project" className="etm-selector bg-gf-surface text-gf-text w-full flex items-center justify-center px-[4px] py-[2px]">
         <select
           className="bg-transparent appearance-none w-full pr-4"
           name="budget"
@@ -345,6 +372,7 @@ function AddTransactionComp({ initialBudgetId = "", defaultIncome = false, onCre
             <input
               type="text"
               name="name"
+              data-tour="add-name"
               value={transactionInfo.name}
               onChange={handleChange}
               placeholder={tr("movements.new.nameHelp")}
@@ -353,6 +381,7 @@ function AddTransactionComp({ initialBudgetId = "", defaultIncome = false, onCre
             <input
               type="number"
               name="amount"
+              data-tour="add-amount"
               value={transactionInfo.amount}
               onChange={handleChange}
               placeholder="0.00"
@@ -368,7 +397,7 @@ function AddTransactionComp({ initialBudgetId = "", defaultIncome = false, onCre
               quoting={merchantQuoting}
             />
             <p className="label-tfp ">{tr("movements.new.type")}</p>
-            <div className="flex w-full gap-2" role="group" aria-label={tr("movements.new.typeLabel")}>
+            <div data-tour="add-type" className="flex w-full gap-2" role="group" aria-label={tr("movements.new.typeLabel")}>
               {[
                 { income: false, label: tr("movements.new.bill") },
                 { income: true, label: tr("movements.new.income") },
@@ -390,7 +419,7 @@ function AddTransactionComp({ initialBudgetId = "", defaultIncome = false, onCre
               })}
             </div>
             <p className="label-tfp ">{tr("movements.new.date")}</p>
-            <div className="date-container w-full h-[100px] ">
+            <div data-tour="add-date" className="date-container w-full h-[100px] ">
               <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <DemoContainer components={["MobileDateTimePicker"]}>
                   <DemoItem label="">
@@ -422,7 +451,9 @@ function AddTransactionComp({ initialBudgetId = "", defaultIncome = false, onCre
               </LocalizationProvider>
             </div>
             <p className="label-tfp ">{tr("movements.new.category")}</p>
-              <BtnSelectCategoryContext onClose={() => setIsCategoryPickerOpen((open) => !open)} />
+              <div className="w-full" data-tour="add-category">
+                <BtnSelectCategoryContext onClose={() => setIsCategoryPickerOpen((open) => !open)} />
+              </div>
               {isCategoryPickerOpen && (
                 <ModalCategoryContent
                   inline
@@ -434,12 +465,13 @@ function AddTransactionComp({ initialBudgetId = "", defaultIncome = false, onCre
             <input
               type="text"
               name="tags"
+              data-tour="add-tags"
               value={transactionInfo.tags || ""}
               onChange={handleChange}
               placeholder={tr("movements.new.tagsPlaceholder")}
             />
             <p className="label-tfp ">{tr("movements.new.account")}</p>
-            <div className="etm-selector bg-gf-surface text-gf-text w-full flex items-center justify-center px-[4px] py-[2px]text-center">
+            <div data-tour="add-account" className="etm-selector bg-gf-surface text-gf-text w-full flex items-center justify-center px-[4px] py-[2px]text-center">
               <select
                 className=" bg-transparent appearance-none w-full pr-4"
                 name="DateSelector"
@@ -458,8 +490,45 @@ function AddTransactionComp({ initialBudgetId = "", defaultIncome = false, onCre
                 )}
               </select>
             </div>
+            {!transactionInfo.isIncome && (
+              <div className="w-full flex flex-col gap-2" data-tour="add-recurring">
+                <div className="flex items-center gap-2">
+                  <Switch checked={recurring} onChange={setRecurring} size="small" />
+                  <p className="label-tfp !mb-0">{tr("movements.new.recurring")}</p>
+                </div>
+                {recurring && (
+                  <div className="w-full flex flex-col gap-2 bg-gf-accent-soft-bg border border-purple-200 rounded-xl p-2">
+                    <p className="label-tfp">{tr("movements.new.recurringEvery")}</p>
+                    <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={tr("movements.new.recurringEvery")}>
+                      {RECURRENCE_FREQUENCIES.map((frequency) => (
+                        <button
+                          key={frequency}
+                          type="button"
+                          role="radio"
+                          aria-checked={recurringFrequency === frequency}
+                          onClick={() => setRecurringFrequency(frequency)}
+                          className={`rounded-full border px-3 py-1 text-xs font-semibold transition-colors ${
+                            recurringFrequency === frequency ? "border-purple-400 bg-purple-500/30 text-gf-text" : "border-white/15 bg-white/5 text-gf-text-muted hover:bg-white/10"
+                          }`}
+                        >
+                          {tr(`recurring.frequency.${frequency}`)}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Switch checked={recurringVariable} onChange={setRecurringVariable} size="small" />
+                      <p className="label-tfp !mb-0">{tr("movements.new.recurringVariable")}</p>
+                    </div>
+                    <p className="text-[11px] text-gf-text-muted">
+                      {tr(recurringVariable ? "movements.new.recurringHintVariable" : "movements.new.recurringHintFixed", { p1: tr(`recurring.frequency.phrase.${recurringFrequency}`) })}
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
             {projectSelector}
             <button
+              data-tour="add-save"
               className="w-full p-2 gf-glass-button text-white text-center rounded-full mt-3"
               type="submit"
             >
@@ -467,6 +536,7 @@ function AddTransactionComp({ initialBudgetId = "", defaultIncome = false, onCre
             </button>
             <button
               type="button"
+              data-tour="add-clear"
               className="clearForm w-full p-2 gf-glass-button-neutral text-red-300 text-center rounded-full cursor-pointer mb-4"
               onClick={clearForm}
             >

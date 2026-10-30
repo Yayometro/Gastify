@@ -99,7 +99,7 @@ function AccountCardFace({
     >
       <CardPatternLayer pattern={cardPattern ?? "circles"} tint={tint} id={patternId} />
 
-      <div className="relative flex items-center justify-between gap-3">
+      <div className="relative flex items-center justify-between gap-3" data-tour="acc-card-top">
         {bank ? (
           <div className="flex h-[44px] w-[44px] shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white p-1" title={bank.name}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -120,7 +120,7 @@ function AccountCardFace({
         </span>
       </div>
 
-      <div className="relative">
+      <div className="relative" data-tour="acc-card-balance">
         <p className="text-xs font-medium" style={{ color: tint(0.8) }}>
           {currency}
           {bank ? ` · ${bank.name}` : ""}
@@ -144,6 +144,7 @@ function AccountCardFace({
             setReveal((value) => !value);
           }}
           className="relative flex items-center gap-2 self-start text-sm font-medium"
+          data-tour="acc-card-number"
           style={{ color: tint(0.92), letterSpacing: "0.1em" }}
         >
           {formatCardNumber(cardNumber, reveal)}
@@ -151,7 +152,7 @@ function AccountCardFace({
         </button>
       ) : null}
 
-      <div className="relative flex items-center justify-between gap-3">
+      <div className="relative flex items-center justify-between gap-3" data-tour="acc-card-flow">
         <span className="flex items-center gap-1 text-sm font-semibold" style={{ color: ink }}>
           <MdKeyboardDoubleArrowUp size={18} style={{ color: up }} />
           {formatMoneyMajor(incomes, flowCurrency, { showCode: false })}

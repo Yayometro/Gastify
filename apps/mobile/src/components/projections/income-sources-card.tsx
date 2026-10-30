@@ -16,6 +16,7 @@ import { formatMoneyMajor, SUPPORTED_CURRENCIES } from '@gastify/core/money/curr
 import { useT, useInfo } from "@/i18n/client";
 import type { TranslateFn } from "@gastify/core/i18n/translate";
 
+import { TourPressable, TourTarget } from '@/components/tour/tour-target';
 type AnyRecord = Record<string, unknown>;
 
 const RECURRENCE = (t: TranslateFn): { id: string; label: string }[] => ([
@@ -80,7 +81,7 @@ export function IncomeSourcesCard({ sources, currency, onChanged }: { sources: A
   };
 
   return (
-    <Card title={tr("mobile.fuentes.de.ingreso")} info={APP_INFO.fuentes_de_ingreso}>
+    <Card tour="m-proj-sources" title={tr("mobile.fuentes.de.ingreso")}>
       {sources.length === 0 && <Text className="font-inter text-sm text-gf-text-muted">{tr("mobile.todavia.no.tienes.fuentes.de")}</Text>}
       {sources.map((source) => (
         <View key={idOf(source as never)} className="flex-row items-center gap-3">
@@ -97,24 +98,24 @@ export function IncomeSourcesCard({ sources, currency, onChanged }: { sources: A
       ))}
 
       {!open ? (
-        <Pressable accessibilityRole="button" onPress={() => setOpen(true)} className="items-center rounded-full border border-gf-border py-3">
+        <TourPressable id="m-proj-sources-new" accessibilityRole="button" onPress={() => setOpen(true)} className="items-center rounded-full border border-gf-border py-3">
           <Text className="font-inter-semibold text-base text-gf-text">{tr("mobile.nueva.fuente.de.ingreso")}</Text>
-        </Pressable>
+        </TourPressable>
       ) : (
         <View className="gap-3">
-          <TextField label={tr("mobile.nombre")} value={name} onChangeText={setName} placeholder={tr("mobile.sueldo")} maxLength={60} autoCapitalize="sentences" />
-          <TextField label={t("mobile.projections.monthlyApprox", { p1: code })} value={amount} onChangeText={(t) => setAmount(t.replace(/[^0-9.,]/g, ''))} placeholder="0.00" keyboardType="decimal-pad" />
-          <View className="gap-2">
+          <TourTarget id="m-proj-sources-name"><TextField label={tr("mobile.nombre")} value={name} onChangeText={setName} placeholder={tr("mobile.sueldo")} maxLength={60} autoCapitalize="sentences" /></TourTarget>
+          <TourTarget id="m-proj-sources-amount"><TextField label={t("mobile.projections.monthlyApprox", { p1: code })} value={amount} onChangeText={(t) => setAmount(t.replace(/[^0-9.,]/g, ''))} placeholder="0.00" keyboardType="decimal-pad" /></TourTarget>
+          <TourTarget id="m-proj-sources-currency" className="gap-2">
             <Text className="font-inter-medium text-sm text-gf-text-muted">{tr("mobile.moneda")}</Text>
             <ChipPicker items={SUPPORTED_CURRENCIES.map((c) => ({ id: c, label: c }))} value={code} onChange={setCode} moreAfter={99} />
-          </View>
-          <View className="gap-2">
+          </TourTarget>
+          <TourTarget id="m-proj-sources-recurrence" className="gap-2">
             <Text className="font-inter-medium text-sm text-gf-text-muted">{tr("mobile.recurrencia")}</Text>
             <ChipPicker items={RECURRENCE(t)} value={recurrence} onChange={setRecurrence} moreAfter={99} />
-          </View>
-          <DateField label={tr("mobile.primer.pago")} value={anchor} onChange={setAnchor} />
+          </TourTarget>
+          <TourTarget id="m-proj-sources-date"><DateField label={tr("mobile.primer.pago")} value={anchor} onChange={setAnchor} /></TourTarget>
           <FormError message={error} />
-          <GradientButton label={tr("mobile.guardar.fuente")} onPress={save} loading={saving} disabled={saving} />
+          <TourTarget id="m-proj-sources-save"><GradientButton label={tr("mobile.guardar.fuente")} onPress={save} loading={saving} disabled={saving} /></TourTarget>
           <Pressable accessibilityRole="button" onPress={() => setOpen(false)} className="items-center py-1">
             <Text className="font-inter-semibold text-sm text-gf-text-muted">{tr("mobile.cancelar")}</Text>
           </Pressable>

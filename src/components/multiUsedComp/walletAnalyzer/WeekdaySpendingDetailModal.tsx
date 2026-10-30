@@ -1,9 +1,14 @@
 "use client";
+import TutorialTip from "@/components/tour/TutorialTip";
 import React from "react";
 import { Modal } from "antd";
 import { formatMoneyMajor } from "@gastify/core/money/currencies";
+import { formatWeekRange } from "@gastify/core/transformers/spendingWeeksCalendar";
 import type { WalletAnalyzerWeekdaySpendingData } from "./WalletAnalyzerView";
-import { useT } from "@/i18n/client";
+import { useLocale, useT } from "@/i18n/client";
+import SpendingSectionTitle from "./SpendingSectionTitle";
+import SpendingWeeklyBars from "./SpendingWeeklyBars";
+import SpendingCalendar from "./SpendingCalendar";
 
 export interface WeekdaySpendingDetailModalProps {
   open: boolean;
@@ -12,10 +17,9 @@ export interface WeekdaySpendingDetailModalProps {
   walletPrimaryCurrency?: string;
 }
 
-// The "why" behind the weekday-pattern card: which week of the month hit
-// hardest, a plain explanation of the averaging method, and a full
-// day-by-day list so the conclusion (e.g. "los miércoles") is traceable
-// to the actual daily numbers, not just the 7-bucket averages.
+// The "why" behind the weekday-pattern card, in reading order: the plain
+// explanation of the averaging method, the weekly totals, a calendar of the
+// last 92 days, and the full day-by-day list so every number stays traceable.
 function WeekdaySpendingDetailModal({
   open,
   onClose,
@@ -23,10 +27,9 @@ function WeekdaySpendingDetailModal({
   walletPrimaryCurrency,
 }: WeekdaySpendingDetailModalProps): React.JSX.Element | null {
   const t = useT();
+  const locale = useLocale();
   if (!open || !weekdaySpending) return null;
-  const { weeks, dailyBreakdown, insight, weekdayAvg, weekendAvg } = weekdaySpending;
-
-  const bestWeek = [...(weeks || [])].sort((a, b) => b.total - a.total)[0];
+  const { weekly, dailyBreakdown, insight, weekdayAvg, weekendAvg } = weekdaySpending;
   const maxDayTotal = Math.max(1, ...(dailyBreakdown || []).map((d) => d.total));
 
   return (
@@ -37,28 +40,34 @@ function WeekdaySpendingDetailModal({
       width={560}
       className="gf-antd-modal-glass"
       zIndex={20000}
-      title={<span className="text-purple-300 font-semibold text-base">{t("analyzer.weekday.detail")}</span>}
+      title={<span className="inline-flex items-center text-purple-300 font-semibold text-base">{t("analyzer.weekday.detail")}<span aria-hidden="true" className="mx-2 inline-block h-5 w-px shrink-0 align-middle bg-purple-300/40" /><TutorialTip tour="anaWeekdayDetail" label={t("analyzer.weekday.detail")} /></span>}
     >
-      <div className="rounded-xl bg-gf-accent-soft-bg p-3.5 mb-4">
-        <p className="text-[11px] font-bold uppercase tracking-wide text-purple-300/70">{t("analyzer.weekday.topWeek")}</p>
-        <p className="text-base font-extrabold text-purple-300">
-          {bestWeek.label} — {formatMoneyMajor(bestWeek.total, walletPrimaryCurrency)}
-        </p>
-        <p className="text-[11px] text-gf-text-muted">{t("analyzer.weekday.txCount", { p1: bestWeek.count })}</p>
-      </div>
-
-      <p className="text-xs text-gf-text-muted mb-2">
+      <p data-tour="wd-method" className="text-xs text-gf-text-muted mb-4">
         <b>{insight}</b> {t("analyzer.weekday.method")}{" "}
         {formatMoneyMajor(weekdayAvg, walletPrimaryCurrency)} {t("analyzer.weekday.weekend")}{" "}
         {formatMoneyMajor(weekendAvg, walletPrimaryCurrency)}.
       </p>
 
+      <div data-tour="wd-weekly" className="mb-5">
+        <SpendingSectionTitle variant="modal" title={t("analyzer.weekly.title")} help={t("analyzer.weekly.help")} tour="anaWeeklyDetail" />
+        <div className="mt-2">
+          <SpendingWeeklyBars weekly={weekly} walletPrimaryCurrency={walletPrimaryCurrency} variant="detail" />
+        </div>
+      </div>
+
+      <div data-tour="wd-calendar" className="mb-5">
+        <SpendingSectionTitle variant="modal" title={t("analyzer.calendar.title")} help={t("analyzer.calendar.help")} tour="anaCalendarDetail" />
+        <div className="mt-2">
+          <SpendingCalendar days={dailyBreakdown || []} lastDays={92} walletPrimaryCurrency={walletPrimaryCurrency} />
+        </div>
+      </div>
+
       <p className="text-[11px] font-bold uppercase tracking-wide text-gf-text-muted mt-3 mb-2">{t("analyzer.weekday.dayByDay")}</p>
-      <div className="flex flex-col max-h-[320px] overflow-y-auto pr-1">
+      <div data-tour="wd-days" className="flex flex-col pr-1">
         {(dailyBreakdown || []).map((d) => (
-          <div key={d.dayOfMonth} className="flex items-center gap-3 py-1.5 border-t border-gf-border first:border-t-0">
-            <span className="w-16 text-[11px] text-gf-text-muted shrink-0">
-              {d.dayName.slice(0, 3)} {d.dayOfMonth}
+          <div key={d.date.getTime()} className="flex items-center gap-3 py-1.5 border-t border-gf-border first:border-t-0">
+            <span className="w-24 text-[11px] text-gf-text-muted shrink-0">
+              {d.dayName.slice(0, 3)} {formatWeekRange(d.date, d.date, locale)}
             </span>
             <div className="flex-1 h-2 rounded-full bg-gf-surface-2 overflow-hidden">
               <div className="h-full rounded-full bg-purple-400" style={{ width: `${(d.total / maxDayTotal) * 100}%` }} />

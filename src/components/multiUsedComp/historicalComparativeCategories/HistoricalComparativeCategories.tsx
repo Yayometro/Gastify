@@ -223,7 +223,7 @@ function HistoricalComparativeCategories({ periodState }: HistoricalComparativeC
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const components: TabsTogglerComponentItem<any>[] = [
     {
-      tab: "bills",
+      tab: t("web.bills"),
       props: {
         data: transactionCategories[0] || [],
         totalValue: (totalAmount as number[])[0] || 0,
@@ -238,7 +238,7 @@ function HistoricalComparativeCategories({ periodState }: HistoricalComparativeC
       Component: ResponsiveBarsChartComponent,
     },
     {
-      tab: "incomes",
+      tab: t("web.incomes"),
       props: {
         data: transactionCategories[1] || [],
         totalValue: (totalAmount as number[])[1] || 0,
@@ -260,7 +260,7 @@ function HistoricalComparativeCategories({ periodState }: HistoricalComparativeC
       renderModal(<ModalContentTopMonthItem item={item} close={handleClose} />);
     components.push(
       {
-        tab: "compare bills",
+        tab: t("web.compare.bills"),
         props: {
           rowsA: compareCategoryData.bills.rowsA,
           rowsB: compareCategoryData.bills.rowsB,
@@ -275,7 +275,7 @@ function HistoricalComparativeCategories({ periodState }: HistoricalComparativeC
         Component: TypedCategoriesCompareTable,
       },
       {
-        tab: "compare incomes",
+        tab: t("web.compare.incomes"),
         props: {
           rowsA: compareCategoryData.incomes.rowsA,
           rowsB: compareCategoryData.incomes.rowsB,

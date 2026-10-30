@@ -1,0 +1,11 @@
+/* The button at the end of a chapter that leads to the next one (Cómo funciona → Herramientas → Tu IA → el siguiente paso). */
+.home-chapter:focus{outline:none}
+.home-bridge{display:flex;align-items:center;gap:.55rem;width:fit-content;margin-top:1.1rem;padding:.7rem 1.1rem;border:1px solid rgba(196,168,255,.28);border-radius:999px;background:rgba(182,147,255,.08);color:#e6d9ff;font-size:.85rem;font-weight:650;transition:background .2s,border-color .2s,color .2s}
+.home-bridge span{display:inline-block;transition:transform .2s}
+.home-bridge:hover{border-color:rgba(214,190,255,.55);background:rgba(182,147,255,.18);color:#fff}
+.home-bridge:hover span{transform:translateY(2px)}
+.home-bridge:focus-visible{outline:2px solid #c7a8ff;outline-offset:3px}
+.home-ai-actions{display:flex;flex-wrap:wrap;align-items:center;gap:.9rem 1.5rem;margin-top:1.2rem}
+.home-ai-actions .home-text-link{margin-top:0}
+.home-ai-actions .home-bridge{margin-top:0}
+@media(prefers-reduced-motion:reduce){.home-bridge,.home-bridge span{transition:none}.home-bridge:hover span{transform:none}}

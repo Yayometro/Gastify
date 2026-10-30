@@ -20,6 +20,8 @@ import { getBudgetActualSpend } from '@gastify/core/transformers/projectionsChan
 import { useT, useInfo } from "@/i18n/client";
 import { tNow } from '@/i18n/now';
 
+import { TourTarget } from '@/components/tour/tour-target';
+import { HelpSep } from '@/components/ui/help-sep';
 // The most budgets the dashboard shows; the rest are one tap away on «Ver todos».
 export const MAX_DASHBOARD_BUDGETS = 10;
 
@@ -55,18 +57,19 @@ export function BudgetsWidget() {
   const { rows, currency } = useDashboardBudgetRows();
   const shown = rows.slice(0, MAX_DASHBOARD_BUDGETS);
   return (
-    <View className="gap-3">
+    <TourTarget id="m-home-budgets" className="gap-3">
       <View className="flex-row items-center justify-between gap-3 px-1">
         <Pressable accessibilityRole="link" onPress={() => router.navigate('/budgets')} hitSlop={8} className="flex-1">
           <Text className="font-inter-semibold text-lg text-gf-text">{t("mobile.presupuestos")}</Text>
         </Pressable>
         <View className="flex-row items-center gap-3">
-          <Pressable accessibilityRole="link" onPress={() => router.navigate('/budgets')} hitSlop={8}><Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{rows.length > shown.length ? tNow("mobile.ver.todos.p1", { p1: rows.length }) : t("mobile.ver.todos")}</Text></Pressable>
           <InfoTip info={APP_INFO.presupuestos} />
+          <HelpSep />
+          <Pressable accessibilityRole="link" onPress={() => router.navigate('/budgets')} hitSlop={8}><Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{rows.length > shown.length ? tNow("mobile.ver.todos.p1", { p1: rows.length }) : t("mobile.ver.todos")}</Text></Pressable>
         </View>
       </View>
       {rows.length === 0 && <Card><Text className="font-inter text-sm text-gf-text-muted">{t("mobile.todavia.no.tienes.presupuestos.de")}</Text></Card>}
       {shown.map((row) => <BudgetCard key={idOf(row.budget)} row={row} currency={currency} saving={false} />)}
-    </View>
+    </TourTarget>
   );
 }

@@ -59,6 +59,7 @@ function PrimaryCurrencySelector({ pcsWallet }: PrimaryCurrencySelectorProps): R
     <Tooltip title={t("shared.currency.help")}>
       <div className="pcs-container flex items-center gap-1 text-[10px] font-light bg-gf-surface-2 text-gf-text rounded-2xl px-[8px] py-[2px] sm:text-xs">
         <span className="whitespace-nowrap">{t("shared.currency.primary")}</span>
+        <span aria-hidden="true" className="mx-2 inline-block h-5 w-px shrink-0 align-middle bg-purple-300/40" />
         <InfoTip info={APP_INFO.moneda_principal} />
         {isSaving ? (
           <Spin size="small" />

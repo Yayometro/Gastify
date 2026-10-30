@@ -90,7 +90,7 @@ function UncategorizedSuggestionsTab({ mail, onApplied }: UncategorizedSuggestio
 
   if (suggestions.length === 0) {
     return (
-      <p className="text-sm text-gf-text-muted text-center py-10">
+      <p data-tour="tools-empty" className="text-sm text-gf-text-muted text-center py-10">
         {t("movements.categorizer.none")}
       </p>
     );
@@ -98,7 +98,7 @@ function UncategorizedSuggestionsTab({ mail, onApplied }: UncategorizedSuggestio
 
   return (
     <div>
-      <p className="text-xs text-gf-text-muted text-center mb-3">
+      <p data-tour="tools-count" className="text-xs text-gf-text-muted text-center mb-3">
         {t("movements.categorizer.matched", { p1: suggestions.length, p2: suggestions.length !== 1 ? "s" : "" })}
       </p>
       <SuggestionsList
