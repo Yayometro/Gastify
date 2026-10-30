@@ -1956,3 +1956,12 @@ When taking over this task, Claude should perform the following steps:
 - **Files Modified:** `src/app/home-platform.css` y este log.
 - **Verification:** la landing recargada en `localhost:3001` reporta `home-soft-float` activo con duración de 6.2 s; la nueva trayectoria se elevó 8 px, regresó al centro y descendió 8 px, con ±2 px laterales. `git diff --check` pasa; sin cambios funcionales ni build.
 - **Release:** local, sin commit, push, merge ni deploy.
+
+### Entry #87 - Codex - 2026-10-30 - Publicación de Oportunidades de crecimiento y landing
+
+- **AI Assistant:** OpenAI / Codex; variante de modelo no verificada en este entorno.
+- **User Request:** publicar la rama `codex/growth-opportunities-polish`, integrarla a `main` y hacer visibles los cambios en `mygastify.com`.
+- **GitHub:** commit de la rama `9285e0e` publicado; PR [#20](https://github.com/Yayometro/Gastify/pull/20) fusionado a `main` mediante merge commit `7b5ac1b` el 2026-10-30. GitHub reportó el PR integrable. Vercel Preview pasó; el check no bloqueante de Cloudflare Pages falló con resumen genérico «Build failed» y sin anotaciones disponibles.
+- **Deployment:** Vercel production deployment `dpl_33gN9NedafucoWJz6chch2jN7JW7`, asociado al SHA `7b5ac1bcb1a0a7dc687c9d3295b45e729e7180e0`, llegó a estado `READY`. `mygastify.com` y `www.mygastify.com` aparecen verificados en el proyecto Gastify; la raíz del dominio responde HTTP 200 desde Vercel.
+- **Alcance del release:** mejoras a Oportunidades de crecimiento, preferencias de categorías y paridad móvil; landing bilingüe con secciones de seguridad y dispositivos, instalación PWA, carruseles, selectores y flotación de paneles. El detalle de implementación y pruebas está en las entradas #82–#86 y en `GOALS_GROWTH_OPPORTUNITIES_PLAN.md`.
+- **Seguimiento:** revisar el fallo independiente de Cloudflare Pages si ese destino sigue siendo necesario; no impidió la publicación en Vercel ni está configurado como requisito de protección de `main`.
