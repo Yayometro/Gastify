@@ -1756,6 +1756,13 @@ When taking over this task, Claude should perform the following steps:
 - **Verificación:** `npm run typecheck`, `npm run lint -- --quiet`, `npx vitest run --reporter=dot` (117 archivos / 818 pruebas) y `git diff --check` pasan. No se ejecutó build en esta integración.
 - **Publicación:** autorizado por el usuario: subir la rama `codex/public-dashboard-demo` e integrarla a `main`. La investigación de monetización se publica en su rama separada; no se mezclan cambios del dashboard administrativo.
 
+### Entry #72 - Codex - 2026-10-28 - Consolidación de la investigación de monetización
+- **Documento:** se incorporó a [Obtención de ingresos Gastify](Obtención%20de%20ingresos%20Gastify.md) la continuación preparada en el checkout `feat/admin-dashboard`: registro de la investigación previa, dudas y decisiones, referencias, evaluación comparativa y top 10 independiente, además de los productos mexicanos solicitados.
+- **Aislamiento:** rama `codex/monetization-research`, creada desde el `main` actualizado. Solo se transfirió el cambio del documento de investigación; se dejó intacto el checkout principal con sus archivos administrativos y otros untracked. El log parte de `main` y se agregó esta entrada, sin copiar reversiones históricas del log de la otra rama.
+- **Alcance:** investigación y planificación solamente. No se crearon cuentas de prueba, no se aceptaron periodos de prueba de pago y no se cambiaron funciones de Gastify.
+- **Verificación:** el documento conserva el informe anterior y suma 1,990 líneas; `git diff --check` pasa. No requiere pruebas de aplicación.
+- **Publicación:** rama independiente para push; no fusionar la investigación a `main` en esta entrega. *(Estado al cierre de esa entrega; después se autorizó la integración.)*
+
 ### Entry #73 - Codex - 2026-10-28 (08:28 AM America/Mexico_City) - Plan de Objetivos y Oportunidades de crecimiento
 
 - **AI Assistant:** OpenAI / Codex; variante de modelo no verificada en este entorno.
@@ -1879,3 +1886,9 @@ When taking over this task, Claude should perform the following steps:
 - **Files Modified:** `src/components/goals/GoalsClient.tsx`, `src/components/goals/GoalDetailModal.tsx`, `apps/mobile/src/app/(tabs)/budgets/goals.tsx`, `apps/mobile/src/app/(tabs)/budgets/[id].tsx`, `.mds/GOALS_GROWTH_OPPORTUNITIES_PLAN.md` y este log.
 - **Verification:** `npm run typecheck`, `npm run lint -- --quiet` (web), `cd apps/mobile && npx tsc --noEmit`, ESLint focalizado en las dos rutas móviles, Vitest `budgetHistory.test.ts` (1 archivo, 10 pruebas) y `git diff --check` pasan. La inspección inicial en Chrome confirmó que los saldos compartidos estaban pintando la barra naranja; después de recargar, la sesión local dejó de estar activa y no había metas para verificar visualmente el nuevo modal/scroll.
 - **Data / Release:** sin escrituras de usuario ni cambios en main. Sin commit, push, merge o deploy.
+
+### Entry #81 - Codex - 2026-10-30 - Integración de la investigación de monetización en main
+- **Autorización:** el usuario pidió explícitamente fusionar `codex/monetization-research` a `main` y publicarlo en producción.
+- **Integración:** se incorpora el apéndice de Codex al informe de Claude en el mismo archivo `.mds/Obtención de ingresos Gastify.md`. Se preservan la entrada histórica #72 de monetización y las entradas #73–#80 de Goals; el único conflicto fue de orden al final del log, resuelto sin descartar entradas.
+- **Verificación:** cambio documental; `git diff --check`. No requiere pruebas de aplicación.
+- **Publicación:** al empujar `main`, Vercel debe crear un deployment de producción; estado por confirmar tras el push.
