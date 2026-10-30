@@ -35,6 +35,9 @@ export interface BudgetData {
   period?: "monthly" | "quarterly" | "biannual" | "yearly" | string;
   budgetType?: "spending" | "saving" | "project" | string;
   icon?: string;
+  color?: string;
+  goalDetails?: import("../goals/types").GoalDetails;
+  revision?: number;
   eventStartDate?: Date | string;
   eventEndDate?: Date | string;
   linkedTags?: (string | unknown)[];

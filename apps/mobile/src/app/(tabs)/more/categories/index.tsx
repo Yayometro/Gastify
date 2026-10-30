@@ -9,6 +9,8 @@ import { Segmented } from '@/components/segmented';
 import { Screen } from '@/components/screen';
 import { Card } from '@/components/ui/card';
 import { TextField } from '@/components/ui/text-field';
+import { ChipPicker } from '@/components/chip-picker';
+import { useGrowthCategoryPreferences } from '@/hooks/use-growth-category-preferences';
 import { Colors } from '@/constants/theme';
 import { useRefreshAppData } from '@/hooks/use-load-app-data';
 import type { RootState } from '@/store';
@@ -35,6 +37,10 @@ export default function CategoriesScreen() {
   const [query, setQuery] = useState('');
   const [tab, setTabState] = useState<'analyzer' | 'list'>(lastTab);
   const setTab = (next: 'analyzer' | 'list') => { lastTab = next; setTabState(next); };
+  const [growthCategoryId, setGrowthCategoryId] = useState('');
+  const [reductionInput, setReductionInput] = useState('25');
+  const [savingGrowth, setSavingGrowth] = useState(false);
+  const growthPreferences = useGrowthCategoryPreferences();
 
   const ownSubs = useMemo(() => subCategories.subCat ?? [], [subCategories.subCat]);
   const defaultSubs = useMemo(() => subCategories.default ?? [], [subCategories.default]);
@@ -88,6 +94,15 @@ export default function CategoriesScreen() {
           </Text>
         </TourPressable>
       </View>
+      <Card title={t('opportunities.categoryPreferenceTitle')}>
+        <Text className="font-inter text-xs leading-5 text-gf-text-muted">{t('opportunities.categoryPreferenceHelp')}</Text>
+        <ChipPicker items={allCategories.map((item) => ({ id: idOf(item), label: item.name || t('opportunities.category'), icon: item.icon, color: item.color }))} value={growthCategoryId} onChange={(value) => { setGrowthCategoryId(value); setReductionInput(String(growthPreferences.preferences.find((item) => item.categoryId === value)?.reductionPercent ?? 25)); }} title={t('opportunities.category')} moreAfter={4} />
+        <TextField label={t('opportunities.reductionPercent')} value={reductionInput} onChangeText={setReductionInput} keyboardType="number-pad" />
+        <Pressable accessibilityRole="button" disabled={!growthCategoryId || savingGrowth || growthPreferences.loading || !Number.isInteger(Number(reductionInput)) || Number(reductionInput) < 0 || Number(reductionInput) > 100} onPress={async () => { setSavingGrowth(true); await growthPreferences.save(growthCategoryId, Number(reductionInput)); setSavingGrowth(false); }} className="items-center rounded-xl bg-gf-surface-2 px-4 py-3 disabled:opacity-50"><Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{t('opportunities.savePreference')}</Text></Pressable>
+        <Text className="font-inter text-xs text-gf-text-muted">{t('opportunities.zeroRemovesPreference')}</Text>
+        {growthPreferences.error && <Text className="font-inter text-xs text-red-300">{t('opportunities.preferenceError')}</Text>}
+        {growthPreferences.preferences.map((item) => { const category = allCategories.find((candidate) => idOf(candidate) === item.categoryId); return category ? <Text key={item.categoryId} className="font-inter text-xs text-gf-text-muted">{category.name} · −{item.reductionPercent}%</Text> : null; })}
+      </Card>
 
       {searching && (
         <>

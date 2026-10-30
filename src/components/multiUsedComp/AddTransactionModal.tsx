@@ -11,6 +11,7 @@ import {
   IoArrowDownCircleOutline,
   IoCashOutline,
   IoDocumentAttachOutline,
+  IoFlagOutline,
   IoPieChartOutline,
   IoPricetagOutline,
   IoSwapHorizontalOutline,
@@ -38,7 +39,7 @@ export interface AddTransactionModalProps {
   close?: React.MouseEventHandler<HTMLElement> | (() => void);
 }
 
-type Option = { id: "excel" | CreateKind; label: string; icon: React.ReactNode; info: InfoText; summary: string };
+type Option = { id: "excel" | "goal" | CreateKind; label: string; icon: React.ReactNode; info: InfoText; summary: string };
 
 // A transaction is an income or an expense: the same explanation, under one name.
 const transactionInfo = (t: TranslateFn, { CREATE_KIND_INFO }: Pick<InfoData, "CREATE_KIND_INFO">): InfoText => ({
@@ -71,6 +72,7 @@ const optionsFor = (t: TranslateFn, { APP_INFO, CREATE_KIND_INFO, CREATE_KIND_SU
   { id: "category", label: t("movements.new.category"), icon: <IoPricetagOutline size={20} />, info: CREATE_KIND_INFO.category, summary: CREATE_KIND_SUMMARY.category },
   { id: "budget", label: t("movements.help.budget"), icon: <IoPieChartOutline size={20} />, info: CREATE_KIND_INFO.budget, summary: CREATE_KIND_SUMMARY.budget },
   { id: "saving", label: t("movements.help.saving"), icon: <IoCashOutline size={20} />, info: CREATE_KIND_INFO.saving, summary: CREATE_KIND_SUMMARY.saving },
+  { id: "goal", label: t("goals.new"), icon: <IoFlagOutline size={20} />, info: { title: t("goals.new"), text: t("goals.plusInfo") }, summary: t("goals.plusSummary") },
   { id: "project", label: t("movements.help.project"), icon: <IoAirplaneOutline size={20} />, info: CREATE_KIND_INFO.project, summary: CREATE_KIND_SUMMARY.project },
   { id: "excel", label: t("movements.help.importTitle"), icon: <IoDocumentAttachOutline size={20} />, info: excelInfo(APP_INFO, t), summary: t("movements.option.excelSummary") },
 ];
@@ -129,6 +131,8 @@ function AddTransactionModal({ close }: AddTransactionModalProps): React.JSX.Ele
         return <BudgetEditModal key={key} mode="creation" inline initialType={BUDGET_TYPES.SPENDING} onClose={again} onBack={null} />;
       case "saving":
         return <BudgetEditModal key={key} mode="creation" inline initialType={BUDGET_TYPES.SAVING} onClose={again} onBack={null} />;
+      case "goal":
+        return <BudgetEditModal key={key} mode="creation" inline initialType={BUDGET_TYPES.SAVING} initialGoal onClose={again} onBack={null} />;
       case "project":
         return <BudgetEditModal key={key} mode="creation" inline initialType={BUDGET_TYPES.PROJECT} onClose={again} onBack={null} />;
       case "excel":

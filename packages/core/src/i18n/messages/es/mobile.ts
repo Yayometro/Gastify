@@ -97,6 +97,7 @@ const mobile = {
   "mobile.borrar.esta.categoria": "Borrar esta categoría",
   "mobile.sus.movimientos.quedan.sin.categoria": "Sus movimientos quedan sin categoría. No se puede deshacer.",
   "mobile.cancelar": "Cancelar",
+  "mobile.continuar": "Convertir montos",
   "mobile.borrar": "Borrar",
   "mobile.borrar.esta.subcategoria": "Borrar esta subcategoría",
   "mobile.no.se.puede.deshacer": "No se puede deshacer.",
@@ -956,6 +957,7 @@ const mobile = {
   "mobile.subform.title": "Nueva subcategoría",
   "mobile.subform.newSubButton": "Nueva subcategoría",
   "mobile.sortedByAmount": "Ordenado por monto, de mayor a menor (no por mes).",
+  "mobile.quitar.fecha": "Quitar fecha",
 } as const;
 
 export default mobile;

@@ -10,6 +10,8 @@ import { useLinkedAccountsTotal } from "@/helpers/hooks/useLinkedAccountsTotal";
 import type { RootState } from "@/lib/store";
 import type { WalletData } from "@/lib/features/walletSlice";
 import { useT } from "@/i18n/client";
+import { findOverlappingSavingAccounts, isEligibleGoalFundingAccountType } from "@gastify/core/goals/progress";
+import { idOf } from "@gastify/core/categories/categoryForm";
 
 export interface BudgetCategoryRef {
   _id?: string;
@@ -35,6 +37,7 @@ export interface BudgetBarRowBudgetItem {
   icon?: string;
   currency?: string;
   linkedAccounts?: unknown[] | null;
+  goalDetails?: { schemaVersion?: number } | null;
   category?: BudgetCategoryRef;
   subCategory?: BudgetCategoryRef;
   categories?: BudgetCategoryItem[];
@@ -50,19 +53,31 @@ export interface BudgetBarRowProps {
 function BudgetBarRow({ budget, actual, onClick }: BudgetBarRowProps): React.JSX.Element {
   const t = useT();
   const walletPrimaryCurrency = useSelector((state: RootState) => (state.walletReducer?.data as WalletData)?.primaryCurrency) || "MXN";
+  const accounts = useSelector((state: RootState) => state.accountsReducer?.data || []);
+  const allBudgets = useSelector((state: RootState) => state.budgetReducer?.data || []);
   const budgetCurrency = budget.currency || walletPrimaryCurrency;
   const goalAmount = budget.goalAmount || 0;
   const isSaving = isSavingBudget(budget);
   const isProject = isProjectBudget(budget);
-  const { total: linkedAccountsTotal } = useLinkedAccountsTotal(
-    isSaving ? budget.linkedAccounts : null,
-    walletPrimaryCurrency
-  );
+  const linkedIds = (budget.linkedAccounts || []).map(idOf).filter(Boolean);
+  const linkedAccounts = accounts.filter((account) => linkedIds.includes(idOf(account)));
+  const { total: linkedAccountsTotal, breakdown } = useLinkedAccountsTotal(isSaving ? linkedAccounts : null, walletPrimaryCurrency);
+  const fundingConflicts = findOverlappingSavingAccounts(allBudgets.filter((item) => !item.archived && isSavingBudget(item)).map((item) => ({
+    id: idOf(item), name: item.name, linkedAccountIds: (item.linkedAccounts || []).map(idOf).filter(Boolean),
+  })));
+  const incompleteGoalFunding = Boolean(budget.goalDetails && (
+    fundingConflicts.has(idOf(budget)) ||
+    linkedIds.some((id) => !linkedAccounts.some((account) => idOf(account) === id)) ||
+    linkedAccounts.some((account) => !isEligibleGoalFundingAccountType(account.accountType)) ||
+    [...new Set(linkedAccounts.map((account) => account.currency || walletPrimaryCurrency))].some((code) => !breakdown.breakdown.some((item) => item.currency === code))
+  ));
 
   let value = 0;
   if (isSaving) {
     if (budget.linkedAccounts && budget.linkedAccounts.length > 0) {
       value = linkedAccountsTotal;
+    } else if (budget.goalDetails) {
+      value = Number(budget.savingAmount) || 0;
     } else {
       value = Math.max(Number(budget.savingAmount) || 0, Number(actual) || 0);
     }
@@ -70,7 +85,7 @@ function BudgetBarRow({ budget, actual, onClick }: BudgetBarRowProps): React.JSX
     value = Number(actual) || 0;
   }
 
-  const ratio = goalAmount > 0 ? value / goalAmount : 0;
+  const ratio = goalAmount > 0 && !incompleteGoalFunding ? value / goalAmount : 0;
   const exceeded = !isSaving && value > goalAmount;
   const isExceeded = value > goalAmount;
   const gradient = getBudgetBarGradient(ratio, isSaving);
@@ -84,7 +99,9 @@ function BudgetBarRow({ budget, actual, onClick }: BudgetBarRowProps): React.JSX
     defaultCate = { ...budget.subCategory, isSub: true };
   }
 
-  const balanceText = isSaving
+  const balanceText = incompleteGoalFunding
+    ? t("goals.fundingNeedsReview")
+    : isSaving
     ? balance <= 0
       ? `Goal reached${balance < 0 ? `, exceeded by ${usdFormatChanger(Math.abs(balance))}` : ""} 🎉`
       : `${usdFormatChanger(balance)} to go`
@@ -197,7 +214,7 @@ function BudgetBarRow({ budget, actual, onClick }: BudgetBarRowProps): React.JSX
         </div>
       </div>
       <div className="flex justify-between text-xs gf-text-muted-glass mt-1">
-        <span>{usdFormatChanger(value)}</span>
+        <span>{incompleteGoalFunding ? "—" : usdFormatChanger(value)}</span>
         <span>
           {t("budgets.ofParams", { p1: usdFormatChanger(goalAmount), p2: isProject ? " total" : periodLabel })}
         </span>

@@ -15,6 +15,7 @@ import "@/components/styles/animations.css";
 import "@/components/multiUsedComp/css/muliUsed.css";
 import { addNewTransacction, type TransactionData } from "@/lib/features/transacctionsSlice";
 import ModalCategoryContent from "../modals/contents/selectCategory/ModalCategoryContent";
+import BasicModal from "../modals/basicModal/BasicModal";
 import BtnSelectCategoryContext from "../buttons/buttonWrappers/selectBtnCategoryWithContext.jsx/BtnSelectCategoryContext";
 import { SelectCategoryContext } from "../categories/SelectCategoryProvider/SelectCategoryProvider";
 import useGetDataFromProvider from "@/hooks/getAllInfo/useGetInfoFromProvider";
@@ -132,7 +133,7 @@ function AddTransactionComp({ initialBudgetId = "", defaultIncome = false, onCre
   const [amountTouchedManually, setAmountTouchedManually] = useState(false);
   const [merchantQuoting, setMerchantQuoting] = useState(false);
 
-  // The category list opens in place, under its button (no window of its own).
+  // Category selection gets its own searchable modal above the transaction form.
   const [isCategoryPickerOpen, setIsCategoryPickerOpen] = useState(false);
   //REDUX
   const { user, wallet, accounts, budgets = [] } = useGetDataFromProvider() as ProviderData;
@@ -452,13 +453,16 @@ function AddTransactionComp({ initialBudgetId = "", defaultIncome = false, onCre
             </div>
             <p className="label-tfp ">{tr("movements.new.category")}</p>
               <div className="w-full" data-tour="add-category">
-                <BtnSelectCategoryContext onClose={() => setIsCategoryPickerOpen((open) => !open)} />
+                <BtnSelectCategoryContext onClose={() => setIsCategoryPickerOpen(true)} />
               </div>
               {isCategoryPickerOpen && (
-                <ModalCategoryContent
-                  inline
+                <BasicModal
                   close={() => setIsCategoryPickerOpen(false)}
-                  getSelected={handleCategory}
+                  zIndexClass="z-[20000]"
+                  renderContent={<ModalCategoryContent
+                    close={() => setIsCategoryPickerOpen(false)}
+                    getSelected={handleCategory}
+                  />}
                 />
               )}
             <p className="label-tfp ">{tr("movements.new.tags")}</p>

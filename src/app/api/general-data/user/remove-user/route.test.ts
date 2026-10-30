@@ -57,6 +57,7 @@ vi.mock("@/model/CategoryRule", () => ({ default: { deleteMany: vi.fn() } }));
 vi.mock("@/model/IncomeSource", () => ({ default: { deleteMany: vi.fn() } }));
 vi.mock("@/model/ProjectionBaseline", () => ({ default: { deleteMany: vi.fn() } }));
 vi.mock("@/model/ProjectionSettings", () => ({ default: { deleteMany: vi.fn() } }));
+vi.mock("@/model/GoalFundingClaim", () => ({ default: { deleteMany: vi.fn() } }));
 
 import { POST } from "./route";
 import { auth, countUserPasskeys } from "@/lib/auth/betterAuth";
@@ -73,6 +74,7 @@ import CategoryRule from "@/model/CategoryRule";
 import IncomeSource from "@/model/IncomeSource";
 import ProjectionBaseline from "@/model/ProjectionBaseline";
 import ProjectionSettings from "@/model/ProjectionSettings";
+import GoalFundingClaim from "@/model/GoalFundingClaim";
 
 const api = auth.api as unknown as {
   getSession: ReturnType<typeof vi.fn>;
@@ -110,7 +112,7 @@ beforeEach(() => {
   userDelete.mockResolvedValue(userDoc);
   walletDelete.mockResolvedValue({ deletedCount: 1 });
   txDelete.mockResolvedValue({ deletedCount: 3 });
-  for (const model of [Account, Category, SubCategory, Tag, Budget, CategoryRule, IncomeSource, ProjectionBaseline, ProjectionSettings]) {
+  for (const model of [Account, Category, SubCategory, Tag, Budget, CategoryRule, IncomeSource, ProjectionBaseline, ProjectionSettings, GoalFundingClaim]) {
     (model as unknown as { deleteMany: ReturnType<typeof vi.fn> }).deleteMany.mockResolvedValue({ deletedCount: 1 });
   }
 });

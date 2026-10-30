@@ -24,6 +24,8 @@ const guideSections: Record<GuideSection, { title: string; steps: readonly [stri
   accounts: { title: "shared.demo.guide.accounts.title", steps: ["shared.demo.guide.accounts.step1", "shared.demo.guide.accounts.step2", "shared.demo.guide.accounts.step3"] },
   history: { title: "shared.demo.guide.history.title", steps: ["shared.demo.guide.history.step1", "shared.demo.guide.history.step2", "shared.demo.guide.history.step3"] },
   categories: { title: "shared.demo.guide.categories.title", steps: ["shared.demo.guide.categories.step1", "shared.demo.guide.categories.step2", "shared.demo.guide.categories.step3"] },
+  goals: { title: "goals.title", steps: ["goals.demo.step1", "goals.demo.step2", "goals.demo.step3"] },
+  opportunities: { title: "opportunities.title", steps: ["opportunities.demo.step1", "opportunities.demo.step2", "opportunities.demo.step3"] },
 };
 
 export default function DemoFeatureGuide({ section }: { section: GuideSection }): React.JSX.Element {

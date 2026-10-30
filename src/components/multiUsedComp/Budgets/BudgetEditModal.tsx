@@ -25,10 +25,15 @@ import { usdFormatChanger } from "@/helpers/transformers/transactionsChange";
 import { findCoverageConflicts } from "@/helpers/transformers/budgetCoverage";
 import { BUDGET_TYPES, getBudgetType } from "@/helpers/transformers/budgetTypes";
 import TimeRange from "@/components/Filters/timeRange/TimeRange";
-import { SUPPORTED_CURRENCIES, CURRENCY_META, formatMoneyMajor } from "@gastify/core/money/currencies";
+import { SUPPORTED_CURRENCIES, CURRENCY_META, formatMoneyMajor, majorToMinor, minorToMajor } from "@gastify/core/money/currencies";
+import { convertMinorAtRate } from "@gastify/core/money/conversion";
 import type { RootState, AppDispatch } from "@/lib/store";
 import type { WalletData } from "@/lib/features/walletSlice";
 import type { AccountData } from "@/lib/features/accountsSlice";
+import type { GoalDetails } from "@gastify/core/goals/types";
+import { emptyGoalDetails } from "@gastify/core/goals/types";
+import { isEligibleGoalFundingAccountType } from "@gastify/core/goals/progress";
+import GoalPlanningFields from "./GoalPlanningFields";
 import "@/components/multiUsedComp/css/muliUsed.css";
 import { useT } from "@/i18n/client";
 import type { TranslateFn } from "@gastify/core/i18n/translate";
@@ -48,6 +53,8 @@ const typeOptions = (t: TranslateFn): BudgetTypeOption[] => [
 ];
 
 const DEFAULT_PROJECT_ICON = "fluent/airplane";
+const DEFAULT_GOAL_ICON = "fluent/bullseye";
+const normalizeGoalIcon = (icon?: string | null): string => !icon || icon === "fluent/flag" ? DEFAULT_GOAL_ICON : icon;
 
 const dateInputValue = (value?: string | Date | null): string => {
   if (!value) return "";
@@ -133,6 +140,8 @@ export interface BudgetModalItem {
   eventEndDate?: Date | string | null;
   linkedTags?: (string | BudgetTagRef)[];
   icon?: string;
+  color?: string;
+  goalDetails?: GoalDetails;
   currency?: string;
   pendingCategory?: FormCategoryEntry;
   draftCategories?: FormCategoryEntry[];
@@ -173,6 +182,7 @@ export interface BudgetEditFormProps {
   onBack?: (() => void) | null;
   // Opens on this type (spending, saving or project) when creating.
   initialType?: string;
+  initialGoal?: boolean;
   // Inside a panel of the "+" window: no window of its own, and no × (the panel has its own).
   inline?: boolean;
 }
@@ -185,10 +195,17 @@ interface ProviderData {
   [key: string]: unknown;
 }
 
-function BudgetEditForm({ mode, budget, onClose, onBack, initialType, inline = false }: BudgetEditFormProps): React.JSX.Element {
+function browserTimeZone(): string {
+  try { return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC"; } catch { return "UTC"; }
+}
+
+function BudgetEditForm({ mode, budget, onClose, onBack, initialType, initialGoal = false, inline = false }: BudgetEditFormProps): React.JSX.Element {
   const tr = useT();
   const t = useT();
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isGoal, setIsGoal] = useState<boolean>(initialGoal || Boolean(budget?.goalDetails));
+  const [goalDetails, setGoalDetails] = useState<GoalDetails>(() => budget?.goalDetails || emptyGoalDetails("custom", browserTimeZone()));
+  const [goalColor, setGoalColor] = useState<string>(budget?.color || "#9B7CFF");
   const [form, setForm] = useState<BudgetEditFormState>({
     name: "",
     goalAmount: "",
@@ -214,6 +231,12 @@ function BudgetEditForm({ mode, budget, onClose, onBack, initialType, inline = f
   const ccAccounts = useSelector((state: RootState) => (state.accountsReducer?.data || []) as AccountData[]);
   const walletPrimaryCurrency = useSelector((state: RootState) => (state.walletReducer?.data as WalletData)?.primaryCurrency) || "MXN";
   const ccBudgets = useSelector((state: RootState) => (state.budgetReducer?.data || []) as BudgetData[]);
+  const categoryData = useSelector((state: RootState) => state.categoriesReducer?.data);
+  const subCategoryData = useSelector((state: RootState) => state.subCategoryReducer?.data);
+  const availableGoalCategories = useMemo(() => [...(categoryData?.user || []), ...(categoryData?.default || [])].filter((item) => item?._id), [categoryData]);
+  const availableGoalSubCategories = useMemo(() => [...(subCategoryData?.subCat || []), ...(subCategoryData?.default || [])].filter((item) => item?._id), [subCategoryData]);
+  const projectBudgets = useMemo(() => ccBudgets.filter((item) => getBudgetType(item) === BUDGET_TYPES.PROJECT && !item.archived), [ccBudgets]);
+  const spendingBudgets = useMemo(() => ccBudgets.filter((item) => getBudgetType(item) === BUDGET_TYPES.SPENDING && !item.archived), [ccBudgets]);
 
   const availableTags = useMemo(() => {
     const tags = new Map<string, BudgetTagRef>();
@@ -227,6 +250,9 @@ function BudgetEditForm({ mode, budget, onClose, onBack, initialType, inline = f
 
   useEffect(() => {
     if (mode === "edition" && budget) {
+      setIsGoal(Boolean(budget.goalDetails));
+      setGoalDetails(budget.goalDetails || emptyGoalDetails("custom", browserTimeZone()));
+      setGoalColor(budget.color || "#9B7CFF");
       let initialCategories: FormCategoryEntry[] = [];
       if (Array.isArray(budget.categories) && budget.categories.length) {
         initialCategories = budget.categories.map((c) => {
@@ -277,7 +303,7 @@ function BudgetEditForm({ mode, budget, onClose, onBack, initialType, inline = f
         eventStartDate: dateInputValue(budget.eventStartDate),
         eventEndDate: dateInputValue(budget.eventEndDate),
         linkedTags: (budget.linkedTags || []).map((tag) => String((typeof tag === "object" && tag !== null && "_id" in tag ? tag._id : tag) || "")),
-        icon: budget.icon || DEFAULT_PROJECT_ICON,
+        icon: budget.goalDetails ? normalizeGoalIcon(budget.icon) : budget.icon || DEFAULT_PROJECT_ICON,
         currency: budget.currency || wallet?.primaryCurrency || "MXN",
       });
       if (setItemSelected) {
@@ -289,8 +315,8 @@ function BudgetEditForm({ mode, budget, onClose, onBack, initialType, inline = f
         name: budget?.draftName || "",
         goalAmount: "",
         savingAmount: "",
-        // The type the window opened with (the "+" window's Presupuesto, Ahorro or Proyecto) wins over the draft's.
-        budgetType: initialType ?? (budget?.draftBudgetType || BUDGET_TYPES.SPENDING),
+        // The type the window opened with (the "+" window's Presupuesto, Ahorro or Proyecto) wins over the draft's; a goal is always a saving.
+        budgetType: initialGoal ? BUDGET_TYPES.SAVING : initialType ?? (budget?.draftBudgetType || BUDGET_TYPES.SPENDING),
         category: draftCategories[0]?.category || "",
         subCategory: draftCategories[0]?.subCategory || "",
         period: "monthly",
@@ -299,26 +325,84 @@ function BudgetEditForm({ mode, budget, onClose, onBack, initialType, inline = f
         eventStartDate: "",
         eventEndDate: "",
         linkedTags: (budget?.draftLinkedTags || []).map((tag) => String((typeof tag === "object" && tag !== null && "_id" in tag ? tag._id : tag) || "")),
-        icon: budget?.draftIcon || DEFAULT_PROJECT_ICON,
+        icon: initialGoal ? normalizeGoalIcon(budget?.draftIcon) : budget?.draftIcon || DEFAULT_PROJECT_ICON,
         currency: wallet?.primaryCurrency || "MXN",
       });
+      setIsGoal(initialGoal);
+      setGoalDetails(emptyGoalDetails("custom", browserTimeZone()));
+      setGoalColor("#9B7CFF");
       if (setItemSelected) {
         setItemSelected(null);
       }
     }
-  }, [mode, budget, initialType, setItemSelected, wallet]);
+  }, [mode, budget, setItemSelected, wallet, initialGoal, initialType]);
 
   const categoryConflicts = useMemo(() => form.budgetType === BUDGET_TYPES.SPENDING
     ? findCoverageConflicts(form.categories, ccBudgets, mode === "edition" ? budget?._id : null)
     : [], [form.budgetType, form.categories, ccBudgets, mode, budget?._id]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-  const toggleListValue = (field: "linkedAccounts" | "linkedTags", value: string | unknown) => setForm((prev) => ({
-    ...prev,
-    [field]: prev[field].some((id) => String(id) === String(value))
-      ? prev[field].filter((id) => String(id) !== String(value))
-      : [...prev[field], String(value)],
-  }));
+  const changeCurrency = async (nextCurrency: string) => {
+    const previousCurrency = form.currency || walletPrimaryCurrency;
+    if (nextCurrency === previousCurrency) return;
+    const targetValue = Number(form.goalAmount) || 0;
+    const hasAmounts = targetValue !== 0 || (Number(form.savingAmount) || 0) !== 0 ||
+      Boolean(goalDetails.assetPriceMoney?.amountMinor || goalDetails.schedule?.fixedContributionMoney?.amountMinor);
+    if (!hasAmounts) {
+      setForm((current) => ({ ...current, currency: nextCurrency }));
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const quote = await toFetch.post("general-data/fx/quote", {
+        amountMinor: majorToMinor(1, previousCurrency),
+        fromCurrency: previousCurrency,
+        toCurrency: nextCurrency,
+      }) as { ok?: boolean; data?: { rate?: string | number } };
+      const rate = Number(quote?.ok ? quote.data?.rate : NaN);
+      if (!Number.isFinite(rate) || rate <= 0) throw new Error(tr("goals.currencyChangeFailed"));
+
+      const convertMajor = (value: number | string) => minorToMajor(convertMinorAtRate({
+        amountMinor: majorToMinor(Number(value) || 0, previousCurrency),
+        fromCurrency: previousCurrency,
+        toCurrency: nextCurrency,
+        rate,
+      }), nextCurrency);
+      const nextGoalAmount = convertMajor(form.goalAmount);
+      const nextSavingAmount = convertMajor(form.savingAmount);
+      const confirm = window.confirm(tr("goals.currencyChangeOffer", {
+        p1: formatMoneyMajor(targetValue, previousCurrency),
+        p2: formatMoneyMajor(nextGoalAmount, nextCurrency),
+      }));
+      if (!confirm) return;
+
+      const convertMoney = (money?: { amountMinor: number; currency: string }) => {
+        if (!money) return undefined;
+        if (money.currency !== previousCurrency) throw new Error(tr("goals.currencyChangeFailed"));
+        return {
+          amountMinor: convertMinorAtRate({ amountMinor: money.amountMinor, fromCurrency: previousCurrency, toCurrency: nextCurrency, rate }),
+          currency: nextCurrency,
+        };
+      };
+      setGoalDetails((current) => ({
+        ...current,
+        ...(current.assetPriceMoney ? { assetPriceMoney: convertMoney(current.assetPriceMoney) } : {}),
+        ...(current.schedule?.fixedContributionMoney ? {
+          schedule: { ...current.schedule, fixedContributionMoney: convertMoney(current.schedule.fixedContributionMoney) },
+        } : {}),
+      }));
+      setForm((current) => ({ ...current, currency: nextCurrency, goalAmount: nextGoalAmount, savingAmount: nextSavingAmount }));
+    } catch (error) {
+      runNotify("error", error instanceof Error ? error.message : tr("goals.currencyChangeFailed"));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  const toggleListValue = (field: "linkedAccounts" | "linkedTags", value: string | unknown) => setForm((prev) => {
+    const selected = prev[field].some((id) => String(id) === String(value));
+    return { ...prev, [field]: selected ? prev[field].filter((id) => String(id) !== String(value)) : [...prev[field], String(value)], ...(field === "linkedAccounts" && !selected ? { savingAmount: "0" } : {}) };
+  });
 
   const handleCategory = (cat: CategoryItem | BudgetCategoryRef | unknown) => {
     const categoryItem = cat as (CategoryItem & BudgetCategoryRef) | null | undefined;
@@ -347,6 +431,20 @@ function BudgetEditForm({ mode, budget, onClose, onBack, initialType, inline = f
       const isSpending = form.budgetType === BUDGET_TYPES.SPENDING;
       const isSaving = form.budgetType === BUDGET_TYPES.SAVING;
       const isProject = form.budgetType === BUDGET_TYPES.PROJECT;
+      const hasGoal = isSaving && isGoal;
+      const goalCurrency = form.currency || "MXN";
+      if (hasGoal && form.linkedAccounts.length > 0 && Number(form.savingAmount || 0) > 0) {
+        throw new Error(tr("goals.chooseOneFundingSource"));
+      }
+      if (hasGoal && goalDetails.targetMode === "down_payment" && !goalDetails.assetPriceMoney) {
+        throw new Error(tr("goals.downPaymentNeedsPrice"));
+      }
+      if (hasGoal && goalDetails.targetMode === "down_payment" && goalDetails.assetPriceMoney?.currency !== goalCurrency) {
+        throw new Error(tr("goals.downPaymentCurrencyMismatch"));
+      }
+      if (hasGoal && goalDetails.schedule && !goalDetails.targetDate) {
+        throw new Error(tr("goals.scheduleNeedsDate"));
+      }
       const payload = {
         name: form.name,
         goalAmount: Number(form.goalAmount),
@@ -361,8 +459,13 @@ function BudgetEditForm({ mode, budget, onClose, onBack, initialType, inline = f
         eventStartDate: isProject ? form.eventStartDate || null : null,
         eventEndDate: isProject ? form.eventEndDate || null : null,
         linkedTags: isProject ? form.linkedTags : [],
-        icon: isProject ? form.icon || DEFAULT_PROJECT_ICON : undefined,
-        currency: form.currency || "MXN",
+        icon: isProject ? form.icon || DEFAULT_PROJECT_ICON : hasGoal ? normalizeGoalIcon(form.icon) : undefined,
+        currency: goalCurrency,
+        color: hasGoal ? goalColor : mode === "edition" && budget?.goalDetails ? null : undefined,
+        goalDetails: hasGoal ? goalDetails : mode === "edition" && budget?.goalDetails ? null : undefined,
+        goalMoney: hasGoal ? { amountMinor: majorToMinor(form.goalAmount, goalCurrency), currency: goalCurrency } : undefined,
+        savingMoney: hasGoal ? { amountMinor: majorToMinor(form.savingAmount || 0, goalCurrency), currency: goalCurrency } : undefined,
+        expectedRevision: mode === "edition" && budget?.goalDetails ? Number(budget.revision || 0) : undefined,
       };
       const res = mode === "edition"
         ? await toFetch.post("general-data/budget/update", { ...payload, id: budget?._id })
@@ -417,7 +520,7 @@ function BudgetEditForm({ mode, budget, onClose, onBack, initialType, inline = f
   const isProject = form.budgetType === BUDGET_TYPES.PROJECT;
   const isSaving = form.budgetType === BUDGET_TYPES.SAVING;
   const isSpending = form.budgetType === BUDGET_TYPES.SPENDING;
-
+  const detailedGoal = isSaving && isGoal;
   // Inside the "+" window the form is the panel: no card, no header and no × of its own.
   const panel = (
     <div className={inline ? "relative flex w-full flex-col" : "content absolute gf-glass-violet flex flex-col w-[94vw] max-w-[500px] max-h-[92vh] overflow-hidden rounded-3xl z-[1001] shadow-2xl"}>
@@ -426,7 +529,7 @@ function BudgetEditForm({ mode, budget, onClose, onBack, initialType, inline = f
         <div className="relative pt-6 pb-5 px-4 text-center text-gf-text shrink-0">
           {onBack && <button type="button" onClick={onBack} className="absolute top-4 left-4 rounded-full gf-glass-card p-1.5 text-purple-100 hover:text-gf-text transition-colors text-xs font-semibold">{t("budgets.back")}</button>}
           <button type="button" onClick={onClose} className="absolute top-4 right-4 rounded-full gf-glass-card p-1.5 text-purple-100 hover:text-gf-text transition-colors"><CategoIcon type="MdClose" siz={18} /></button>
-          <h1 className="text-2xl font-bold">{mode === "edition" ? tr("web.edit") : tr("web.create")} {isProject ? tr("web.project") : tr("web.budget")} 🪄<span aria-hidden="true" className="mx-2 inline-block h-5 w-px shrink-0 align-middle bg-purple-300/40" /><TutorialTip className="ml-0.5" tour="budForm" label={t("tour.budForm.name")} /></h1>
+          <h1 className="text-2xl font-bold">{detailedGoal ? t("goals.edit") : mode === "edition" ? tr("web.edit") : tr("web.create")} {detailedGoal ? "" : isProject ? tr("web.project") : tr("web.budget")} 🪄<span aria-hidden="true" className="mx-2 inline-block h-5 w-px shrink-0 align-middle bg-purple-300/40" /><TutorialTip className="ml-0.5" tour="budForm" label={t("tour.budForm.name")} /></h1>
         </div>
       )}
       <div className={inline ? "w-full" : "flex-1 overflow-y-auto px-6 sm:px-8 pt-6 pb-8"}>
@@ -435,22 +538,22 @@ function BudgetEditForm({ mode, budget, onClose, onBack, initialType, inline = f
           <input data-tour="bud-form-name" type="text" name="name" value={form.name} onChange={handleChange} placeholder={isProject ? tr("web.e.g.japan.2027") : tr("web.budget.name")} required className="w-full" />
           {mode === "creation" && Number(budget?.referenceSpent) > 0 && <p className="text-xs text-amber-400 bg-amber-500/15 border border-amber-200 rounded-xl px-3 py-2">{tr("budgets.project.alreadySpent")} <strong>{usdFormatChanger(budget?.referenceSpent)}</strong>{tr("budgets.project.linkedNote")}</p>}
 
-          <p className="label-tfp mt-1">{t("budgets.form.type")}</p>
+          {!initialGoal && !budget?.goalDetails && <p className="label-tfp mt-1">{t("budgets.form.type")}</p>}
           <div data-tour="bud-form-type" className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-            {typeOptions(t).map((option) => <button key={option.value} type="button" onClick={() => setForm((prev) => ({ ...prev, budgetType: option.value }))} className={`text-left rounded-2xl border p-3 transition-colors ${form.budgetType === option.value ? "border-purple-500 bg-gf-accent-soft-bg text-purple-300" : "border-gf-border bg-gf-surface text-gf-text-muted hover:border-purple-200"}`}>
+            {typeOptions(t).filter((option) => (!initialGoal && !budget?.goalDetails) || option.value === BUDGET_TYPES.SAVING).map((option) => <button key={option.value} type="button" onClick={() => { setForm((prev) => ({ ...prev, budgetType: option.value, icon: option.value === BUDGET_TYPES.SAVING ? DEFAULT_GOAL_ICON : prev.icon })); if (option.value !== BUDGET_TYPES.SAVING) setIsGoal(false); }} className={`text-left rounded-2xl border p-3 transition-colors ${form.budgetType === option.value ? "border-purple-500 bg-gf-accent-soft-bg text-purple-300" : "border-gf-border bg-gf-surface text-gf-text-muted hover:border-purple-200"}`}>
               <UniversalCategoIcon type={option.icon} siz={18} />
               <p className="font-bold text-xs mt-1">{option.title}</p><p className="text-[10px] leading-tight mt-0.5">{option.copy}</p>
             </button>)}
           </div>
 
-          <p className="label-tfp mt-1">{isSaving ? tr("web.savings.target") : isProject ? tr("web.project.spending.limit") : tr("web.spending.limit")}</p>
+          <p className="label-tfp mt-1">{isSaving && isGoal && goalDetails.targetMode === "down_payment" && goalDetails.downPaymentInput?.mode === "amount" ? t("goals.downPaymentAmount") : isSaving ? tr("web.savings.target") : isProject ? tr("web.project.spending.limit") : tr("web.spending.limit")}</p>
           <div data-tour="bud-form-amount" className="flex items-stretch gap-2">
-            <input type="number" min="0" name="goalAmount" value={form.goalAmount} onChange={handleChange} required className="flex-1 min-w-0" />
+            <input type="number" min="0" name="goalAmount" value={form.goalAmount} onChange={handleChange} required disabled={isSaving && isGoal && goalDetails.targetMode === "down_payment" && goalDetails.downPaymentInput?.mode !== "amount"} className="flex-1 min-w-0 disabled:cursor-not-allowed disabled:opacity-70" />
             <Tooltip title={t("budgets.form.currencyHelp")}>
               <select
                 name="currency"
                 value={form.currency}
-                onChange={handleChange}
+                onChange={(event) => event.target.name === "currency" ? void changeCurrency(event.target.value) : handleChange(event)}
                 className="h-10 shrink-0 bg-gf-accent-soft-bg border border-purple-300 text-purple-300 text-xs font-semibold rounded-full px-3 cursor-pointer outline-none"
               >
                 {SUPPORTED_CURRENCIES.map((code: string) => (
@@ -463,12 +566,31 @@ function BudgetEditForm({ mode, budget, onClose, onBack, initialType, inline = f
           </div>
 
           {isSaving && <>
+            {!initialGoal && !budget?.goalDetails && <button type="button" onClick={() => { setIsGoal((value) => !value); if (!isGoal) setForm((current) => ({ ...current, icon: DEFAULT_GOAL_ICON })); }} className="self-start rounded-full border border-purple-300/30 px-3 py-1.5 text-xs text-purple-200">{isGoal ? t("goals.detailedEnabled") : t("goals.upgradeSavings")}</button>}
+            {detailedGoal && <GoalPlanningFields
+              details={goalDetails}
+              onChange={setGoalDetails}
+              currency={form.currency || "MXN"}
+              amount={form.goalAmount}
+              onAmountChange={(goalAmount) => setForm((current) => ({ ...current, goalAmount }))}
+              icon={normalizeGoalIcon(form.icon)}
+              onIconChange={(icon) => setForm((current) => ({ ...current, icon }))}
+              color={goalColor}
+              onColorChange={setGoalColor}
+              categories={availableGoalCategories.map((item) => ({ id: String(item._id), label: item.name || tr("web.category") }))}
+              subCategories={availableGoalSubCategories.map((item) => ({ id: String(item._id), label: item.name || tr("web.category") }))}
+              tags={availableTags.map((item) => ({ id: String(item._id), label: "#" + item.name }))}
+              spendingBudgets={spendingBudgets.map((item) => ({ id: String(item._id), label: item.name || tr("web.unnamed.budget") }))}
+              projects={projectBudgets.map((item) => ({ id: String(item._id), label: item.name || tr("web.project") }))}
+              t={t}
+            />}
             <p className="label-tfp mt-1">{t("budgets.saving.manualLabel")}</p>
             <input data-tour="bud-form-saving-manual" type="number" min="0" name="savingAmount" value={form.savingAmount} onChange={handleChange} placeholder="0" className="w-full" />
             <TitleWithHelp as="p" title={t("budgets.saving.linkBalances")} info={{ title: t("budgets.saving.linkBalances"), text: t("budgets.saving.linkedNote") }} titleClassName="label-tfp" />
             <div data-tour="bud-form-saving-link" className="flex flex-col gap-2">{ccAccounts.length ? ccAccounts.map((acc) => {
               const selected = form.linkedAccounts.includes(String(acc._id));
-              return <button key={acc._id} type="button" onClick={() => toggleListValue("linkedAccounts", acc._id)} className={`flex justify-between rounded-xl border px-3 py-2 text-xs ${selected ? "bg-blue-600 border-blue-600 text-white" : "bg-gf-surface border-gf-border"}`}><span>{acc.name}</span><strong>{formatMoneyMajor(acc.amount || 0, acc.currency || walletPrimaryCurrency, { showCode: true })}</strong></button>;
+              const eligible = isEligibleGoalFundingAccountType(acc.accountType);
+              return <button key={acc._id} type="button" disabled={!eligible && !selected} onClick={() => toggleListValue("linkedAccounts", acc._id)} className={`flex justify-between rounded-xl border px-3 py-2 text-xs disabled:cursor-not-allowed disabled:opacity-50 ${selected ? "bg-blue-600 border-blue-600 text-white" : "bg-gf-surface border-gf-border"}`}><span>{acc.name}{eligible ? "" : ` · ${t("goals.ineligibleAccountLabel")}`}</span><strong>{formatMoneyMajor(acc.amount || 0, acc.currency || walletPrimaryCurrency, { showCode: true })}</strong></button>;
             }) : <p className="text-xs text-gf-text-muted italic">{t("budgets.saving.noAccounts")}</p>}</div>
           </>}
 

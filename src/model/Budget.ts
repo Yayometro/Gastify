@@ -1,6 +1,7 @@
 import mongoose, { Schema } from "mongoose";
 import { moneyAmountSchema } from "./schemas/moneySchemas";
 import { SUPPORTED_CURRENCIES } from "@gastify/core/money/currencies";
+import type { GoalDetails } from "@gastify/core/goals/types";
 
 export interface IBudgetCategoryEntry {
     category?: mongoose.Types.ObjectId | string;
@@ -18,6 +19,8 @@ export interface IBudgetHistoryEntry {
         amountMinor: number;
         currency: string;
     };
+    goalDetails?: GoalDetails | null;
+    currency?: string;
     effectiveFrom?: Date;
     effectiveTo?: Date;
 }
@@ -39,6 +42,9 @@ export interface IBudget extends mongoose.Document {
     period?: "monthly" | "quarterly" | "biannual" | "yearly" | string;
     budgetType?: "spending" | "saving" | "project" | string;
     icon?: string;
+    color?: string;
+    goalDetails?: GoalDetails;
+    revision?: number;
     eventStartDate?: Date;
     eventEndDate?: Date;
     linkedTags?: (mongoose.Types.ObjectId | string)[];
@@ -114,6 +120,11 @@ const budgetSchema = new Schema<IBudget>({
         default: "spending",
     },
     icon: { type: String },
+    color: { type: String, match: /^#[0-9A-Fa-f]{6}$/ },
+    // Optional, versioned metadata on top of an existing saving Budget. The
+    // target and current balance remain the Budget's existing single source.
+    goalDetails: { type: Schema.Types.Mixed },
+    revision: { type: Number, default: 0, min: 0 },
     eventStartDate: { type: Date },
     eventEndDate: { type: Date },
     linkedTags: [{
@@ -130,6 +141,8 @@ const budgetSchema = new Schema<IBudget>({
         savingAmount: Number,
         goalMoney: moneyAmountSchema,
         savingMoney: moneyAmountSchema,
+        goalDetails: Schema.Types.Mixed,
+        currency: String,
         effectiveFrom: Date,
         effectiveTo: Date,
     }],

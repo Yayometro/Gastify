@@ -4,6 +4,7 @@ import User from "@/model/User";
 import dbConnection from "@/app/api/dbConnection";
 import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 import { serverT } from "@/i18n/server";
+import GoalFundingClaim from "@/model/GoalFundingClaim";
 
 export type RemoveAccountRequestBody = string;
 
@@ -44,6 +45,7 @@ export async function POST(
     //IF ERROR
     if (!removedAccount)
       throw new Error(t("errors.api.accountNotIdentifiedRemove"));
+    await GoalFundingClaim.deleteMany({ wallet: userFound.wallet, account: accountId });
 
     return NextResponse.json({
       message: t("errors.api.removed", { p1: removedAccount.name }),

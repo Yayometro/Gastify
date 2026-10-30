@@ -34,6 +34,7 @@ import {
   MdChevronRight,
 } from "react-icons/md";
 import WalletAnalyzerTeaser from "./multiUsedComp/walletAnalyzer/WalletAnalyzerTeaser";
+import GrowthOpportunityTeaser from "@/components/opportunities/GrowthOpportunityTeaser";
 import dayjs from "dayjs";
 import { Skeleton, Spin, Tooltip } from "antd";
 import { formatMoneyMajor } from "@gastify/core/money/currencies";
@@ -667,6 +668,7 @@ function Wallet({ session, readOnly = false, demoRatesToMxn }: DashboardProps): 
               timePeriodFromFather={startDate && endDate ? [new Date(startDate), new Date(endDate)] : undefined}
               demoMode={readOnly}
             />
+            <GrowthOpportunityTeaser demoMode={readOnly} />
             <div id={readOnly ? "demo-accounts" : undefined} className="multi-container lg:flex lg:item" data-tour="dash-accounts">
               <MultiCreditCardComp
                 timePeriod={[startDate, endDate]}

@@ -6,6 +6,7 @@ import User from "@/model/User";
 import { getVerifiedSession } from "@/lib/auth/requireVerifiedSession";
 import type mongoose from "mongoose";
 import { serverT } from "@/i18n/server";
+import { releaseSavingBudgetClaims } from "@/lib/goals/fundingClaims";
 
 export interface RemoveBudgetGetStatusResponse {
   mes: string;
@@ -56,6 +57,7 @@ export async function POST(
     const openEntry = removedBudget.history?.find((h) => !h.effectiveTo);
     if (openEntry) openEntry.effectiveTo = new Date();
     await removedBudget.save();
+    if ((removedBudget.budgetType || (removedBudget.isSaving ? "saving" : "spending")) === "saving") await releaseSavingBudgetClaims(userFound.wallet, removedBudget._id);
     if ((removedBudget.budgetType || (removedBudget.isSaving ? "saving" : "spending")) === "project") {
       // Removing a project never removes its movements; they simply become
       // available for another project (and visible as unbudgeted again).

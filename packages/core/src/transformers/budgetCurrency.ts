@@ -6,6 +6,8 @@
 // rates are fetched elsewhere (see useBudgetsInPrimaryCurrency).
 
 import { getMinorUnits } from "@gastify/core/money/currencies";
+import { convertMinorAtRate } from "@gastify/core/money/conversion";
+import type { GoalDetails } from "@gastify/core/goals/types";
 
 // Currency units of the target per ONE unit of the source (major units), keyed
 // by the source currency: { USD: 18.2 } means 1 USD = 18.2 primary units.
@@ -22,6 +24,7 @@ export interface BudgetWithCurrency {
   goalAmount?: number;
   savingAmount?: number;
   history?: BudgetHistoryLike[];
+  goalDetails?: GoalDetails;
   [key: string]: unknown;
 }
 
@@ -44,6 +47,18 @@ function convertAmount(value: number | undefined, rate: number, primary: string)
   return roundToCurrency(value * rate, primary);
 }
 
+function convertGoalMoney(money: { amountMinor: number; currency: string } | undefined, source: string, rate: number, primary: string): { value: { amountMinor: number; currency: string } | undefined; unavailable: boolean } {
+  if (!money) return { value: money, unavailable: false };
+  // The quoted rate belongs to the Budget's currency. A mismatched embedded
+  // currency cannot be safely converted with it, so keep it visible but mark
+  // the whole goal unavailable for comparisons until the user reviews it.
+  if (money.currency !== source || !Number.isSafeInteger(money.amountMinor)) return { value: money, unavailable: true };
+  return {
+    value: { amountMinor: convertMinorAtRate({ amountMinor: money.amountMinor, fromCurrency: source, toCurrency: primary, rate }), currency: primary },
+    unavailable: false,
+  };
+}
+
 export function getForeignBudgetCurrencies(budgets: BudgetWithCurrency[] | null | undefined, primaryCurrency: string): string[] {
   const found = new Set<string>();
   for (const b of budgets || []) {
@@ -58,13 +73,23 @@ export function convertBudgetToPrimary<T extends BudgetWithCurrency>(
   rates: RatesToPrimary | null | undefined
 ): ConvertedBudget<T> {
   const from = budget?.currency;
-  if (!from || from === primaryCurrency) return budget;
+  if (!from || from === primaryCurrency) {
+    const details = budget.goalDetails;
+    const mismatch = Boolean(details && (
+      (details.assetPriceMoney && details.assetPriceMoney.currency !== (from || primaryCurrency)) ||
+      (details.schedule?.fixedContributionMoney && details.schedule.fixedContributionMoney.currency !== (from || primaryCurrency))
+    ));
+    return mismatch ? { ...budget, conversionUnavailable: true } : budget;
+  }
 
   const rate = rates?.[from];
   if (typeof rate !== "number" || !Number.isFinite(rate) || rate <= 0) {
     return { ...budget, conversionUnavailable: true };
   }
 
+  const assetPrice = convertGoalMoney(budget.goalDetails?.assetPriceMoney, from, rate, primaryCurrency);
+  const fixedContribution = convertGoalMoney(budget.goalDetails?.schedule?.fixedContributionMoney, from, rate, primaryCurrency);
+  const goalMoneyUnavailable = assetPrice.unavailable || fixedContribution.unavailable;
   return {
     ...budget,
     currency: primaryCurrency,
@@ -77,6 +102,17 @@ export function convertBudgetToPrimary<T extends BudgetWithCurrency>(
           savingAmount: convertAmount(entry.savingAmount, rate, primaryCurrency),
         }))
       : budget.history,
+    conversionUnavailable: goalMoneyUnavailable || undefined,
+    goalDetails: budget.goalDetails ? {
+      ...budget.goalDetails,
+      ...(budget.goalDetails.assetPriceMoney ? { assetPriceMoney: assetPrice.value } : {}),
+      ...(budget.goalDetails.schedule?.fixedContributionMoney ? {
+        schedule: {
+          ...budget.goalDetails.schedule,
+          fixedContributionMoney: fixedContribution.value,
+        },
+      } : {}),
+    } : budget.goalDetails,
     originalBudget: budget,
   };
 }

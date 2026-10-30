@@ -49,6 +49,7 @@ const en: Record<keyof typeof categories, string> = {
   "categories.compare.help": "Each side ranks its own top {p1} categories independently — row 1 on the left and row 1 on the right don't have to be the same category.",
   "categories.colors.classic": "The classics",
   "categories.colors.more": "More colors",
+  "categories.colors.less": "Show fewer colors",
   "categories.colors.hex": "Exact color (hex)",
   "categories.colors.hexHelp": "Use a color like #F57C00 or F57C00.",
   "categories.chart.bills": "Category bills",

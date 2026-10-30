@@ -15,6 +15,8 @@ import HistoricalWalletAnalyzer from "./HistoricalWalletAnalyzer/HistoricalWalle
 import HistoricalProjectionsTable from "./HistoricalWalletAnalyzer/HistoricalProjectionsTable";
 import usePeriodComparison from "@/hooks/usePeriodComparison";
 import { InfoTip } from "@/components/multiUsedComp/InfoTip";
+import Link from "next/link";
+import { IoArrowForward, IoSparklesOutline } from "react-icons/io5";
 import type { BudgetHistoricalInput } from "@/helpers/transformers/budgetHistoricalComparative";
 
 import { useT, useInfo } from "@/i18n/client";
@@ -128,6 +130,11 @@ function HistoryClient({ email, readOnly = false, demoBudgets, demoRatesToMxn }:
           </h1>
         </div>
         <div className="content-profile-cont w-full h-full content-wallet-glass text-center items-center mt-[10px] sm:mt-[20px] rounded-t-[100px] rounded-b-2xl px-2 pt-6 pb-[80px]">
+          <Link href={readOnly ? "/demo/opportunities" : "/dashboard/opportunities"} className="mx-auto mb-5 flex w-full max-w-5xl items-center gap-3 rounded-2xl border border-purple-300/20 bg-purple-300/[.05] p-4 text-left transition hover:bg-purple-300/[.09]">
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-purple-300/10 text-purple-200"><IoSparklesOutline aria-hidden="true" /></span>
+            <span className="min-w-0 flex-1"><span className="block text-sm font-semibold text-gf-text">{t("opportunities.title")}</span><span className="mt-1 block text-xs text-gf-text-muted">{t("opportunities.historyLink")}</span></span>
+            <IoArrowForward aria-hidden="true" className="shrink-0 text-purple-200" />
+          </Link>
           <HistoryGate tour="his-periods" className="history-client-cont w-full h-fulls flex flex-col justify-center items-center pb-4" starts={[periodState.timePeriod[0], periodState.compareEnabled ? periodState.comparePeriod[0] : null]}>
             <TypedTabsTogglerMontlyController periodState={periodState} />
           </HistoryGate>

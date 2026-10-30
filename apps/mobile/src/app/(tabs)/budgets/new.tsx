@@ -11,6 +11,7 @@ import { usePrimaryCurrency } from '@/hooks/use-primary-currency';
 import { sendWrite } from '@/lib/write';
 import type { AppDispatch } from '@/store';
 import { emptyBudgetValues, type BudgetKind } from '@gastify/core/budgets/budgetForm';
+import { emptyGoalDetails } from '@gastify/core/goals/types';
 import { idOf } from '@gastify/core/categories/categoryForm';
 import { useT, useInfo } from '@/i18n/client';
 import { tNow } from '@/i18n/now';
@@ -21,7 +22,8 @@ const TITLE_KEYS: Record<BudgetKind, string> = { spending: "budgets.new", saving
 export default function NewBudgetScreen() {
   const t = useT();
   const { APP_INFO } = useInfo();
-  const { kind: rawKind, categoryId } = useLocalSearchParams<{ kind?: string; categoryId?: string }>();
+  
+  const { kind: rawKind, categoryId, goal } = useLocalSearchParams<{ kind?: string; categoryId?: string; goal?: string }>();
   const kind: BudgetKind = rawKind === 'saving' || rawKind === 'project' ? rawKind : 'spending';
   const dispatch = useDispatch<AppDispatch>();
   const toast = useToast();
@@ -29,6 +31,10 @@ export default function NewBudgetScreen() {
   const { categories } = useCatalog();
   const category = kind === 'spending' ? categories.find((item) => idOf(item) === categoryId) : undefined;
   const initial = emptyBudgetValues(kind, currency);
+  if (kind === 'saving' && goal === '1') {
+    initial.goalDetails = emptyGoalDetails('custom', Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC');
+    initial.icon = 'fluent/flag';
+  }
   if (category) {
     initial.name = category.name || '';
     initial.categoryIds = [idOf(category)];

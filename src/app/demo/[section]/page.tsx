@@ -5,7 +5,7 @@ import type { DemoSection } from "../DemoWorkspace";
 export const metadata = DEMO_METADATA;
 
 const sections = new Set<DemoSection>([
-  "profile", "movements", "budgets", "projections", "analyzer", "accounts", "history", "categories",
+  "profile", "movements", "budgets", "projections", "analyzer", "accounts", "history", "categories", "goals", "opportunities",
 ]);
 
 export default async function DemoSectionPage({ params }: { params: Promise<{ section: string }> }): Promise<React.JSX.Element> {

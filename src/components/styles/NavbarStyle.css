@@ -103,12 +103,13 @@
 }
 
 
-/* On a short window the bar fits itself: its items, icons and spacing shrink with the height, so every icon stays inside it. */
+/* The full rail now has 15 entries (including Goals and Growth Opportunities). Scale the icons to that count so the
+   added destinations still fit in a short desktop viewport without clipping the tooltip bubbles. */
 @media (min-width: 768px) {
   .nav-full {
-    gap: clamp(2px, 0.9vh, 16px) !important;
-    padding-top: clamp(8px, 2vh, 32px) !important;
-    padding-bottom: clamp(8px, 2vh, 48px) !important;
+    gap: clamp(1px, 0.75vh, 12px) !important;
+    padding-top: clamp(8px, 1.8vh, 28px) !important;
+    padding-bottom: clamp(8px, 1.8vh, 36px) !important;
     /* The desktop rail's hover labels sit outside each item; clipping them here
        made the text appear trapped inside the navigation capsule. The items
        still fit by the clamps above. */
@@ -116,20 +117,20 @@
   }
   .gf-nav-item > a,
   .gf-nav-item > button {
-    width: clamp(28px, calc((95vh - 120px) / 12.5), 46px);
-    height: clamp(28px, calc((95vh - 120px) / 12.5), 46px);
+    width: clamp(26px, calc((95vh - 145px) / 15), 46px);
+    height: clamp(26px, calc((95vh - 145px) / 15), 46px);
   }
   .gf-nav-item svg {
     width: 56%;
     height: 56%;
   }
   .nav-full .add-more button {
-    width: clamp(32px, calc((95vh - 100px) / 11), 50px);
-    height: clamp(32px, calc((95vh - 100px) / 11), 50px);
+    width: clamp(30px, calc((95vh - 145px) / 15), 50px);
+    height: clamp(30px, calc((95vh - 145px) / 15), 50px);
   }
   .nav-full img {
-    width: clamp(26px, 4.4vh, 40px);
-    height: clamp(26px, 4.4vh, 40px);
+    width: clamp(24px, 3.8vh, 40px);
+    height: clamp(24px, 3.8vh, 40px);
   }
 }
 

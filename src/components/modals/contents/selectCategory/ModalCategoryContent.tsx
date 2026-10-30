@@ -53,18 +53,23 @@ function ModalCategoryContent({
   }
 
   return (
-    <div className="content absolute gf-glass-violet flex flex-col w-full h-full max-w-[500px] max-h-[90%] rounded-2xl items-center justify-center overflow-hidden z-[10002]">
+    <div
+      className="content absolute gf-glass-violet flex flex-col w-full h-full max-w-[500px] max-h-[90%] rounded-2xl items-center justify-center overflow-hidden z-[10002]"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="category-picker-title"
+    >
       <header className="pt-2 w-full h-fit flex flex-col justify-between items-center text-white sticky top-0 z-10">
         <span className="w-full flex gap-2 items-center justify-center font-bold text-3xl ">
           <BiSolidCategory size={40} className="hidden sm:inline" />
-          <h1>{onlyFathers ? t("web.select.parent") : t("web.select.category")}</h1>
+          <h1 id="category-picker-title">{onlyFathers ? t("web.select.parent") : t("web.select.category")}</h1>
         </span>
         <div className="footer-eader w-full h-3 rounded-t-3xl mt-4"></div>
       </header>
       <div className={`w-full h-full overflow-y-scroll mb-[10px]`}>
         {list}
       </div>
-      <button onClick={close}>
+      <button type="button" aria-label={t("navbar.close")} onClick={close}>
         <div className="close-con absolute top-[0%] right-[0%] rounded-full gf-glass-card p-1.5 text-purple-100 hover:text-white transition-colors m-2 pulse-animation-short z-50">
           <CategoIcon type={"MdClose"} siz={20} />
         </div>

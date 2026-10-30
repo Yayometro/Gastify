@@ -99,6 +99,7 @@ const en: Record<keyof typeof mobile, string> = {
   "mobile.borrar.esta.categoria": "Delete this category",
   "mobile.sus.movimientos.quedan.sin.categoria": "Its transactions will have no category. This cannot be undone.",
   "mobile.cancelar": "Cancel",
+  "mobile.continuar": "Convert amounts",
   "mobile.borrar": "Delete",
   "mobile.borrar.esta.subcategoria": "Delete this subcategory",
   "mobile.no.se.puede.deshacer": "This cannot be undone.",
@@ -958,6 +959,7 @@ const en: Record<keyof typeof mobile, string> = {
   "mobile.subform.title": "New subcategory",
   "mobile.subform.newSubButton": "New subcategory",
   "mobile.sortedByAmount": "Sorted by amount, highest to lowest (not by month).",
+  "mobile.quitar.fecha": "Remove date",
 };
 
 export default en;

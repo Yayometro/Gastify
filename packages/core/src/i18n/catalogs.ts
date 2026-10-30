@@ -3,7 +3,7 @@ import type { Locale } from "./locales";
 
 // The namespaces: one catalog file per namespace and language, under messages/<locale>/<namespace>.ts. A screen loads only the
 // namespaces it shows, so the first paint carries the text of its own screen and nothing else.
-export const NAMESPACES = ["common", "auth", "movements", "navbar", "dashboard", "budgets", "accounts", "categories", "profile", "history", "analyzer", "projections", "info", "errors", "inicio", "shared", "tour", "tourDashboard", "tourMovements", "tourBudgets", "tourProjections", "tourAnalyzer", "tourAccounts", "tourHistory", "tourCategories", "tourProfile", "tourMobile", "template", "web", "mobile"] as const;
+export const NAMESPACES = ["common", "auth", "movements", "navbar", "dashboard", "budgets", "goals", "opportunities", "accounts", "categories", "profile", "history", "analyzer", "projections", "info", "errors", "inicio", "shared", "tour", "tourDashboard", "tourMovements", "tourBudgets", "tourProjections", "tourAnalyzer", "tourAccounts", "tourHistory", "tourCategories", "tourProfile", "tourMobile", "template", "web", "mobile"] as const;
 export type Namespace = (typeof NAMESPACES)[number];
 
 // The tutorial texts of the web's pages (one namespace per page). The phone never shows them, so it does not load them.
@@ -16,6 +16,8 @@ type Loader = () => Promise<{ default: Dict }>;
 
 const LOADERS: Record<Locale, Partial<Record<Namespace, Loader>>> = {
   es: {
+    goals: () => import("./messages/es/goals"),
+    opportunities: () => import("./messages/es/opportunities"),
     mobile: () => import("./messages/es/mobile"),
     template: () => import("./messages/es/template"),
     web: () => import("./messages/es/web"),
@@ -47,6 +49,8 @@ const LOADERS: Record<Locale, Partial<Record<Namespace, Loader>>> = {
     navbar: () => import("./messages/es/navbar"),
   },
   en: {
+    goals: () => import("./messages/en/goals"),
+    opportunities: () => import("./messages/en/opportunities"),
     mobile: () => import("./messages/en/mobile"),
     template: () => import("./messages/en/template"),
     web: () => import("./messages/en/web"),

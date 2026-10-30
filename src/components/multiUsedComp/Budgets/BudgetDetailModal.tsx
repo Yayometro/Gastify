@@ -217,6 +217,8 @@ function BudgetDetailModal({
   if (isSaving) {
     if (budget.linkedAccounts && budget.linkedAccounts.length > 0) {
       effectiveAmount = linkedAccountsTotal;
+    } else if (budget.goalDetails) {
+      effectiveAmount = Number(budget.savingAmount) || 0;
     } else {
       effectiveAmount = Math.max(Number(budget.savingAmount) || 0, totalSpent);
     }

@@ -147,6 +147,8 @@ export interface AlertCelebrationProps {
 function AlertCelebration({ alert, onClose }: AlertCelebrationProps): React.JSX.Element {
   const t = useT();
   const mood = alertMood(alert);
+  const isGoalReminder = alert.key.includes(":goal-reminder:");
+  const destination = isGoalReminder ? "/dashboard/goals/" + alert.key.split(":")[0] : "/dashboard/budgets";
   const emoji = mood === "fire" ? "🔥" : mood === "alarm" ? "😬" : "🎉";
   return (
     <BasicModal
@@ -175,8 +177,8 @@ function AlertCelebration({ alert, onClose }: AlertCelebrationProps): React.JSX.
             </span>
             <h2 className="text-2xl font-bold text-white">{alert.title}</h2>
             <p className="text-base text-purple-100/90">{alert.message}</p>
-            <Link href="/dashboard/budgets" onClick={onClose} className="gf-glass-button w-full rounded-full px-4 py-3 text-center font-semibold text-white">
-              {t("navbar.seeBudget")}
+            <Link href={destination} onClick={onClose} className="gf-glass-button w-full rounded-full px-4 py-3 text-center font-semibold text-white">
+              {isGoalReminder ? t("goals.open") : t("navbar.seeBudget")}
             </Link>
             <button type="button" onClick={onClose} className="text-sm font-semibold text-purple-200 hover:text-white">
               {t("navbar.close")}
