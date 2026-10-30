@@ -19,7 +19,7 @@ import { calculateGoalSchedule } from "@gastify/core/goals/schedule";
 import { findOverlappingSavingAccounts, isEligibleGoalFundingAccountType } from "@gastify/core/goals/progress";
 import { useLocale, useT } from "@/i18n/client";
 import { useInfo } from "@/i18n/client";
-import { InfoTip } from "@/components/multiUsedComp/InfoTip";
+import TitleWithHelp from "@/components/multiUsedComp/TitleWithHelp";
 import type { InfoText } from "@gastify/core/info/createInfo";
 import { getBudgetBarColor, getBudgetBarGradient, getBudgetMoodEmoji } from "@/helpers/transformers/budgetHistory";
 import GoalDetailModal from "@/components/goals/GoalDetailModal";
@@ -168,16 +168,16 @@ export default function GoalsClient({ initialGoalId }: { initialGoalId?: string 
   return (
     <main className="min-h-[calc(100vh-70px)] w-full px-3 pb-16 pt-5 sm:px-6 xl:px-8">
       <header className="mx-auto flex w-full max-w-[1800px] flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div><div className="flex items-center gap-2"><h1 className="text-3xl font-semibold text-gf-text sm:text-4xl">{t("goals.title")}</h1><InfoTip info={goalInfo} /></div><p className="mt-2 max-w-3xl text-sm text-gf-text-muted">{t("goals.subtitle")}</p></div>
-        <button type="button" onClick={() => setModal("new")} className="gf-glass-button inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-semibold text-white"><IoAdd size={19} />{t("goals.new")}</button>
+        <div data-tour="goals-title"><TitleWithHelp as="h1" title={t("goals.title")} info={goalInfo} tour="budGoals" titleClassName="text-3xl font-semibold text-gf-text sm:text-4xl" /><p className="mt-2 max-w-3xl text-sm text-gf-text-muted">{t("goals.subtitle")}</p></div>
+        <button type="button" data-tour="goals-new" onClick={() => setModal("new")} className="gf-glass-button inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-semibold text-white"><IoAdd size={19} />{t("goals.new")}</button>
       </header>
       <section className="mx-auto mt-6 grid w-full max-w-[1800px] gap-3">
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-purple-300/15 bg-purple-300/[.04] p-4">
           <p className="text-sm text-gf-text-muted">{t("goals.savingsRule")}</p>
           <Link href="/dashboard/budgets" className="text-xs font-semibold text-purple-200 underline decoration-purple-200/30 underline-offset-4">{t("goals.backToBudgets")}</Link>
         </div>
-        {goals.length === 0 ? <div className="gf-glass-card rounded-3xl p-8 text-center"><h2 className="text-xl font-semibold text-gf-text">{t("goals.emptyTitle")}</h2><p className="mx-auto mt-2 max-w-lg text-sm text-gf-text-muted">{t("goals.emptyText")}</p><button type="button" onClick={() => setModal("new")} className="gf-glass-button mt-5 rounded-full px-5 py-2.5 text-sm text-white">{t("goals.new")}</button></div> : goals.map((budget) => <GoalCard key={budget._id} budget={budget as BudgetData} currency={currency} fundingConflict={fundingConflicts.get(String(budget._id))} onOpenDetail={() => setDetailGoalId(String(budget._id))} onEdit={() => { setDetailGoalId("closed"); setModal(budget as BudgetModalItem); }} onUpdate={(changes) => void saveChanges(budget as BudgetData, changes)} onArchive={() => void archive(budget as BudgetData)} />)}
-        <Link href="/dashboard/opportunities" className="gf-glass-card flex items-center justify-between gap-3 rounded-2xl p-4 text-sm font-semibold text-purple-100"><span>{t("opportunities.title")}</span><IoArrowForward /></Link>
+        {goals.length === 0 ? <div className="gf-glass-card rounded-3xl p-8 text-center"><h2 className="text-xl font-semibold text-gf-text">{t("goals.emptyTitle")}</h2><p className="mx-auto mt-2 max-w-lg text-sm text-gf-text-muted">{t("goals.emptyText")}</p><button type="button" onClick={() => setModal("new")} className="gf-glass-button mt-5 rounded-full px-5 py-2.5 text-sm text-white">{t("goals.new")}</button></div> : <div data-tour="goals-list" className="grid gap-3">{goals.map((budget) => <GoalCard key={budget._id} budget={budget as BudgetData} currency={currency} fundingConflict={fundingConflicts.get(String(budget._id))} onOpenDetail={() => setDetailGoalId(String(budget._id))} onEdit={() => { setDetailGoalId("closed"); setModal(budget as BudgetModalItem); }} onUpdate={(changes) => void saveChanges(budget as BudgetData, changes)} onArchive={() => void archive(budget as BudgetData)} />)}</div>}
+        <Link href="/dashboard/opportunities" data-tour="goals-opportunities" className="gf-glass-card flex items-center justify-between gap-3 rounded-2xl p-4 text-sm font-semibold text-purple-100"><span>{t("opportunities.title")}</span><IoArrowForward /></Link>
       </section>
       {modal && <BudgetEditModal mode={modal === "new" ? "creation" : "edition"} budget={modal === "new" ? null : modal} initialType={BUDGET_TYPES.SAVING} initialGoal={modal === "new"} onClose={() => setModal(null)} />}
       {detailGoal && <GoalDetailModal budget={detailGoal} currency={currency} fundingConflict={fundingConflicts.get(String(detailGoal._id))} onClose={() => setDetailGoalId("closed")} onEdit={() => { setDetailGoalId("closed"); setModal(detailGoal as BudgetModalItem); }} />}

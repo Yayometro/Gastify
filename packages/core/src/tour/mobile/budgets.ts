@@ -36,6 +36,25 @@ export const budgetsTours = {
     { id: "mBudgets.projects", anchor: "m-bud-projects", optional: true, side: "top" },
   ] satisfies readonly TourStep[],
   components: {
+    // Oportunidades de crecimiento: where the money went and what it could have been, from the top down.
+    "m-opportunities": [
+      { id: "m-opportunities.lead", anchor: "m-opp-lead", side: "bottom" },
+      { id: "m-opportunities.sources", anchor: "m-opp-sources", optional: true, side: "bottom" },
+      { id: "m-opportunities.advanced", anchor: "m-opp-advanced", optional: true, side: "bottom" },
+      { id: "m-opportunities.share", anchor: "m-opp-share", side: "bottom" },
+      { id: "m-opportunities.results", anchor: "m-opp-results", side: "top" },
+      { id: "m-opportunities.goal", anchor: "m-opp-goal", side: "top" },
+      { id: "m-opportunities.invest", anchor: "m-opp-invest", side: "top" },
+      { id: "m-opportunities.trip", anchor: "m-opp-trip", side: "top" },
+      { id: "m-opportunities.car", anchor: "m-opp-car", side: "top" },
+    ],
+    // Objetivos de ahorro: what a goal is, how to create one and how to read a card.
+    "m-goals": [
+      { id: "m-goals.what", anchor: "m-goals-intro", side: "bottom" },
+      { id: "m-goals.new", anchor: "m-goals-new", side: "bottom" },
+      { id: "m-goals.list", anchor: "m-goals-first", optional: true, side: "bottom" },
+      { id: "m-goals.opportunities", anchor: "m-goals-opportunities", side: "top" },
+    ],
     "m-bud-new": [{ id: "m-bud-new.what", anchor: "m-bud-new", side: "bottom" }],
     "m-bud-period": [{ id: "m-bud-period.what", anchor: "m-bud-period", side: "bottom" }],
     "m-bud-summary": [{ id: "m-bud-summary.what", anchor: "m-bud-summary", side: "bottom" }],

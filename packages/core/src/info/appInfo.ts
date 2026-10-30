@@ -388,153 +388,392 @@ export const APP_INFO = {
   'tope_de_gasto_inesperado': { title: 'Tope de gasto inesperado', text: 'Un monto manual que se suma a tu estimado de gastos, para gastos que no tienen su propio presupuesto.' },
   'tope_de_ingreso_inesperado': { title: 'Tope de ingreso inesperado', text: 'Un monto manual que se suma a tu estimado de ingresos, para dinero que entra y no está ligado a una fuente de ingreso recurrente.' },
   'periodo_de_oportunidades': {
-    title: 'Para qué sirve el periodo analizado',
-    text: 'Oportunidades de crecimiento no califica tus gastos como buenos o malos ni supone que todo lo gastado podría ahorrarse. Su propósito es hacer visible el costo de oportunidad: ayudarte a imaginar qué podría significar una parte de tus gastos si tú decidieras destinarla a otra prioridad.',
-    sections: [
-      { label: 'La idea detrás del análisis', blocks: [
-        { kind: 'p', text: 'El periodo define la muestra de tu historial que usamos como punto de partida. La pregunta no es «¿en qué gasté mal?», sino «si una parte de este gasto hubiera tenido otro destino, ¿qué posibilidad habría abierto para mí?».' },
-        { kind: 'p', text: 'El objetivo es convertir movimientos pasados en una perspectiva útil para tus decisiones futuras y tus metas. Es una herramienta de reflexión, no un regaño ni una recomendación de que elimines un gasto.' },
-      ] },
-      { label: 'Cómo leer lo que aparece', blocks: [
-        { kind: 'bullets', items: [
-          'Gasto observado es el importe de los gastos que coinciden con el periodo y los filtros. Se expresa en tu moneda principal; el contador muestra cuántos movimientos coinciden.',
-          'El porcentaje que eliges es un escenario: prueba primero con 5 % o 10 % y, si quieres, ajusta otra proporción. No es un límite de presupuesto ni dinero que ya esté apartado.',
-          'Las tarjetas posteriores usan ese mismo importe hipotético para ilustrar alternativas, como inversión, viaje o avance hacia una meta de ahorro.',
-          'Reembolsos y comisiones se presentan por separado. Los movimientos sin conversión disponible no se suman al total, y la pantalla señala si hay datos o tipos de cambio que debes revisar.',
-        ] },
-      ] },
-      { label: 'Cómo se calcula y qué no significa', blocks: [
-        { kind: 'bullets', items: [
-          'Mes, trimestre y año comienzan el primer día del periodo y llegan hasta hoy. En Personalizado eliges ambas fechas; los días de inicio y fin se incluyen.',
-          'Se toman movimientos de gasto, reembolso o comisión registrados en Gastify dentro de esas fechas; los que tengan un estado distinto de completado quedan fuera. Después, categoría, subcategoría, etiqueta o concepto pueden acotar el conjunto.',
-          'Los escenarios son hipotéticos: no mueven dinero, no crean un ahorro y no prometen rendimientos. La inversión usa la tasa y el plazo que tú indiques; sirve para comparar, no para predecir un resultado real.',
-          'Cambiar fechas o filtros solo recalcula la vista. No edita ni elimina tus movimientos.',
-        ] },
-      ] },
-    ],
+    "title": "Qué periodo estamos mirando",
+    "text": "El periodo es el tramo de tu historial que revisamos: lo que va del mes, del trimestre o del año, o fechas que tú elijas. Mientras más largo, más dinero entra en la cuenta.",
+    "sections": [
+      {
+        "label": "En simple",
+        "blocks": [
+          {
+            "kind": "bullets",
+            "items": [
+              "«En lo que va del año» cuenta desde el 1 de enero hasta hoy.",
+              "Si eliges fechas propias, se incluyen el primer y el último día.",
+              "Cambiar el periodo solo recalcula la pantalla: no toca tus movimientos."
+            ]
+          }
+        ]
+      },
+      {
+        "label": "Detalle técnico",
+        "blocks": [
+          {
+            "kind": "bullets",
+            "items": [
+              "Mes, trimestre y año empiezan el primer día del periodo y llegan hasta hoy.",
+              "Se toman gastos completados registrados en Gastify dentro de esas fechas; reembolsos y comisiones se muestran aparte.",
+              "El análisis solo incluye lo que registraste en Gastify: no conoce gastos que no hayas anotado."
+            ]
+          }
+        ]
+      }
+    ]
   },
   'filtros_de_oportunidades': {
-    title: 'Qué significa «Analizar por»',
-    text: 'Elige qué parte de tus gastos quieres mirar. Esto no modifica movimientos ni decide por ti cuáles gastos son buenos o malos.',
-    sections: [{ label: 'Opciones', blocks: [
-      { kind: 'definition', term: 'Todos los gastos', text: 'Reúne los gastos registrados en el periodo. Imaginar un 5 % o 10 % no significa que todo pudiera evitarse.' },
-      { kind: 'definition', term: 'Categoría o subcategoría', text: 'Mira un grupo concreto, como Restaurantes. Sirve para revisar un hábito, no para declararlo innecesario.' },
-      { kind: 'definition', term: 'Etiqueta', text: 'Agrupa movimientos con la misma etiqueta aunque pertenezcan a distintas categorías.' },
-      { kind: 'definition', term: 'Concepto', text: 'Busca palabras del nombre del movimiento, como un comercio. Revisa las coincidencias: nombres parecidos pueden ser gastos distintos.' },
-      { kind: 'p', text: 'Primero se aplica el periodo; después el filtro reduce los movimientos. Solo se suman gastos con importe disponible en tu moneda principal. Reembolsos y comisiones aparecen aparte.' },
-    ] }],
+    "title": "Qué significa «Analizar por»",
+    "text": "Es la forma de elegir qué gastos quieres mirar. Por ejemplo, «Categoría → Restaurantes» revisa solo lo que gastaste en restaurantes. No cambia tus movimientos ni decide por ti qué gastos son buenos o malos.",
+    "sections": [
+      {
+        "label": "Cada opción, en simple",
+        "blocks": [
+          {
+            "kind": "definition",
+            "term": "Todos los gastos registrados",
+            "text": "Revisa todo lo que gastaste en el periodo. Es el punto de partida más amplio; por eso conviene apartar una parte chica (5 % o 10 %), porque no todo se puede evitar."
+          },
+          {
+            "kind": "definition",
+            "term": "Categoría",
+            "text": "Mira un tema completo, como Restaurantes o Transporte. Se llena eligiendo la categoría de una lista."
+          },
+          {
+            "kind": "definition",
+            "term": "Subcategoría",
+            "text": "Mira una parte más fina de una categoría, como «Comida rápida» dentro de Restaurantes. Se llena eligiendo la subcategoría de una lista."
+          },
+          {
+            "kind": "definition",
+            "term": "Etiqueta",
+            "text": "Junta movimientos que llevan la misma etiqueta aunque estén en categorías distintas, como «viaje» o «trabajo». Se llena eligiendo una etiqueta que ya uses."
+          },
+          {
+            "kind": "definition",
+            "term": "Concepto contiene",
+            "text": "Busca una palabra en el nombre del movimiento, como el nombre de una tienda. Se llena escribiendo el texto; revisa las coincidencias porque nombres parecidos pueden ser gastos distintos."
+          }
+        ]
+      },
+      {
+        "label": "Detalle técnico",
+        "blocks": [
+          {
+            "kind": "p",
+            "text": "Primero se aplica el periodo; después el filtro reduce los movimientos. Entre filtros distintos se combinan con «y»; dentro de una lista basta con «o». Solo se suman gastos con importe disponible en tu moneda principal."
+          }
+        ]
+      }
+    ]
   },
   'tres_alternativas_de_ese_monto': {
-    title: 'Tres alternativas para el mismo monto',
-    text: 'Estas tarjetas ponen un mismo monto de referencia en tres contextos para ayudar a imaginar opciones. No son tres montos separados y no se suman entre sí.',
-    sections: [
-      { label: 'Cómo interpretar cada tarjeta', blocks: [
-        { kind: 'table', head: ['Alternativa', 'Qué muestra', 'Qué no hace'], rows: [
-          ['Inversión ilustrativa', 'Dos cálculos matemáticos con una tasa y un plazo editables.', 'No es una inversión real, oferta ni rendimiento garantizado.'],
-          ['Viaje', 'Qué parte de una meta editable podría cubrir el monto.', 'No busca precios, cotiza ni reserva el viaje.'],
-          ['Enganche u otra meta', 'Cómo cambiaría, solo en una simulación, el avance hacia tu objetivo.', 'No deposita dinero ni modifica el objetivo guardado.'],
-        ] },
-      ] },
-    ],
+    "title": "Cuatro formas de imaginar el mismo dinero",
+    "text": "A la derecha ves lo mismo de cuatro maneras: tu objetivo de ahorro (si tienes uno), una inversión, un viaje y el enganche de un carro. Es siempre el mismo dinero: no se suma cuatro veces.",
+    "sections": [
+      {
+        "label": "En simple",
+        "blocks": [
+          {
+            "kind": "bullets",
+            "items": [
+              "Tu objetivo va primero si ya creaste uno: así ves cuánto te acercaría a algo que de verdad quieres.",
+              "Inversión: cuánto habría crecido ese dinero con una tasa y un plazo que tú puedes cambiar.",
+              "Viaje: qué viaje de ejemplo te alcanzaba (o cuánto de uno te faltaba).",
+              "Enganche de carro: qué carro de ejemplo podías empezar a pagar o comprar de contado."
+            ]
+          }
+        ]
+      },
+      {
+        "label": "Detalle técnico",
+        "blocks": [
+          {
+            "kind": "p",
+            "text": "Las tarjetas no hacen nada con tu dinero real: no depositan, no reservan y no modifican tus objetivos ni presupuestos. Los precios de viajes y carros son referencias aproximadas y redondeadas, por persona, que sirven para dar escala; no son cotizaciones."
+          }
+        ]
+      }
+    ]
   },
   'viaje_en_oportunidades': {
-    title: 'Cómo se compara el ejemplo de viaje',
-    text: 'La tarjeta divide el monto de referencia entre el costo estimado que escribas. El resultado es una proporción matemática, no una cotización ni una recomendación de gasto.',
-    sections: [
-      { label: 'Lectura de la barra', blocks: [
-        { kind: 'equation', left: 'Cobertura estimada', right: 'Monto de referencia ÷ meta de viaje × 100' },
-        { kind: 'p', text: 'Si el resultado supera 100 %, la barra se llena, aunque el porcentaje escrito puede superar la meta. Ajusta el monto de ejemplo para comparar otro escenario; el cambio solo vive en esta pantalla.' },
-      ] },
-    ],
+    "title": "Cómo se compara el viaje",
+    "text": "Te decimos a qué viaje de ejemplo te habría alcanzado ese dinero, o cuánto te faltó para el siguiente. Si ya tienes un viaje en mente, escribe cuánto cuesta y vemos qué parte cubrías.",
+    "sections": [
+      {
+        "label": "Detalle técnico",
+        "blocks": [
+          {
+            "kind": "equation",
+            "left": "Cobertura",
+            "right": "Dinero de partida ÷ costo del viaje × 100"
+          },
+          {
+            "kind": "p",
+            "text": "Los viajes de ejemplo (México, Colombia, Canadá, Europa, Japón) son precios aproximados por persona, redondeados, que no incluyen temporada alta ni vuelos específicos. Si superas el 100 %, la barra se llena y el porcentaje puede pasar de 100."
+          }
+        ]
+      }
+    ]
   },
   'oportunidades_de_crecimiento': {
-    title: 'Cómo leer Oportunidades de crecimiento',
-    text: 'Este análisis no afirma que debiste gastar menos ni que ese dinero siga disponible. Es un ejercicio para darle contexto a gastos que ya registraste y explorar alternativas posibles.',
-    sections: [
-      { label: '1. Periodo y filtros', blocks: [
-        { kind: 'p', text: 'El periodo determina qué fechas se revisan. Mes, trimestre y año actual llegan hasta hoy; «Personalizado» usa las fechas que elijas. «Analizar por» filtra esos movimientos por categoría, subcategoría, etiqueta o texto del concepto. No cambia, edita ni crea transacciones.' },
-        { kind: 'p', text: 'Solo cuenta gastos completados registrados en Gastify dentro del rango. Se excluyen transferencias, movimientos no completados y conceptos que no sean gastos. Los importes se presentan en tu moneda principal; si falta una conversión o el historial no está completo, Gastify lo señala.' },
-      ] },
-      { label: '2. Gasto observado y porcentaje', blocks: [
-        { kind: 'equation', left: 'Gasto observado', right: 'Suma de los gastos que coinciden con el periodo y los filtros' },
-        { kind: 'equation', left: 'Monto alternativo', right: 'Gasto observado × proporción elegida' },
-        { kind: 'p', text: 'Los botones de porcentaje no son calificaciones, alertas ni rendimientos: preguntan «¿qué pasaría si apartara esta fracción de ese gasto?». La vista sencilla propone 5 % o 10 %; en Personalizar puedes explorar proporciones mayores. Por ejemplo, 10 % de $1,000 equivale a $100.' },
-      ] },
-      { label: '3. Tres alternativas, el mismo dinero', blocks: [
-        { kind: 'table', head: ['Alternativa', 'Qué representa', 'Qué no significa'], rows: [
-          ['Inversión ilustrativa', 'Un cálculo matemático con una tasa anual y un plazo que tú eliges.', 'No es una oferta, una recomendación ni un rendimiento garantizado. No descuenta comisiones o impuestos.'],
-          ['Viaje u otra compra', 'El monto alternativo comparado con una meta de ejemplo editable.', 'No es una cotización; no reserva ni paga nada.'],
-          ['Objetivo personal', 'El monto alternativo sumado, solo en esta simulación, al avance de un objetivo de ahorro elegido.', 'No deposita dinero en tus cuentas ni cambia el objetivo real.'],
-        ] },
-        { kind: 'p', text: 'En la inversión se muestran dos lecturas distintas: «disponer del monto hoy» lo modela como un depósito único desde hoy; «apartar cada gasto cuando ocurrió» conserva las fechas originales de los gastos incluidos. Por eso pueden dar resultados diferentes.' },
-      ] },
-      { label: 'Ejemplo de lectura', blocks: [
-        { kind: 'example', text: 'Si el gasto observado es $10,000 y eliges 10 %, el monto alternativo es $1,000. Las tarjetas muestran distintas posibilidades para esos mismos $1,000, no tres bolsas de dinero.' },
-      ] },
-    ],
+    "title": "Qué son las Oportunidades de crecimiento",
+    "text": "Esta sección te enseña, con un ejemplo claro, qué habrías podido hacer con el dinero que se te fue en gastos que quizá no te aportaron o en lo que te pasaste de tus presupuestos. No te regaña ni te dice en qué gastar: solo te muestra, con tus propios números, lo que ese dinero habría significado si hubiera tenido otro destino.",
+    "sections": [
+      {
+        "label": "Cómo leerla, en simple",
+        "blocks": [
+          {
+            "kind": "bullets",
+            "items": [
+              "A la izquierda eliges de qué dinero partimos: una parte de todo lo que gastaste, lo que te pasaste de tus presupuestos o las categorías que quieres reducir.",
+              "A la derecha ves lo que habrías podido hacer con ese mismo dinero: acercarte a tu objetivo de ahorro, invertirlo, hacer un viaje o dar el enganche de un carro.",
+              "Todo es un ejemplo para imaginar: no mueve tu dinero, no crea ahorros ni promete rendimientos."
+            ]
+          }
+        ]
+      },
+      {
+        "label": "Si quieres personalizarlo",
+        "blocks": [
+          {
+            "kind": "p",
+            "text": "El «Modo avanzado» te deja elegir tú qué gastos analizar (por categoría, subcategoría, etiqueta o concepto) y qué porcentaje de ellos. Úsalo cuando ya entiendas la vista sencilla."
+          }
+        ]
+      },
+      {
+        "label": "Detalle técnico",
+        "blocks": [
+          {
+            "kind": "p",
+            "text": "Solo cuentan gastos completados registrados en Gastify dentro del periodo. Se excluyen transferencias, movimientos no completados y lo que no sea gasto. Los importes se muestran en tu moneda principal; si falta una conversión o el historial aún no termina de cargar, Gastify lo avisa."
+          },
+          {
+            "kind": "equation",
+            "left": "Dinero de partida",
+            "right": "Gasto observado × el porcentaje que apartarías"
+          },
+          {
+            "kind": "p",
+            "text": "Las cuatro formas de imaginar el dinero usan exactamente ese mismo monto: no se suman entre sí."
+          },
+          {
+            "kind": "example",
+            "text": "Si el gasto observado es $10,000 y eliges 10 %, el dinero de partida es $1,000. Con esos mismos $1,000 se calcula la inversión, el viaje, el enganche y el avance de tu objetivo."
+          }
+        ]
+      }
+    ]
   },
   'parte_del_gasto': {
-    title: 'Qué significa la proporción',
-    text: 'El total grande es el gasto observado que coincide con el periodo y los filtros. La proporción es una hipótesis que tú eliges para explorar una alternativa, no algo que Gastify considere que debiste ahorrar.',
-    sections: [
-      { label: 'Cálculo', blocks: [
-        { kind: 'equation', left: 'Monto de referencia', right: 'Gasto observado × proporción' },
-        { kind: 'table', head: ['Selección', 'Si el gasto observado fuera $1,000'], rows: [['5 %', '$50'], ['10 %', '$100'], ['25 %', '$250']] },
-        { kind: 'p', text: 'La selección actual aparece como monto destacado y alimenta las tres alternativas. Cambiarla no altera las transacciones ni los presupuestos.' },
-      ] },
-    ],
+    "title": "Qué parte habrías apartado",
+    "text": "Es la parte del gasto que imaginas que habrías guardado en vez de gastar. No es una meta que Gastify te ponga: es una hipótesis tuya para ver qué pasaría.",
+    "sections": [
+      {
+        "label": "En simple",
+        "blocks": [
+          {
+            "kind": "example",
+            "text": "Si gastaste $1,000 y apartas el 10 %, serían $100."
+          },
+          {
+            "kind": "p",
+            "text": "Prueba con 5 % o 10 %: es realista para casi todos. Puedes escribir otro porcentaje en la casilla."
+          }
+        ]
+      },
+      {
+        "label": "Detalle técnico",
+        "blocks": [
+          {
+            "kind": "equation",
+            "left": "Dinero de partida",
+            "right": "Gasto observado × porcentaje"
+          },
+          {
+            "kind": "p",
+            "text": "Cambiar el porcentaje no altera tus movimientos ni tus presupuestos."
+          }
+        ]
+      }
+    ]
   },
   'inversion_ilustrativa': {
-    title: 'Cómo leer la inversión ilustrativa',
-    text: 'Es una simulación de interés compuesto, no una cuenta ni una oferta de inversión. La tasa y el plazo son supuestos editables para mostrar sensibilidad al tiempo y al rendimiento.',
-    sections: [
-      { label: 'Dos formas de modelar el mismo gasto', blocks: [
-        { kind: 'table', head: ['Renglón', 'Supuesto'], rows: [
-          ['Si tuvieras el monto hoy', 'El monto alternativo completo se considera un depósito único realizado hoy y crece durante todo el plazo.'],
-          ['Si apartaras cada gasto al ocurrir', 'Cada parte del monto se considera apartada en la fecha de su gasto y crece desde esa fecha hasta hoy.'],
-        ] },
-        { kind: 'equation', left: 'Valor futuro ilustrativo', right: 'Capital modelado + rendimiento hipotético' },
-        { kind: 'p', text: 'El valor verde entre paréntesis es solo el rendimiento que arroja ese supuesto; el valor principal incluye el capital. Cambiar la tasa o el plazo vuelve a calcular el ejemplo. Una tasa negativa también es posible y puede bajar el valor.' },
-        { kind: 'p', text: 'No se consideran comisiones, impuestos, inflación ni variaciones reales de mercado. No predice resultados, no recomienda productos y no mueve dinero.' },
-      ] },
-    ],
+    "title": "Cómo leer la inversión",
+    "text": "Te dice cuánto tendrías hoy si ese dinero se hubiera invertido: tú pones la tasa anual y los años, y vemos cuánto habría crecido. Por defecto usamos 12 % anual durante 1 año; cámbialos para ver otros casos.",
+    "sections": [
+      {
+        "label": "En simple",
+        "blocks": [
+          {
+            "kind": "example",
+            "text": "Con $10,000 al 12 % anual durante 1 año tendrías $11,200: $1,200 más."
+          },
+          {
+            "kind": "p",
+            "text": "Es un ejemplo para imaginar, no una oferta ni una promesa de que esa tasa exista."
+          }
+        ]
+      },
+      {
+        "label": "Detalle técnico",
+        "blocks": [
+          {
+            "kind": "equation",
+            "left": "Valor futuro",
+            "right": "Dinero de partida × (1 + tasa) ^ años"
+          },
+          {
+            "kind": "p",
+            "text": "Es interés compuesto simple. No considera comisiones, impuestos, inflación ni variaciones reales de mercado, y no recomienda ningún producto. Una tasa negativa también es posible y puede bajar el valor."
+          }
+        ]
+      }
+    ]
   },
   'metas_en_oportunidades': {
-    title: 'Cómo se compara una meta',
-    text: 'La comparación usa el objetivo de ahorro que selecciones y presenta el cambio únicamente como hipótesis. El ahorro real y las cuentas asociadas permanecen sin cambios.',
-    sections: [
-      { label: 'Qué significa el avance', blocks: [
-        { kind: 'equation', left: 'Ahorro simulado', right: 'Ahorro actual reconocido + monto alternativo' },
-        { kind: 'equation', left: 'Cobertura simulada', right: 'Ahorro simulado ÷ meta total' },
-        { kind: 'p', text: 'El monto actual reconocido viene del saldo de las cuentas ligadas al objetivo o del monto de ahorro registrado, según cómo esté configurada esa meta. Si la conversión de una cuenta no está disponible o una cuenta se comparte entre objetivos, no se ofrece una comparación potencialmente engañosa.' },
-        { kind: 'p', text: 'El importe que se agrega existe solo en este cálculo. No se transfiere a una cuenta, no cambia el progreso guardado y puede superar la meta; la barra visual se limita al 100 %.' },
-      ] },
-    ],
+    "title": "Cómo se compara tu objetivo",
+    "text": "Sumamos, solo en este ejemplo, ese dinero al avance de tu objetivo de ahorro para que veas cuánto te acercaría a conseguirlo. Tu ahorro real y tus cuentas no cambian.",
+    "sections": [
+      {
+        "label": "Detalle técnico",
+        "blocks": [
+          {
+            "kind": "equation",
+            "left": "Ahorro simulado",
+            "right": "Ahorro actual + dinero de partida"
+          },
+          {
+            "kind": "equation",
+            "left": "Avance simulado",
+            "right": "Ahorro simulado ÷ meta total"
+          },
+          {
+            "kind": "p",
+            "text": "El ahorro actual sale del saldo de las cuentas ligadas al objetivo o de lo que declaraste a mano. Si una conversión no está disponible o la cuenta se comparte entre objetivos, no mostramos una comparación que pueda engañar."
+          }
+        ]
+      }
+    ]
   },
   'objetivos_de_ahorro': {
-    title: 'Cómo funcionan los objetivos de ahorro',
-    text: 'Un objetivo le pone nombre y rumbo a algo que quieres conseguir: un viaje, un automóvil, tu negocio o un fondo para imprevistos. Puedes ver cuánto te falta y qué pasos te acercan a esa meta.',
-    sections: [
-      { label: 'Cómo usarlo', blocks: [
-        { kind: 'bullets', items: [
-          'Elige qué quieres lograr y cuánto necesitas. Añade una fecha si quieres ver un plan de ahorro por aportación.',
-          'Registra lo que ya llevas o vincula una cuenta dedicada. La barra muestra tu avance hacia la cantidad elegida.',
-          'Puedes cambiar la meta, la fecha y el plan si tus circunstancias cambian. Pausarla no borra tu progreso.',
-          'Oportunidades de crecimiento puede comparar un monto hipotético con tu objetivo, pero no añade dinero real ni altera su avance.',
-        ] },
-      ] },
-      { label: 'Cómo se calcula y por qué puede verse provisional', blocks: [
-        { kind: 'equation', left: 'Avance', right: 'Ahorro reconocido ÷ importe objetivo' },
-        { kind: 'bullets', items: [
-          'Si ligas cuentas elegibles, se suman sus saldos convertidos a la moneda del objetivo. Si no ligas cuentas, se usa el ahorro que declaraste manualmente; nunca sumamos ambas fuentes.',
-          'Una cuenta solo debe financiar un objetivo. Si ahorros heredados comparten cuentas, la pantalla enseña el saldo vinculado como provisional y muestra el aviso en ámbar. Ese saldo puede aparecer en más de una meta, así que no representa progreso exclusivo hasta asignar cada cuenta a una sola.',
-          'La barra de ahorro conserva los mismos umbrales que Budgets: coral por debajo del 35 %, verde del 35 % a menos de 85 %, y azul desde 85 %; al completar o superar la meta sigue azul. La carita refleja esa misma cercanía.',
-          'Si falta una cuenta, su conversión o la cuenta no es elegible, no se inventa un progreso. Revisa el origen de fondos desde «Editar objetivo».',
-          'Los proyectos, gastos, categorías, etiquetas y fuentes de ingreso relacionados dan contexto; no se agregan al saldo ahorrado ni registran depósitos automáticamente.',
-        ] },
-        { kind: 'p', text: 'Editar la meta cambia su configuración; pausar o completarla cambia su estado. Oportunidades de crecimiento añade un escenario solo a la simulación y no altera este saldo.' },
-      ] },
-    ],
+    "title": "Para qué sirven los objetivos de ahorro",
+    "text": "Un objetivo es algo que quieres lograr con tu dinero: un coche, una casa, un negocio, un viaje, un fondo de emergencia. Lo creas, dices cuánto necesitas y para cuándo, y Gastify te muestra cuánto llevas y cuánto te falta. La idea es que tu dinero tenga rumbo.",
+    "sections": [
+      {
+        "label": "Cómo usarlo, en simple",
+        "blocks": [
+          {
+            "kind": "bullets",
+            "items": [
+              "Crea un objetivo y ponle nombre, ícono y color.",
+              "Dile cuánto necesitas y, si quieres, para cuándo: te sugerimos cuánto apartar en cada pago.",
+              "Cuenta cuánto llevas: escribiendo el monto o ligando una cuenta que uses solo para eso.",
+              "Míralo avanzar en la barra: se pone de un color distinto según qué tan cerca estás.",
+              "En Oportunidades de crecimiento verás cuánto te habría acercado el dinero que se te fue."
+            ]
+          }
+        ]
+      },
+      {
+        "label": "Detalle técnico",
+        "blocks": [
+          {
+            "kind": "equation",
+            "left": "Avance",
+            "right": "Ahorro reconocido ÷ importe objetivo"
+          },
+          {
+            "kind": "bullets",
+            "items": [
+              "Si ligas cuentas, se suman sus saldos convertidos a la moneda del objetivo; si no, se usa lo que declaraste. Nunca se suman las dos cosas.",
+              "Una cuenta debería financiar un solo objetivo. Si dos objetivos comparten cuenta, el avance se muestra como provisional con un aviso en ámbar.",
+              "La barra usa los mismos umbrales que los presupuestos: coral por debajo de 35 %, verde de 35 % a menos de 85 % y azul desde 85 %.",
+              "Los proyectos, categorías, etiquetas y fuentes de ingreso relacionados dan contexto; no agregan dinero ni registran depósitos.",
+              "Editar la meta cambia su configuración; pausarla o completarla cambia su estado, sin borrar tu avance."
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  'enganche_de_carro': {
+    "title": "Cómo se compara el enganche de carro",
+    "text": "Te decimos de qué carro de ejemplo habrías podido dar el enganche (el 20 % de su precio) o comprar de contado con ese dinero, y qué tan cerca estabas del siguiente.",
+    "sections": [
+      {
+        "label": "Detalle técnico",
+        "blocks": [
+          {
+            "kind": "equation",
+            "left": "Enganche de ejemplo",
+            "right": "Precio del carro × 20 %"
+          },
+          {
+            "kind": "p",
+            "text": "Es solo una comparación matemática: no es una cotización, un crédito ni una aprobación. Los precios son referencias aproximadas y redondeadas para dar escala; consulta el precio vigente con un distribuidor."
+          }
+        ]
+      }
+    ]
+  },
+  'fuentes_de_oportunidad': {
+    "title": "De qué dinero partimos",
+    "text": "Aquí eliges el dinero que imaginamos que habrías apartado. Toca una de las opciones y la parte derecha se recalcula.",
+    "sections": [
+      {
+        "label": "Las opciones",
+        "blocks": [
+          {
+            "kind": "definition",
+            "term": "Una parte de todo lo que gastaste",
+            "text": "Toma el 5 % o 10 % (o el que escribas) de todos tus gastos del periodo."
+          },
+          {
+            "kind": "definition",
+            "term": "Lo que te pasaste de tus presupuestos",
+            "text": "Suma, presupuesto por presupuesto, lo que gastaste por encima de su límite."
+          },
+          {
+            "kind": "definition",
+            "term": "Categorías que quieres reducir",
+            "text": "Las que elegiste en Categorías, con el porcentaje que quieres bajarlas. Si no has elegido, te sugerimos algunas por su nombre (como restaurantes o vicios) o la categoría donde más gastas. Es una sugerencia, no un juicio."
+          }
+        ]
+      }
+    ]
+  },
+  'modo_avanzado_oportunidades': {
+    "title": "Qué es el modo avanzado",
+    "text": "Es la versión con todos los controles: tú eliges qué gastos analizar (todos, una categoría, una subcategoría, una etiqueta o un concepto) y qué porcentaje apartar. Úsalo cuando ya entiendas la vista sencilla.",
+    "sections": [
+      {
+        "label": "Detalle técnico",
+        "blocks": [
+          {
+            "kind": "p",
+            "text": "El modo avanzado usa el mismo cálculo que la vista sencilla, pero sin las fuentes ya preparadas. Puedes volver cuando quieras: no se pierde nada."
+          }
+        ]
+      }
+    ]
+  },
+  'categorias_a_reducir': {
+    "title": "Categorías que quiero reducir",
+    "text": "Aquí le dices a Gastify en qué categorías quieres gastar menos y cuánto quieres bajarlas (por ejemplo, Restaurantes 30 %). Es solo una intención tuya: no cambia tus movimientos ni bloquea nada.",
+    "sections": [
+      {
+        "label": "Para qué sirve",
+        "blocks": [
+          {
+            "kind": "bullets",
+            "items": [
+              "En Oportunidades de crecimiento esas categorías aparecen primero, con el ahorro que habrías logrado al bajarlas.",
+              "Mientras más alto el porcentaje, más fuerte es tu intención de reducir ese gasto: 100 % significa eliminarlo.",
+              "Pon 0 % y guarda para quitar una categoría de la lista."
+            ]
+          }
+        ]
+      }
+    ]
   },
   'totales': { title: 'Totales', text: 'Ingresos = suma de todo lo que entró en el periodo. Gastos = suma de todo lo que salió. Balance = ingresos − gastos (verde si sobra, rojo si falta). Se calcula con los movimientos que ves bajo los filtros activos, en tu moneda principal; las transferencias entre tus cuentas no cuentan porque ni entran ni salen de tu dinero.' },
 };

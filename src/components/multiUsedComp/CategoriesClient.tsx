@@ -23,6 +23,7 @@ import type { TransactionData } from "@/lib/features/transacctionsSlice";
 import type { BudgetData } from "@/lib/features/budgetSlice";
 import { useT, useInfo } from "@/i18n/client";
 import { InfoTip } from "@/components/multiUsedComp/InfoTip";
+import type { InfoText } from "@gastify/core/info/createInfo";
 import { useGrowthCategoryPreferences } from "@/hooks/useGrowthCategoryPreferences";
 
 export interface CategoriesClientProps {
@@ -197,7 +198,7 @@ function CategoriesClient({ ccSession, readOnly = false }: CategoriesClientProps
                 className="w-full max-w-[400px] h-10 rounded-3xl gf-glass-inset px-4 text-gf-text"
               />
               {!readOnly && <div className="w-full max-w-2xl rounded-2xl border border-gf-border bg-gf-surface/25 p-4 text-left">
-                <h2 className="text-base font-semibold text-gf-text">{t("opportunities.categoryPreferenceTitle")}</h2>
+                <h2 className="inline-flex items-center gap-1.5 text-base font-semibold text-gf-text">{t("opportunities.categoryPreferenceTitle")}<InfoTip info={APP_INFO.categorias_a_reducir as InfoText} /></h2>
                 <p className="mt-1 text-xs leading-relaxed text-gf-text-muted">{t("opportunities.categoryPreferenceHelp")}</p>
                 <div className="form-trans-edit mt-3 flex flex-wrap items-end gap-3">
                   <label className="min-w-[180px] flex-1 text-xs text-gf-text-muted">{t("opportunities.category")}

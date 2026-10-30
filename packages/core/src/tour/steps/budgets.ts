@@ -63,6 +63,27 @@ export const budgetsTours = {
       ...formSteps("budCreate"),
     ],
     // The form, when it is already open (also inside the "+" window).
+    // Oportunidades de crecimiento (its own page): where the money went and what it could have been, from the top down.
+    budOpportunities: [
+      { id: "budOpportunities.title", anchor: "opp-title", side: "bottom" },
+      { id: "budOpportunities.lead", anchor: "opp-lead", side: "bottom" },
+      { id: "budOpportunities.period", anchor: "opp-period", side: "bottom" },
+      { id: "budOpportunities.sources", anchor: "opp-sources", optional: true, side: "right" },
+      { id: "budOpportunities.advanced", anchor: "opp-advanced", optional: true, side: "right" },
+      { id: "budOpportunities.share", anchor: "opp-share", side: "top" },
+      { id: "budOpportunities.results", anchor: "opp-results", side: "left" },
+      { id: "budOpportunities.goal", anchor: "opp-goal", side: "left" },
+      { id: "budOpportunities.invest", anchor: "opp-invest", side: "left" },
+      { id: "budOpportunities.trip", anchor: "opp-trip", side: "left" },
+      { id: "budOpportunities.car", anchor: "opp-car", side: "left" },
+    ],
+    // Objetivos de ahorro (its own page): what a goal is, how to create one and how to read a card.
+    budGoals: [
+      { id: "budGoals.title", anchor: "goals-title", side: "bottom" },
+      { id: "budGoals.new", anchor: "goals-new", side: "bottom" },
+      { id: "budGoals.list", anchor: "goals-list", optional: true, side: "top" },
+      { id: "budGoals.opportunities", anchor: "goals-opportunities", side: "top" },
+    ],
     budForm: formSteps("budForm"),
     // The forms of the "+" window, one per type: each one lists only the fields that type shows, from the top down. The compass of
     // each form is beside its title in the window, and the form is already open, so the cards point straight at its fields.

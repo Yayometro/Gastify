@@ -19,6 +19,7 @@ import type { CategoryData } from '@gastify/core/features/categoriesSlice';
 import type { SubCategoryData } from '@gastify/core/features/subCategorySlice';
 import { normalizeText } from '@gastify/core/search/normalizeText';
 import { useT, useInfo } from "@/i18n/client";
+import type { InfoText } from '@gastify/core/info/createInfo';
 
 import { TourPressable, TourTarget } from '@/components/tour/tour-target';
 // The person's own categories (tap to edit them and their sub-categories) and the defaults that come with
@@ -94,7 +95,7 @@ export default function CategoriesScreen() {
           </Text>
         </TourPressable>
       </View>
-      <Card title={t('opportunities.categoryPreferenceTitle')}>
+      <Card title={t('opportunities.categoryPreferenceTitle')} info={APP_INFO.categorias_a_reducir as InfoText}>
         <Text className="font-inter text-xs leading-5 text-gf-text-muted">{t('opportunities.categoryPreferenceHelp')}</Text>
         <ChipPicker items={allCategories.map((item) => ({ id: idOf(item), label: item.name || t('opportunities.category'), icon: item.icon, color: item.color }))} value={growthCategoryId} onChange={(value) => { setGrowthCategoryId(value); setReductionInput(String(growthPreferences.preferences.find((item) => item.categoryId === value)?.reductionPercent ?? 25)); }} title={t('opportunities.category')} moreAfter={4} />
         <TextField label={t('opportunities.reductionPercent')} value={reductionInput} onChangeText={setReductionInput} keyboardType="number-pad" />

@@ -4,6 +4,7 @@ import { Pressable, Text, View, useColorScheme } from 'react-native';
 import { useSelector } from 'react-redux';
 
 import { Screen } from '@/components/screen';
+import { TourTarget } from '@/components/tour/tour-target';
 import { Card } from '@/components/ui/card';
 import { CategoryBadge } from '@/components/category-badge';
 import { BudgetMood, BudgetProgress } from '@/components/budget-progress';
@@ -19,10 +20,12 @@ import { convertBudgetsToPrimary } from '@gastify/core/transformers/budgetCurren
 import { idOf } from '@gastify/core/categories/categoryForm';
 import { findOverlappingSavingAccounts, isEligibleGoalFundingAccountType } from '@gastify/core/goals/progress';
 import { getBudgetBarColor } from '@gastify/core/transformers/budgetHistory';
-import { useT, useLocale } from '@/i18n/client';
+import { useInfo, useLocale, useT } from '@/i18n/client';
+import type { InfoText } from '@gastify/core/info/createInfo';
 
 export default function GoalsScreen() {
   const t = useT();
+  const { APP_INFO } = useInfo();
   const locale = useLocale();
   const currency = usePrimaryCurrency();
   const scheme = useColorScheme();
@@ -38,15 +41,15 @@ export default function GoalsScreen() {
   }))), [goals]);
 
   return (
-    <Screen title={t('goals.title')} subtitle={t('goals.subtitle')} refreshing={refreshing} onRefresh={refresh}>
-      <Card>
+    <Screen tutorial="m-goals" title={t('goals.title')} titleInfo={APP_INFO.objetivos_de_ahorro as InfoText} subtitle={t('goals.subtitle')} refreshing={refreshing} onRefresh={refresh}>
+      <Card tour="m-goals-intro">
         <Text className="font-inter text-sm leading-5 text-gf-text-muted">{t('goals.savingsRule')}</Text>
         <Text className="font-inter text-xs leading-5 text-gf-text-muted">{t('goals.contextHelp')}</Text>
       </Card>
-      <Pressable accessibilityRole="button" onPress={() => router.push({ pathname: '/budgets/new', params: { kind: 'saving', goal: '1' } })} className="rounded-2xl border border-purple-300/30 bg-purple-300/10 px-4 py-3">
+      <TourTarget id="m-goals-new"><Pressable accessibilityRole="button" onPress={() => router.push({ pathname: '/budgets/new', params: { kind: 'saving', goal: '1' } })} className="rounded-2xl border border-purple-300/30 bg-purple-300/10 px-4 py-3">
         <Text className="font-inter-semibold text-base text-gf-text">+ {t('goals.new')}</Text>
-      </Pressable>
-      {goals.length === 0 ? <Card title={t('goals.emptyTitle')}><Text className="font-inter text-sm leading-5 text-gf-text-muted">{t('goals.emptyText')}</Text></Card> : goals.map((goal) => {
+      </Pressable></TourTarget>
+      {goals.length === 0 ? <Card title={t('goals.emptyTitle')}><Text className="font-inter text-sm leading-5 text-gf-text-muted">{t('goals.emptyText')}</Text></Card> : goals.map((goal, goalIndex) => {
         const linkedIds = (goal.linkedAccounts || []).map(idOf).filter(Boolean);
         const linked = accounts.filter((account) => linkedIds.includes(idOf(account)));
         const progress = linkedIds.length ? totalInPrimary(linked, currency, rates) : null;
@@ -65,7 +68,7 @@ export default function GoalsScreen() {
         const status = goal.goalDetails?.status || 'active';
         const openGoal = (edit = false) => router.push({ pathname: '/budgets/[id]', params: { id: idOf(goal), ...(edit ? { edit: '1' } : {}) } });
         return (
-          <Card key={idOf(goal)}>
+          <Card key={idOf(goal)} tour={goalIndex === 0 ? 'm-goals-first' : undefined}>
             <Pressable accessibilityRole="button" accessibilityLabel={t('mobile.openLabel', { p1: goal.name || t('goals.untitled') })} onPress={() => openGoal()} className="gap-3">
               <View className="flex-row items-center gap-3">
                 <CategoryBadge icon={goal.icon || 'fluent/bullseye'} color={goal.color || colors.accent} size={44} />
@@ -92,9 +95,9 @@ export default function GoalsScreen() {
           </Card>
         );
       })}
-      <Pressable accessibilityRole="button" onPress={() => router.push('/budgets/opportunities')} className="rounded-2xl border border-gf-border px-4 py-3">
+      <TourTarget id="m-goals-opportunities"><Pressable accessibilityRole="button" onPress={() => router.push('/budgets/opportunities')} className="rounded-2xl border border-gf-border px-4 py-3">
         <Text className="font-inter-semibold text-sm" style={{ color: colors.accent }}>{t('opportunities.title')} →</Text>
-      </Pressable>
+      </Pressable></TourTarget>
     </Screen>
   );
 }
