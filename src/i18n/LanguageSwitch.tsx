@@ -10,7 +10,7 @@ const NAMES: Record<Locale, string> = { es: "common.languageSpanish", en: "commo
 
 // Two pills, Español and English. The choice goes into a cookie (a year) and the page is refreshed so the server sends the
 // texts of the new language.
-export default function LanguageSwitch({ className = "" }: { className?: string }): React.JSX.Element {
+export default function LanguageSwitch({ className = "", compact = false }: { className?: string; compact?: boolean }): React.JSX.Element {
   const router = useRouter();
   const t = useT();
   const current = useLocale();
@@ -27,10 +27,12 @@ export default function LanguageSwitch({ className = "" }: { className?: string 
           type="button"
           aria-pressed={locale === current}
           lang={locale}
+          aria-label={t(NAMES[locale])}
+          title={t(NAMES[locale])}
           onClick={() => choose(locale)}
           className={`rounded-full px-3 py-1 text-sm font-semibold transition-all ${locale === current ? "gf-glass-button text-white" : "text-purple-200/80 hover:bg-white/10 hover:text-white"}`}
         >
-          {t(NAMES[locale])}
+          {compact ? locale.toUpperCase() : t(NAMES[locale])}
         </button>
       ))}
     </div>

@@ -20,6 +20,7 @@ import { formatMoneyMajor } from "@gastify/core/money/currencies";
 import type { TransactionData } from "@/lib/features/transacctionsSlice";
 import type { BudgetData } from "@/lib/features/budgetSlice";
 import { useT } from "@/i18n/client";
+import { useGrowthCategoryPreferences } from "@/hooks/useGrowthCategoryPreferences";
 
 export interface CategoriesClientProps {
   ccData?: unknown;
@@ -32,6 +33,10 @@ function CategoriesClient({ ccSession, readOnly = false }: CategoriesClientProps
   const [onEdition, setOnEdition] = useState<string | boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedDetail, setSelectedDetail] = useState<CategoryData | SubCategoryData | null>(null);
+  const [growthCategoryId, setGrowthCategoryId] = useState("");
+  const [reductionInput, setReductionInput] = useState("25");
+  const [savingGrowth, setSavingGrowth] = useState(false);
+  const growthPreferences = useGrowthCategoryPreferences(!readOnly);
 
   // Redux
   const dispatch = useDispatch<AppDispatch>();
@@ -141,6 +146,25 @@ function CategoriesClient({ ccSession, readOnly = false }: CategoriesClientProps
                 placeholder={t("categories.search")}
                 className="w-full max-w-[400px] h-10 rounded-3xl gf-glass-inset px-4 text-gf-text"
               />
+              {!readOnly && <div className="w-full max-w-2xl rounded-2xl border border-gf-border bg-gf-surface/25 p-4 text-left">
+                <h2 className="text-base font-semibold text-gf-text">{t("opportunities.categoryPreferenceTitle")}</h2>
+                <p className="mt-1 text-xs leading-relaxed text-gf-text-muted">{t("opportunities.categoryPreferenceHelp")}</p>
+                <div className="form-trans-edit mt-3 flex flex-wrap items-end gap-3">
+                  <label className="min-w-[180px] flex-1 text-xs text-gf-text-muted">{t("opportunities.category")}
+                    <select className="etm-selector mt-1 w-full" value={growthCategoryId} onChange={(event) => { const id = event.target.value; setGrowthCategoryId(id); setReductionInput(String(growthPreferences.preferences.find((item) => item.categoryId === id)?.reductionPercent ?? 25)); }}>
+                      <option value="">{t("opportunities.select")}</option>
+                      {allCategoriesData.map((item) => <option key={item._id} value={item._id}>{item.name}</option>)}
+                    </select>
+                  </label>
+                  <label className="w-32 text-xs text-gf-text-muted">{t("opportunities.reductionPercent")}
+                    <input type="number" min="0" max="100" step="1" value={reductionInput} onChange={(event) => setReductionInput(event.target.value)} className="mt-1" />
+                  </label>
+                  <button type="button" disabled={!growthCategoryId || growthPreferences.loading || savingGrowth || !Number.isInteger(Number(reductionInput)) || Number(reductionInput) < 0 || Number(reductionInput) > 100} onClick={async () => { setSavingGrowth(true); await growthPreferences.save(growthCategoryId, Number(reductionInput)); setSavingGrowth(false); }} className="gf-glass-button rounded-xl px-4 py-2.5 text-sm font-semibold text-gf-text disabled:opacity-50">{t("opportunities.savePreference")}</button>
+                </div>
+                <p className="mt-2 text-[11px] text-gf-text-muted">{t("opportunities.zeroRemovesPreference")}</p>
+                {growthPreferences.error && <p role="alert" className="mt-2 text-xs text-rose-300">{t("opportunities.preferenceError")}</p>}
+                {growthPreferences.preferences.length > 0 && <div className="mt-3 flex flex-wrap gap-2">{growthPreferences.preferences.map((item) => { const category = allCategoriesData.find((candidate) => String(candidate._id) === item.categoryId); return category ? <span key={item.categoryId} className="rounded-full border border-purple-300/25 px-3 py-1 text-xs text-purple-100">{category.name} · −{item.reductionPercent}%</span> : null; })}</div>}
+              </div>}
               {!readOnly && <SelectCategories>
                 <EditCategoryModal
                   ecmMode={onEdition}

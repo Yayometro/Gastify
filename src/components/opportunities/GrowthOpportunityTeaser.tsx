@@ -48,8 +48,8 @@ export default function GrowthOpportunityTeaser({ demoMode = false }: { demoMode
     }
     return [...categories.entries()].map(([id, value]) => ({ id, ...value })).sort((a, b) => b.amountMinor - a.amountMinor)[0] || null;
   }, [transactions, categoriesState, currency, year, t]);
-  const shareMinor = top ? Math.round(top.amountMinor * 0.25) : 0;
-  const projection = top ? projectSingleDeposit({ principalMinor: shareMinor, currency, annualEffectiveRate: 0.06, years: 3, asOf }) : null;
+  const shareMinor = top ? Math.round(top.amountMinor * 0.1) : 0;
+  const projection = top ? projectSingleDeposit({ principalMinor: shareMinor, currency, annualEffectiveRate: 0.12, years: 1, asOf }) : null;
   const href = demoMode ? "/demo/opportunities" : "/dashboard/opportunities";
   const goalHref = demoMode ? "/demo/goals" : "/dashboard/goals";
 
@@ -75,17 +75,17 @@ export default function GrowthOpportunityTeaser({ demoMode = false }: { demoMode
         </div>
 
         {top && <div className="relative mt-4 grid gap-2 sm:grid-cols-3">
-          <article className="min-w-0 rounded-2xl border border-gf-border/80 bg-gf-surface/25 p-3">
+          <article className="min-w-0 rounded-xl border border-gf-border bg-gf-surface/25 p-3 transition-colors hover:border-purple-200">
             <p className="text-[10px] font-bold uppercase tracking-wide text-purple-200">{t("opportunities.growthPath.investment")}</p>
             <p className="mt-1 break-words text-lg font-bold text-gf-text">{formatMoneyMinor(projection?.valueMinor || shareMinor, currency)}</p>
             <p className="mt-0.5 text-[11px] text-gf-text-muted">{t("opportunities.teaser.investmentMeta", { p1: formatMoneyMinor(shareMinor, currency) })}</p>
           </article>
-          <article className="min-w-0 rounded-2xl border border-gf-border/80 bg-gf-surface/25 p-3">
+          <article className="min-w-0 rounded-xl border border-gf-border bg-gf-surface/25 p-3 transition-colors hover:border-purple-200">
             <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide text-cyan-200"><IoAirplaneOutline aria-hidden="true" />{t("opportunities.growthPath.travel")}</p>
             <p className="mt-1 break-words text-lg font-bold text-gf-text">{formatMoneyMinor(shareMinor, currency)}</p>
             <p className="mt-0.5 text-[11px] text-gf-text-muted">{t("opportunities.teaser.travelMeta")}</p>
           </article>
-          <Link href={goalHref} className="min-w-0 rounded-2xl border border-gf-border/80 bg-gf-surface/25 p-3 text-left text-gf-text">
+          <Link href={goalHref} className="min-w-0 rounded-xl border border-gf-border bg-gf-surface/25 p-3 text-left text-gf-text transition-colors hover:border-purple-200">
             <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide text-emerald-200"><GiArcheryTarget aria-hidden="true" />{t("opportunities.growthPath.goal")}</p>
             <p className="mt-1 break-words text-lg font-bold">{formatMoneyMinor(shareMinor, currency)}</p>
             <p className="mt-0.5 text-[11px] text-gf-text-muted">{t("opportunities.teaser.goalMeta")}</p>

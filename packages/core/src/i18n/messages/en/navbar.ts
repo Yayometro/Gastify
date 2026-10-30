@@ -25,6 +25,7 @@ const en: Record<keyof typeof navbar, string> = {
   "navbar.icons.loadError": "We could not load the icons. Check your connection.",
   "navbar.icons.none": "No icon matches the search.",
   "navbar.icons.more": "Show more ({p1} left)",
+  "navbar.icons.less": "Show less",
   "navbar.seeBudget": "See my budget",
   "navbar.tools.open": "Open tools",
   "navbar.tools.drag": "Tools (drag it to another edge)",

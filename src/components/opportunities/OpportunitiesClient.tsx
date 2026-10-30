@@ -20,6 +20,9 @@ import type { OpportunityDateRange, OpportunityDimension } from "@gastify/core/o
 import { useInfo, useLocale, useT } from "@/i18n/client";
 import { InfoTip } from "@/components/multiUsedComp/InfoTip";
 import type { InfoText } from "@gastify/core/info/createInfo";
+import { useGrowthCategoryPreferences } from "@/hooks/useGrowthCategoryPreferences";
+import { calculateBudgetOverage } from "@gastify/core/opportunities/budgetOverage";
+import { currentMxCarExample, JAPAN_LODGING_REFERENCE } from "@gastify/core/opportunities/illustrativePrices";
 import "@/components/multiUsedComp/css/muliUsed.css";
 
 const idOf = (value: unknown): string => String((value as { _id?: unknown } | null)?.["_id"] ?? value ?? "");
@@ -40,6 +43,7 @@ export default function OpportunitiesClient(): React.JSX.Element {
   const t = useT();
   const { APP_INFO } = useInfo();
   const periodInfo = APP_INFO.periodo_de_oportunidades as InfoText;
+  const filtersInfo = APP_INFO.filtros_de_oportunidades as InfoText;
   const shareInfo = APP_INFO.parte_del_gasto as InfoText;
   const investmentInfo = APP_INFO.inversion_ilustrativa as InfoText;
   const scenariosInfo = APP_INFO.tres_alternativas_de_ese_monto as InfoText;
@@ -51,6 +55,7 @@ export default function OpportunitiesClient(): React.JSX.Element {
   const accounts = useSelector((state: RootState) => state.accountsReducer?.data || []);
   const categoriesState = useSelector((state: RootState) => state.categoriesReducer?.data);
   const subCategoriesState = useSelector((state: RootState) => state.subCategoryReducer?.data);
+  const growthPreferences = useGrowthCategoryPreferences();
   const currency = useSelector((state: RootState) => (state.walletReducer?.data as WalletData)?.primaryCurrency) || "MXN";
   const transactions = transactionsState.data as TransactionData[];
   const convertedBudgets = useBudgetsInPrimaryCurrency(storedBudgets, currency);
@@ -64,15 +69,22 @@ export default function OpportunitiesClient(): React.JSX.Element {
   const [dimension, setDimension] = useState<OpportunityDimension>("all");
   const [selectedId, setSelectedId] = useState("");
   const [concept, setConcept] = useState("");
-  const [share, setShare] = useState(25);
-  const [ratePercent, setRatePercent] = useState(6);
-  const [horizonYears, setHorizonYears] = useState(1);
-  const [travelTarget, setTravelTarget] = useState(260000);
+  const [advanced, setAdvanced] = useState(false);
+  const [overageSelected, setOverageSelected] = useState(false);
+  const [shareInput, setShareInput] = useState("10");
+  const [rateInput, setRateInput] = useState("12");
+  const [horizonInput, setHorizonInput] = useState("1");
+  const [travelTargetInput, setTravelTargetInput] = useState("260000");
+  const share = Math.min(100, Math.max(0, Number(shareInput) || 0));
+  const allSourceShare = !advanced && !overageSelected && dimension === "all" ? share : 10;
+  const ratePercent = Math.min(100, Math.max(-99, Number(rateInput) || 0));
+  const horizonYears = Math.min(60, Math.max(0, Number(horizonInput) || 0));
+  const travelTarget = Math.max(0, Number(travelTargetInput) || 0);
   const [selectedGoalId, setSelectedGoalId] = useState("");
   const [movementLimit, setMovementLimit] = useState(20);
   const completeHistory = transactionsState.historyStatus === "complete";
 
-  const categories = [...(categoriesState?.user || []), ...(categoriesState?.default || [])];
+  const categories = useMemo(() => [...(categoriesState?.user || []), ...(categoriesState?.default || [])], [categoriesState]);
   const subCategories = [...(subCategoriesState?.subCat || []), ...(subCategoriesState?.default || [])];
   const tagChoices = useMemo(() => {
     const tags = new Map<string, string>();
@@ -89,6 +101,34 @@ export default function OpportunitiesClient(): React.JSX.Element {
     : dimension === "subcategory"
       ? subCategories.map((item) => ({ id: idOf(item), name: item.name || "" }))
       : dimension === "tag" ? tagChoices : [];
+  const featuredCategory = useMemo(() => {
+    const names = new Map([...((categoriesState?.user || [])), ...((categoriesState?.default || []))].map((item) => [idOf(item), item.name || ""]));
+    const totals = new Map<string, number>();
+    for (const tx of transactions) {
+      if (kindOf(tx) !== "expense" || (tx.state && tx.state !== "completed") || !tx.date) continue;
+      const date = new Date(tx.date);
+      if (Number.isNaN(date.getTime())) continue;
+      const day = date.toISOString().slice(0, 10);
+      if (day < range.startDate || day > range.endDate) continue;
+      const id = idOf(tx.category);
+      const money = resolveOpportunityMoney(tx, currency);
+      if (!id || !money || money.currency !== currency) continue;
+      totals.set(id, (totals.get(id) || 0) + Math.abs(money.amountMinor));
+    }
+    let best: { id: string; name: string; amountMinor: number } | null = null;
+    for (const [id, amountMinor] of totals) {
+      if (!best || amountMinor > best.amountMinor) best = { id, name: names.get(id) || "", amountMinor };
+    }
+    return best?.name ? best : null;
+  }, [transactions, categoriesState, currency, range.startDate, range.endDate]);
+  const featuredSourceShare = !advanced && !overageSelected && dimension === "category" && selectedId === featuredCategory?.id ? share : 10;
+  const preferredCategories = useMemo(() => {
+    const names = new Map(categories.map((item) => [idOf(item), item.name || ""]));
+    return growthPreferences.preferences.map((preference) => {
+      const amountMinor = scanOpportunityTransactions(transactions, { categoryIds: [preference.categoryId], primaryCurrency: currency }, range).amountMinor;
+      return { ...preference, name: names.get(preference.categoryId) || "", amountMinor };
+    }).filter((item) => item.name && item.amountMinor > 0).sort((a, b) => b.amountMinor * b.reductionPercent - a.amountMinor * a.reductionPercent).slice(0, 2);
+  }, [categories, currency, growthPreferences.preferences, range, transactions]);
 
   const filters = useMemo(() => ({
     includeAllExpenses: dimension === "all",
@@ -98,7 +138,15 @@ export default function OpportunitiesClient(): React.JSX.Element {
     conceptQuery: dimension === "concept" ? concept.trim() : "",
     primaryCurrency: currency,
   }), [dimension, selectedId, concept, currency]);
-  const scan = useMemo(() => scanOpportunityTransactions(transactions, filters, range), [transactions, filters, range]);
+  const regularScan = useMemo(() => scanOpportunityTransactions(transactions, filters, range), [transactions, filters, range]);
+  const budgetOverage = useMemo(() => calculateBudgetOverage({ transactions, budgets: convertedBudgets, range, currency }), [transactions, convertedBudgets, range, currency]);
+  const scan = useMemo(() => overageSelected ? {
+    ...regularScan, amountMinor: budgetOverage.amountMinor, refundMinor: 0, feeMinor: 0,
+    missingFxCount: budgetOverage.missingFxCount, unmatchedRefundCount: 0,
+    count: new Set(budgetOverage.cycles.flatMap((cycle) => cycle.transactionIds)).size,
+    transactionIds: [...new Set(budgetOverage.cycles.flatMap((cycle) => cycle.transactionIds))],
+  } : regularScan, [overageSelected, regularScan, budgetOverage]);
+  const allSpendMinor = useMemo(() => scanOpportunityTransactions(transactions, { includeAllExpenses: true, primaryCurrency: currency }, range).amountMinor, [transactions, currency, range]);
   const selectedGoal = availableGoals.find((item) => String(item._id) === selectedGoalId) || availableGoals[0];
   const linkedGoalAccounts = selectedGoal ? accounts.filter((account) => (selectedGoal.linkedAccounts || []).map(idOf).includes(idOf(account))) : [];
   const linkedGoalTotal = useLinkedAccountsTotal(linkedGoalAccounts, currency);
@@ -118,6 +166,7 @@ export default function OpportunitiesClient(): React.JSX.Element {
   const refund = minorToMajor(scan.refundMinor, currency);
   const fees = minorToMajor(scan.feeMinor, currency);
   const datedExpenses = useMemo(() => {
+    if (overageSelected) return [];
     const ids = new Set(scan.transactionIds);
     return transactions.filter((tx) => ids.has(idOf(tx)) && kindOf(tx) === "expense" && tx.date).flatMap((tx) => {
       const money = resolveOpportunityMoney(tx, currency);
@@ -127,8 +176,9 @@ export default function OpportunitiesClient(): React.JSX.Element {
       date: (() => { const date = new Date(tx.date as Date | string); return Number.isNaN(date.getTime()) ? "" : date.toISOString().slice(0, 10); })(),
     }];
     }).filter((expense) => expense.amountMinor > 0 && expense.date);
-  }, [transactions, scan.transactionIds, share, currency]);
+  }, [transactions, scan.transactionIds, share, currency, overageSelected]);
   const projectionNow = dayText(today);
+  const carExample = currentMxCarExample(projectionNow, currency);
   const annualRate = Math.min(1, Math.max(-0.99, Number.isFinite(ratePercent) ? ratePercent / 100 : 0));
   const investmentYears = Number.isFinite(horizonYears) ? Math.min(60, Math.max(0, horizonYears)) : 0;
   const investmentNow = projectSingleDeposit({ principalMinor: principalMinor || 0, currency, annualEffectiveRate: annualRate, years: investmentYears, asOf: projectionNow });
@@ -146,7 +196,6 @@ export default function OpportunitiesClient(): React.JSX.Element {
   }) : null;
   const rangeStart = rangeDate(range.startDate);
   const rangeEnd = rangeDate(range.endDate);
-  const displayDate = (date: Date): string => new Intl.DateTimeFormat(locale === "es" ? "es-MX" : "en-US", { dateStyle: "medium" }).format(date);
   const setPresetRange = (value: "year" | "quarter" | "month") => {
     setPreset(value);
     const end = new Date();
@@ -169,23 +218,32 @@ export default function OpportunitiesClient(): React.JSX.Element {
 
       <section className="mx-auto mt-6 grid w-full max-w-[1800px] items-stretch gap-4 2xl:grid-cols-[minmax(0,1.04fr)_minmax(0,.96fr)]">
         <div className="gf-glass-card flex h-full flex-col rounded-3xl border border-gf-border p-4 sm:p-6">
+          <div className="mb-5 flex flex-wrap items-start justify-between gap-3"><div className="flex max-w-xl items-start gap-1.5"><p className="text-sm leading-relaxed text-gf-text">{t("opportunities.simpleIntro")}</p>{!advanced && <InfoTip info={filtersInfo} className="shrink-0" />}</div><button type="button" onClick={() => { if (advanced) { setDimension("all"); setSelectedId(""); setShareInput("10"); } setOverageSelected(false); setAdvanced(!advanced); }} className="shrink-0 rounded-full border border-gf-border px-3 py-2 text-xs font-semibold text-purple-200">{advanced ? t("opportunities.simple") : t("opportunities.advanced")}</button></div>
           <div className="flex flex-wrap items-center justify-between gap-3"><div className="flex items-center gap-2"><h2 className="text-lg font-semibold text-gf-text">{t("opportunities.range")}</h2><InfoTip info={periodInfo} /></div><div role="group" aria-label={t("opportunities.range")} className="flex max-w-full gap-1 overflow-x-auto rounded-full gf-glass-inset p-1.5">{(["month", "quarter", "year"] as const).map((item) => <button key={item} type="button" aria-pressed={preset === item} onClick={() => setPresetRange(item)} className={"shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors " + (preset === item ? "gf-glass-button text-white" : "text-gf-text-muted hover:text-gf-text")}>{t("opportunities.preset." + item)}</button>)}<button type="button" aria-pressed={preset === "custom"} onClick={() => setPreset("custom")} className={"shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors " + (preset === "custom" ? "gf-glass-button text-white" : "text-gf-text-muted hover:text-gf-text")}>{t("opportunities.preset.custom")}</button></div></div>
-          {rangeStart && rangeEnd && <><div className="mt-4"><TimeRange startDateValue={rangeStart} endDateValue={rangeEnd} rpDate={applyRange} styles="flex w-fit max-w-full items-center justify-center gap-1 rounded-full gf-glass-inset px-2 py-2" /></div><p className="mt-2 text-xs text-gf-text-muted">{t("opportunities.del.p1.al.p2", { p1: displayDate(rangeStart), p2: displayDate(rangeEnd) })}</p></>}
-          <p className="mt-2 text-xs leading-relaxed text-gf-text-muted">{t("opportunities.periodHelp")}</p>
-          <p className="mt-3 text-xs leading-relaxed text-gf-text-muted">{t("opportunities.rangeWarning")}</p>
+          {rangeStart && rangeEnd && <><div className="mt-4"><TimeRange startDateValue={rangeStart} endDateValue={rangeEnd} rpDate={applyRange} /></div><p className="mt-2 text-xs text-gf-text-muted">{preset === "year" ? t("opportunities.periodYtd") : t("opportunities.periodCurrent")}</p></>}
           {!completeHistory && <div className="mt-3 flex items-start gap-2 rounded-xl border border-amber-300/20 bg-amber-300/5 p-3 text-xs text-amber-100/90"><IoInformationCircleOutline className="mt-0.5 shrink-0" />{t("opportunities.partial")}</div>}
-
-          <div className="form-trans-edit mt-5 grid gap-4 sm:grid-cols-2">
-            <label className="flex min-w-0 flex-col gap-1.5"><span className="text-xs font-semibold text-gf-text-muted">{t("opportunities.dimension")}</span><select value={dimension} onChange={(event) => { setDimension(event.target.value as OpportunityDimension); setSelectedId(""); }} className="etm-selector"><option value="all">{t("opportunities.allExpenses")}</option><option value="category">{t("opportunities.category")}</option><option value="subcategory">{t("opportunities.subcategory")}</option><option value="tag">{t("opportunities.tag")}</option><option value="concept">{t("opportunities.concept")}</option></select></label>
-            {dimension === "all" ? <p className="flex items-end pb-2 text-xs leading-relaxed text-gf-text-muted">{t("opportunities.allExpensesHelp")}</p> : dimension === "concept" ? <label className="flex min-w-0 flex-col gap-1.5"><span className="text-xs font-semibold text-gf-text-muted">{t("opportunities.concept")}</span><input value={concept} onChange={(event) => setConcept(event.target.value)} placeholder={t("opportunities.search")} /></label> : <label className="flex min-w-0 flex-col gap-1.5"><span className="text-xs font-semibold text-gf-text-muted">{t("opportunities.select")}</span><select value={selectedId} onChange={(event) => setSelectedId(event.target.value)} className="etm-selector"><option value="">{t("opportunities.select")}</option>{selectedChoices.filter((item) => item.id).map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>}
-          </div>
-          <p className="mt-3 text-xs leading-relaxed text-gf-text-muted">{t("opportunities.filterHelp")}</p>
+          {advanced ? <div className="form-trans-edit mt-5 grid gap-4 sm:grid-cols-2">
+            <label className="flex min-w-0 flex-col gap-1.5"><span className="inline-flex items-center gap-1.5 text-xs font-semibold text-gf-text-muted">{t("opportunities.dimension")}<InfoTip info={filtersInfo} /></span><select value={dimension} onChange={(event) => { setDimension(event.target.value as OpportunityDimension); setSelectedId(""); }} className="etm-selector"><option value="all">{t("opportunities.allExpenses")}</option><option value="category">{t("opportunities.category")}</option><option value="subcategory">{t("opportunities.subcategory")}</option><option value="tag">{t("opportunities.tag")}</option><option value="concept">{t("opportunities.concept")}</option></select></label>
+            {dimension === "all" ? null : dimension === "concept" ? <label className="flex min-w-0 flex-col gap-1.5"><span className="text-xs font-semibold text-gf-text-muted">{t("opportunities.concept")}</span><input value={concept} onChange={(event) => setConcept(event.target.value)} placeholder={t("opportunities.search")} /></label> : <label className="flex min-w-0 flex-col gap-1.5"><span className="text-xs font-semibold text-gf-text-muted">{t("opportunities.select")}</span><select value={selectedId} onChange={(event) => setSelectedId(event.target.value)} className="etm-selector"><option value="">{t("opportunities.select")}</option>{selectedChoices.filter((item) => item.id).map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>}
+          </div> : <div className="mt-4 grid gap-2 sm:grid-cols-2">
+            {preferredCategories.map((item) => <button key={item.categoryId} type="button" aria-pressed={!overageSelected && dimension === "category" && selectedId === item.categoryId} onClick={() => { setOverageSelected(false); setDimension("category"); setSelectedId(item.categoryId); setShareInput(String(item.reductionPercent)); }} className={"rounded-xl border p-3 text-left text-sm transition-colors " + (!overageSelected && dimension === "category" && selectedId === item.categoryId ? "border-purple-300/60 bg-purple-300/10 text-gf-text" : "border-gf-border text-gf-text-muted hover:border-purple-200")}><span className="block font-semibold">{t("opportunities.preferredSource", { p1: item.name })}</span><span className="mt-1 block text-xs text-gf-text-muted">{t("opportunities.sourceAmount", { p1: formatMoneyMinor(item.amountMinor, currency), p2: formatMoneyMinor(opportunityPrincipal(item.amountMinor, item.reductionPercent / 100) || 0, currency), p3: item.reductionPercent + "%" })}</span><span className="mt-3 block h-2 overflow-hidden rounded-full bg-gf-surface-2"><span className="block h-full rounded-full bg-gradient-to-r from-cyan-300 to-purple-400" style={{ width: item.reductionPercent + "%" }} /></span></button>)}
+            <button type="button" aria-pressed={!overageSelected && dimension === "all"} onClick={() => { setOverageSelected(false); setDimension("all"); setSelectedId(""); setShareInput("10"); }} className={"rounded-xl border p-3 text-left text-sm transition-colors " + (!overageSelected && dimension === "all" ? "border-purple-300/60 bg-purple-300/10 text-gf-text" : "border-gf-border text-gf-text-muted hover:border-purple-200")}><span className="block font-semibold">{t("opportunities.sourceAll")}</span><span className="mt-1 block text-xs text-gf-text-muted">{t("opportunities.sourceAmount", { p1: formatMoneyMinor(allSpendMinor, currency), p2: formatMoneyMinor(opportunityPrincipal(allSpendMinor, allSourceShare / 100) || 0, currency), p3: allSourceShare + "%" })}</span><span className="mt-3 block h-2 overflow-hidden rounded-full bg-gf-surface-2"><span className="block h-full rounded-full bg-gradient-to-r from-cyan-300 to-purple-400" style={{ width: allSourceShare + "%" }} /></span></button>
+            {budgetOverage.amountMinor > 0 && <button type="button" aria-pressed={overageSelected} onClick={() => { setOverageSelected(true); setShareInput("100"); }} className={"rounded-xl border p-3 text-left text-sm transition-colors " + (overageSelected ? "border-purple-300/60 bg-purple-300/10 text-gf-text" : "border-gf-border text-gf-text-muted hover:border-purple-200")}><span className="block font-semibold">{t("opportunities.sourceOverage")}</span><span className="mt-1 block text-xs text-gf-text-muted">{t("opportunities.overageAmount", { p1: formatMoneyMinor(budgetOverage.amountMinor, currency), p2: budgetOverage.cycles.length })}</span><span className="mt-2 block text-[11px] text-gf-text-muted">{t("opportunities.overageNote")}</span></button>}
+            {featuredCategory && <button type="button" aria-pressed={!overageSelected && dimension === "category" && selectedId === featuredCategory.id} onClick={() => { setOverageSelected(false); setDimension("category"); setSelectedId(featuredCategory.id); setShareInput("10"); }} className={"rounded-xl border p-3 text-left text-sm transition-colors " + (!overageSelected && dimension === "category" && selectedId === featuredCategory.id ? "border-purple-300/60 bg-purple-300/10 text-gf-text" : "border-gf-border text-gf-text-muted hover:border-purple-200")}><span className="block font-semibold">{t("opportunities.sourceCategory", { p1: featuredCategory.name })}</span><span className="mt-1 block text-xs text-gf-text-muted">{t("opportunities.sourceAmount", { p1: formatMoneyMinor(featuredCategory.amountMinor, currency), p2: formatMoneyMinor(opportunityPrincipal(featuredCategory.amountMinor, featuredSourceShare / 100) || 0, currency), p3: featuredSourceShare + "%" })}</span><span className="mt-3 block h-2 overflow-hidden rounded-full bg-gf-surface-2"><span className="block h-full rounded-full bg-gradient-to-r from-cyan-300 to-purple-400" style={{ width: featuredSourceShare + "%" }} /></span><span className="mt-2 block text-xs text-gf-text-muted">{t("opportunities.sourceCategoryNote")}</span></button>}
+            <Link href="/dashboard/categories" className="flex items-center justify-center rounded-xl border border-dashed border-gf-border p-3 text-center text-xs text-purple-200 hover:border-purple-300/50">{t("opportunities.managePreferences")}</Link>
+          </div>}
+          {overageSelected && <details className="mt-3 rounded-2xl border border-gf-border bg-gf-surface/25 p-3">
+            <summary className="cursor-pointer text-sm font-semibold text-gf-text">{t("opportunities.overageBreakdown")}</summary>
+            <p className="mt-2 text-xs leading-relaxed text-gf-text-muted">{t("opportunities.overageBreakdownHelp")}</p>
+            <ul className="mt-3 divide-y divide-gf-border/70">{budgetOverage.cycles.map((cycle) => <li key={cycle.key} className="py-2 text-xs"><div className="flex items-center justify-between gap-2"><strong className="text-gf-text">{cycle.name || t("budgets.kind.spending")}</strong><strong className="text-rose-200">+{formatMoneyMinor(cycle.overageMinor, currency)}</strong></div><p className="mt-1 text-gf-text-muted">{cycle.periodStart} – {cycle.periodEnd} · {t("opportunities.overageSpentAndLimit", { p1: formatMoneyMinor(cycle.spentMinor, currency), p2: formatMoneyMinor(cycle.limitMinor, currency) })}</p></li>)}</ul>
+            {budgetOverage.conflictCount > 0 && <p className="mt-2 text-xs text-amber-200">{t("opportunities.overageConflicts", { p1: budgetOverage.conflictCount })}</p>}
+          </details>}
           <div className="mt-6 rounded-2xl border border-purple-300/20 bg-purple-300/[.05] p-4 sm:p-5">
             <div className="flex flex-wrap items-start justify-between gap-3"><div><p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-gf-text-muted">{t("opportunities.observedTotal")}<InfoTip info={shareInfo} /></p><p className="mt-1 text-2xl font-bold tracking-tight text-gf-text sm:text-3xl">{formatMoneyMajor(actualMoney, currency)}</p></div><span className="rounded-full border border-gf-border px-3 py-1 text-xs text-gf-text-muted">{t("opportunities.count", { p1: scan.count })}</span></div>
-            <div className="mt-5 flex flex-wrap items-end justify-between gap-3"><div><p className="text-sm font-semibold text-gf-text">{t("opportunities.shareQuestion")}</p><p className="mt-1 text-xs text-gf-text-muted">{t("opportunities.shareHelp")}</p></div><div className="form-trans-edit flex w-28 shrink-0 items-center gap-2"><label htmlFor="growth-custom-share" className="sr-only">{t("opportunities.customShare")}</label><input id="growth-custom-share" aria-label={t("opportunities.customShare")} type="number" min="0" max="100" step="1" value={share} onChange={(event) => setShare(Math.min(100, Math.max(0, Number(event.target.value) || 0)))} /><span className="text-sm font-semibold text-gf-text">%</span></div></div>
-            <div role="group" aria-label={t("opportunities.shareQuestion")} className="mt-4 grid grid-cols-3 gap-2">{[25, 50, 100].map((value) => {
+            <div className="mt-5 flex flex-wrap items-end justify-between gap-3"><div><p className="text-sm font-semibold text-gf-text">{t("opportunities.shareQuestion")}</p><p className="mt-1 text-xs text-gf-text-muted">{t("opportunities.shareHelp")}</p></div><div className="form-trans-edit flex w-28 shrink-0 items-center gap-2"><label htmlFor="growth-custom-share" className="sr-only">{t("opportunities.customShare")}</label><input id="growth-custom-share" aria-label={t("opportunities.customShare")} type="number" min="0" max="100" step="1" value={shareInput} onChange={(event) => setShareInput(event.target.value)} /><span className="text-sm font-semibold text-gf-text">%</span></div></div>
+            <div role="group" aria-label={t("opportunities.shareQuestion")} className="mt-4 grid grid-cols-2 gap-2">{(advanced || overageSelected ? [10, 25, 50, 100] : [5, 10]).map((value) => {
               const optionAmount = minorToMajor(opportunityPrincipal(scan.amountMinor, value / 100) || 0, currency);
-              return <button key={value} type="button" aria-pressed={share === value} onClick={() => setShare(value)} className={"flex min-w-0 flex-col items-start rounded-xl border px-3 py-2.5 text-left transition-colors " + (share === value ? "border-purple-300/70 bg-purple-300/15 text-gf-text" : "border-gf-border bg-gf-surface/20 text-gf-text-muted hover:border-purple-300/40")}><span className="text-sm font-bold">{value}%</span><span className="mt-0.5 truncate text-[11px]">{formatMoneyMajor(optionAmount, currency)}</span></button>;
+              return <button key={value} type="button" aria-pressed={share === value} onClick={() => setShareInput(String(value))} className={"flex min-w-0 flex-col items-start rounded-xl border px-3 py-2.5 text-left transition-colors " + (share === value ? "border-purple-300/70 bg-purple-300/15 text-gf-text" : "border-gf-border bg-gf-surface/20 text-gf-text-muted hover:border-purple-300/40")}><span className="text-sm font-bold">{value}%</span><span className="mt-0.5 truncate text-[11px]">{formatMoneyMajor(optionAmount, currency)}</span></button>;
             })}</div>
             <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-gf-border/70 pt-3"><span className="text-xs text-gf-text-muted">{t("opportunities.referenceAmount")} · {t("opportunities.amountOfObserved", { p1: share + "%" })}</span><strong className="text-lg text-purple-200 sm:text-xl">{formatMoneyMajor(principal, currency)}</strong></div>
           </div>
@@ -196,6 +254,7 @@ export default function OpportunitiesClient(): React.JSX.Element {
           {scan.staleFxCount > 0 && <p className="mt-2 text-xs text-amber-200">{t("opportunities.staleFx", { p1: scan.staleFxCount })}</p>}
           {scan.count > 0 && <details className="mt-4 rounded-2xl border border-gf-border bg-gf-surface/30 p-3">
             <summary className="cursor-pointer text-sm font-semibold text-gf-text">{t("opportunities.movements", { p1: scan.count })}</summary>
+            {overageSelected && <p className="mt-2 text-xs leading-relaxed text-gf-text-muted">{t("opportunities.overageMovementsNote")}</p>}
             <ul className="mt-3 divide-y divide-gf-border/70">
               {matchedTransactions.slice(0, movementLimit).map((tx) => {
                 const money = resolveOpportunityMoney(tx, currency);
@@ -214,31 +273,38 @@ export default function OpportunitiesClient(): React.JSX.Element {
         <div className="gf-glass-card flex h-full flex-col rounded-3xl border border-gf-border p-4 sm:p-6">
           <div className="flex items-center gap-2"><IoSparkles className="text-purple-300" aria-hidden="true" /><h2 className="text-lg font-semibold text-gf-text">{t("opportunities.threeExamples")}</h2><InfoTip info={scenariosInfo} /></div>
           <p className="mt-1 text-xs leading-relaxed text-gf-text-muted">{t("opportunities.sameAmountNote")}</p>
-          <div className="mt-4 flex flex-1 snap-x snap-mandatory items-stretch gap-3 overflow-x-auto pb-2">
-            <article className="flex h-full w-[calc((100%-1.5rem)/3)] min-w-[220px] shrink-0 snap-start flex-col rounded-2xl border border-gf-border bg-gf-surface/30 p-4">
+          <div className="mt-4 flex flex-1 flex-col gap-3">
+            {availableGoals.length > 0 && <p className="order-first text-xs text-purple-200">{t("opportunities.goalFirst")}</p>}
+            <article className="grid w-full gap-x-5 gap-y-2 rounded-2xl border border-gf-border bg-gf-surface/30 p-4 md:grid-cols-2">
               <div className="flex items-center gap-1.5"><h3 className="font-semibold text-gf-text">{t("opportunities.investment")}</h3><InfoTip info={investmentInfo} /></div>
-              <p className="mt-1 text-xs leading-relaxed text-gf-text-muted">{t("opportunities.investmentHelp")}</p>
-              <div className="form-trans-edit mt-3 grid grid-cols-2 gap-3"><label className="min-w-0 text-xs font-medium text-gf-text-muted"><span>{t("opportunities.rateField")}</span><input type="number" min="-99" max="100" step="0.1" value={ratePercent} onChange={(event) => setRatePercent(Math.min(100, Math.max(-99, Number(event.target.value) || 0)))} className="mt-1" /></label><label className="min-w-0 text-xs font-medium text-gf-text-muted"><span>{t("opportunities.horizonField")}</span><input type="number" min="0" max="60" step="0.5" value={horizonYears} onChange={(event) => setHorizonYears(Math.min(60, Math.max(0, Number(event.target.value) || 0)))} className="mt-1" /></label></div>
-              <div className="mt-3 rounded-xl border border-purple-300/15 bg-purple-300/[.04] px-3 py-2.5"><span className="text-xs text-gf-text-muted">{t("opportunities.startingAmount")}</span><strong className="mt-1 block text-sm text-gf-text">{formatMoneyMajor(principal, currency)}</strong></div>
-              <div className="mt-4 space-y-3">
+              <p className="text-xs leading-relaxed text-gf-text-muted md:col-start-1">{t("opportunities.investmentHelp")}</p>
+              <div className="form-trans-edit mt-2 grid grid-cols-2 gap-3 md:col-start-1"><label className="min-w-0 text-xs font-medium text-gf-text-muted"><span>{t("opportunities.rateField")}</span><input type="number" min="-99" max="100" step="0.1" value={rateInput} onChange={(event) => setRateInput(event.target.value)} className="mt-1" /></label><label className="min-w-0 text-xs font-medium text-gf-text-muted"><span>{t("opportunities.horizonField")}</span><input type="number" min="0" max="60" step="0.5" value={horizonInput} onChange={(event) => setHorizonInput(event.target.value)} className="mt-1" /></label></div>
+              <div className="rounded-xl border border-purple-300/15 bg-purple-300/[.04] px-3 py-2.5 md:col-start-2 md:row-start-1"><span className="text-xs text-gf-text-muted">{t("opportunities.startingAmount")}</span><strong className="mt-1 block text-sm text-gf-text">{formatMoneyMajor(principal, currency)}</strong></div>
+              <div className="space-y-3 md:col-start-2 md:row-start-2 md:row-span-2">
                 <div className="rounded-xl border border-gf-border/70 p-3"><p className="text-xs text-gf-text-muted">{t("opportunities.singleDeposit")}</p><p className="mt-1 break-words text-lg font-bold text-gf-text">{formatMoneyMajor(minorToMajor(investmentNow?.valueMinor || 0, currency), currency)}</p><p className="mt-0.5 text-[11px] text-emerald-300">+{formatMoneyMajor(minorToMajor(investmentNow?.returnMinor || 0, currency), currency)} {t("opportunities.simulatedReturn")}</p></div>
-                <div className="rounded-xl border border-gf-border/70 p-3"><p className="text-xs text-gf-text-muted">{t("opportunities.datedDeposits")}</p><p className="mt-1 break-words text-lg font-bold text-gf-text">{formatMoneyMajor(minorToMajor(historicalInvestment?.valueMinor || 0, currency), currency)}</p><p className="mt-0.5 text-[11px] text-emerald-300">+{formatMoneyMajor(minorToMajor(historicalInvestment?.returnMinor || 0, currency), currency)} {t("opportunities.simulatedReturn")}</p></div>
+                {!overageSelected && <div className="rounded-xl border border-gf-border/70 p-3"><p className="text-xs text-gf-text-muted">{t("opportunities.datedDeposits")}</p><p className="mt-1 break-words text-lg font-bold text-gf-text">{formatMoneyMajor(minorToMajor(historicalInvestment?.valueMinor || 0, currency), currency)}</p><p className="mt-0.5 text-[11px] text-emerald-300">+{formatMoneyMajor(minorToMajor(historicalInvestment?.returnMinor || 0, currency), currency)} {t("opportunities.simulatedReturn")}</p></div>}
               </div>
             </article>
-            <article className="flex h-full w-[calc((100%-1.5rem)/3)] min-w-[220px] shrink-0 snap-start flex-col rounded-2xl border border-gf-border bg-gf-surface/30 p-4">
+            <article className="grid w-full gap-x-5 gap-y-2 rounded-2xl border border-gf-border bg-gf-surface/30 p-4 md:grid-cols-2">
               <div className="flex items-center gap-1.5"><h3 className="font-semibold text-gf-text">{t("opportunities.travel")}</h3><InfoTip info={travelInfo} /></div>
-              <p className="mt-1 text-xs leading-relaxed text-gf-text-muted">{t("opportunities.travelTargetHelp")}</p>
-              <label className="form-trans-edit mt-3 block text-xs font-medium text-gf-text-muted"><span>{t("opportunities.exampleGoalCurrency", { p1: currency })}</span><input type="number" min="1" value={travelTarget} onChange={(event) => setTravelTarget(Math.max(1, Number(event.target.value) || 1))} className="mt-1" /></label>
-              <div className="mt-4 rounded-xl border border-gf-border/70 p-3"><p className="text-xs text-gf-text-muted">{t("opportunities.referenceAmount")}</p><p className="mt-1 break-words text-lg font-bold text-gf-text">{formatMoneyMajor(principal, currency)}</p><p className="mt-0.5 text-[11px] text-cyan-200">{travelCoverage.toFixed(1)}% {t("opportunities.goalCoverage")}</p><div role="progressbar" aria-label={t("opportunities.progressBarLabel")} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(Math.min(100, travelCoverage))} className="mt-3 h-3 overflow-hidden rounded-full bg-gf-surface-2"><div className="h-full rounded-full bg-gradient-to-r from-cyan-400 to-teal-300" style={{ width: Math.min(100, Math.max(0, travelCoverage)) + "%" }} /></div><p className="mt-2 text-[11px] leading-relaxed text-gf-text-muted">{t("opportunities.unallocated")}</p></div>
+              <p className="text-xs leading-relaxed text-gf-text-muted md:col-start-1">{t("opportunities.travelTargetHelp")}</p>
+              <label className="form-trans-edit mt-2 block text-xs font-medium text-gf-text-muted md:col-start-1"><span>{t("opportunities.exampleGoalCurrency", { p1: currency })}</span><input type="number" min="1" value={travelTargetInput} onChange={(event) => setTravelTargetInput(event.target.value)} className="mt-1" /></label>
+              <div className="rounded-xl border border-gf-border/70 p-3 md:col-start-2 md:row-start-1 md:row-span-3"><p className="text-xs text-gf-text-muted">{t("opportunities.referenceAmount")}</p><p className="mt-1 break-words text-lg font-bold text-gf-text">{formatMoneyMajor(principal, currency)}</p><p className="mt-0.5 text-[11px] text-cyan-200">{travelCoverage.toFixed(1)}% {t("opportunities.goalCoverage")}</p><div role="progressbar" aria-label={t("opportunities.progressBarLabel")} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(Math.min(100, travelCoverage))} className="mt-3 h-3 overflow-hidden rounded-full bg-gf-surface-2"><div className="h-full rounded-full bg-gradient-to-r from-cyan-400 to-teal-300" style={{ width: Math.min(100, Math.max(0, travelCoverage)) + "%" }} /></div><p className="mt-2 text-[11px] leading-relaxed text-gf-text-muted">{t("opportunities.unallocated")}</p></div>
+              <p className="text-[11px] leading-relaxed text-gf-text-muted md:col-span-2">{t("opportunities.japanLodgingReference", { p1: formatMoneyMajor(JAPAN_LODGING_REFERENCE.budgetHotelJpyPerNight * JAPAN_LODGING_REFERENCE.nights, "JPY") })} <a href={JAPAN_LODGING_REFERENCE.sourceUrl} target="_blank" rel="noopener noreferrer" className="text-purple-200 underline underline-offset-2">{t("opportunities.sourceLink")}</a></p>
             </article>
-            <article className="flex h-full w-[calc((100%-1.5rem)/3)] min-w-[220px] shrink-0 snap-start flex-col rounded-2xl border border-gf-border bg-gf-surface/30 p-4">
+            <article className={"grid w-full gap-x-5 gap-y-2 rounded-2xl border border-gf-border bg-gf-surface/30 p-4 md:grid-cols-2 " + (availableGoals.length ? "order-first" : "")}>
               <div className="flex items-center gap-1.5"><h3 className="font-semibold text-gf-text">{t("opportunities.downPayment")}</h3><InfoTip info={goalInfo} /></div>
-              <p className="mt-1 text-xs leading-relaxed text-gf-text-muted">{t("opportunities.goalPickerHelp")}</p>
-              {availableGoals.length ? <label className="form-trans-edit mt-3 block text-xs font-medium text-gf-text-muted">{t("opportunities.growthPath.target")}<select aria-label={t("opportunities.growthPath.target")} value={selectedGoal?._id || ""} onChange={(event) => setSelectedGoalId(event.target.value)} className="etm-selector mt-1">{availableGoals.map((goal) => <option key={goal._id} value={goal._id}>{goal.name}</option>)}</select></label> : <div className="mt-3 rounded-xl border border-gf-border/70 p-3"><p className="text-sm font-semibold text-gf-text">{t("opportunities.growthPath.target")}</p><p className="mt-1 text-xs leading-relaxed text-gf-text-muted">{t("opportunities.growthPath.createGoal")}</p></div>}
+              <p className="text-xs leading-relaxed text-gf-text-muted md:col-start-1">{t("opportunities.goalPickerHelp")}</p>
+              {availableGoals.length ? <label className="form-trans-edit mt-2 block text-xs font-medium text-gf-text-muted md:col-start-1">{t("opportunities.growthPath.target")}<select aria-label={t("opportunities.growthPath.target")} value={selectedGoal?._id || ""} onChange={(event) => setSelectedGoalId(event.target.value)} className="etm-selector mt-1">{availableGoals.map((goal) => <option key={goal._id} value={goal._id}>{goal.name}</option>)}</select></label> : <div className="rounded-xl border border-gf-border/70 p-3 md:col-start-1"><p className="text-sm font-semibold text-gf-text">{t("opportunities.growthPath.target")}</p><p className="mt-1 text-xs leading-relaxed text-gf-text-muted">{t("opportunities.growthPath.createGoal")}</p></div>}
               {selectedGoalFundingIncomplete && <p className="mt-2 rounded-lg border border-amber-300/20 bg-amber-300/5 p-2 text-xs text-amber-200">{selectedGoalFundingConflict?.accountIds.length ? t("goals.sharedAccounts", { p1: selectedGoalFundingConflict.otherNames.join(", ") }) : selectedGoalMissingAccounts.length ? t("goals.missingAccounts") : t("goals.partialFx")}</p>}
-              {goalComparison && <div className="mt-4 rounded-xl border border-gf-border/70 p-3"><p className="text-xs text-gf-text-muted">{t("opportunities.progressBarLabel")}</p><p className="mt-1 break-words text-lg font-bold text-gf-text">{formatMoneyMajor(minorToMajor(goalComparison.simulatedSavedMinor, currency), currency)}</p><p className="mt-0.5 text-[11px] text-gf-text-muted">{t("opportunities.goalProgress", { p1: (goalComparison.targetCoverage * 100).toFixed(1) + "%" })}</p><div role="progressbar" aria-label={t("opportunities.progressBarLabel")} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(Math.min(100, goalComparison.targetCoverage * 100))} className="mt-3 h-3 overflow-hidden rounded-full bg-gf-surface-2"><div className="h-full rounded-full bg-gradient-to-r from-purple-400 to-fuchsia-300" style={{ width: Math.min(100, Math.max(0, goalComparison.targetCoverage * 100)) + "%" }} /></div><p className="mt-2 text-[11px] text-gf-text-muted">{t("goals.remaining")}: {formatMoneyMajor(minorToMajor(goalComparison.simulatedRemainingMinor, currency), currency)}</p></div>}
-              <Link href="/dashboard/goals?new=1" className="mt-auto inline-flex items-center gap-1.5 pt-4 text-xs font-semibold text-purple-200 underline decoration-purple-200/30 underline-offset-4">{availableGoals.length ? t("opportunities.openGoals") : t("opportunities.addGoal")}<IoArrowForward aria-hidden="true" /></Link>
+              {goalComparison && <div className="rounded-xl border border-gf-border/70 p-3 md:col-start-2 md:row-start-1 md:row-span-3"><p className="text-xs text-gf-text-muted">{t("opportunities.progressBarLabel")}</p><p className="mt-1 break-words text-lg font-bold text-gf-text">{formatMoneyMajor(minorToMajor(goalComparison.simulatedSavedMinor, currency), currency)}</p><p className="mt-0.5 text-[11px] text-gf-text-muted">{t("opportunities.goalProgress", { p1: (goalComparison.targetCoverage * 100).toFixed(1) + "%" })}</p><div role="progressbar" aria-label={t("opportunities.progressBarLabel")} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(Math.min(100, goalComparison.targetCoverage * 100))} className="mt-3 h-3 overflow-hidden rounded-full bg-gf-surface-2"><div className="h-full rounded-full bg-gradient-to-r from-purple-400 to-fuchsia-300" style={{ width: Math.min(100, Math.max(0, goalComparison.targetCoverage * 100)) + "%" }} /></div><p className="mt-2 text-[11px] text-gf-text-muted">{t("goals.remaining")}: {formatMoneyMajor(minorToMajor(goalComparison.simulatedRemainingMinor, currency), currency)}</p></div>}
+              <Link href="/dashboard/goals?new=1" className="inline-flex items-center gap-1.5 pt-2 text-xs font-semibold text-purple-200 underline decoration-purple-200/30 underline-offset-4 md:col-start-1">{availableGoals.length ? t("opportunities.openGoals") : t("opportunities.addGoal")}<IoArrowForward aria-hidden="true" /></Link>
             </article>
+            {carExample && <article className="grid w-full gap-x-5 gap-y-2 rounded-2xl border border-gf-border bg-gf-surface/30 p-4 md:grid-cols-2">
+              <div><h3 className="font-semibold text-gf-text">{t("opportunities.carExampleTitle")}</h3><p className="mt-2 text-xs text-gf-text-muted">{carExample.model}</p><p className="mt-2 text-xs text-gf-text-muted">{t("opportunities.carListPrice", { p1: formatMoneyMajor(carExample.listPriceMxn, "MXN") })}</p></div>
+              <div className="rounded-xl border border-gf-border/70 p-3"><p className="text-xs text-gf-text-muted">{t("opportunities.carIllustrativeDeposit", { p1: formatMoneyMajor(carExample.listPriceMxn * carExample.exampleDepositFraction, "MXN") })}</p><p className="mt-1 text-lg font-bold text-gf-text">{Math.min(100, principal / (carExample.listPriceMxn * carExample.exampleDepositFraction) * 100).toFixed(1)}% {t("opportunities.goalCoverage")}</p><div role="progressbar" aria-label={t("opportunities.progressBarLabel")} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(Math.min(100, principal / (carExample.listPriceMxn * carExample.exampleDepositFraction) * 100))} className="mt-3 h-3 overflow-hidden rounded-full bg-gf-surface-2"><div className="h-full rounded-full bg-gradient-to-r from-amber-300 to-orange-400" style={{ width: Math.min(100, Math.max(0, principal / (carExample.listPriceMxn * carExample.exampleDepositFraction) * 100)) + "%" }} /></div></div>
+              <p className="text-[11px] leading-relaxed text-gf-text-muted md:col-span-2">{t("opportunities.carSourceNote", { p1: carExample.checkedOn })} <a href={carExample.sourceUrl} target="_blank" rel="noopener noreferrer" className="text-purple-200 underline underline-offset-2">{t("opportunities.sourceLink")}</a></p>
+            </article>}
           </div>
           <p className="mt-4 flex items-start gap-2 rounded-xl border border-purple-300/15 bg-purple-300/[.04] p-3 text-xs leading-relaxed text-gf-text-muted"><span className="font-semibold text-gf-text">{t("opportunities.disclaimerTitle")}:</span><span>{t("opportunities.disclaimerBody")}</span></p>
         </div>

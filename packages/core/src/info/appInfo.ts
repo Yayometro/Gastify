@@ -357,19 +357,41 @@ export const APP_INFO = {
   'tope_de_gasto_inesperado': { title: 'Tope de gasto inesperado', text: 'Un monto manual que se suma a tu estimado de gastos, para gastos que no tienen su propio presupuesto.' },
   'tope_de_ingreso_inesperado': { title: 'Tope de ingreso inesperado', text: 'Un monto manual que se suma a tu estimado de ingresos, para dinero que entra y no está ligado a una fuente de ingreso recurrente.' },
   'periodo_de_oportunidades': {
-    title: 'Cómo elegir el periodo de análisis',
-    text: 'El periodo define las fechas de los gastos observados. Los filtros posteriores acotan esa selección; no cambian los movimientos guardados.',
+    title: 'Para qué sirve el periodo analizado',
+    text: 'Oportunidades de crecimiento no califica tus gastos como buenos o malos ni supone que todo lo gastado podría ahorrarse. Su propósito es hacer visible el costo de oportunidad: ayudarte a imaginar qué podría significar una parte de tus gastos si tú decidieras destinarla a otra prioridad.',
     sections: [
-      { label: 'Qué incluye', blocks: [
+      { label: 'La idea detrás del análisis', blocks: [
+        { kind: 'p', text: 'El periodo define la muestra de tu historial que usamos como punto de partida. La pregunta no es «¿en qué gasté mal?», sino «si una parte de este gasto hubiera tenido otro destino, ¿qué posibilidad habría abierto para mí?».' },
+        { kind: 'p', text: 'El objetivo es convertir movimientos pasados en una perspectiva útil para tus decisiones futuras y tus metas. Es una herramienta de reflexión, no un regaño ni una recomendación de que elimines un gasto.' },
+      ] },
+      { label: 'Cómo leer lo que aparece', blocks: [
         { kind: 'bullets', items: [
-          'Mes, trimestre y año actual empiezan al inicio de ese periodo y terminan hoy.',
-          'Personalizado analiza solo las fechas de inicio y fin que elijas.',
-          'Después puedes filtrar ese rango por categoría, subcategoría, etiqueta o texto del concepto.',
-          'Solo se suman gastos completados registrados en Gastify; si faltan movimientos o conversiones, la pantalla lo advierte.',
+          'Gasto observado es el importe de los gastos que coinciden con el periodo y los filtros. Se expresa en tu moneda principal; el contador muestra cuántos movimientos coinciden.',
+          'El porcentaje que eliges es un escenario: prueba primero con 5 % o 10 % y, si quieres, ajusta otra proporción. No es un límite de presupuesto ni dinero que ya esté apartado.',
+          'Las tarjetas posteriores usan ese mismo importe hipotético para ilustrar alternativas, como inversión, viaje o avance hacia una meta de ahorro.',
+          'Reembolsos y comisiones se presentan por separado. Los movimientos sin conversión disponible no se suman al total, y la pantalla señala si hay datos o tipos de cambio que debes revisar.',
         ] },
-        { kind: 'p', text: 'La cifra observada es la suma de los gastos que coinciden con estas fechas y filtros, en tu moneda principal. Cambiar el periodo o el filtro no edita ni elimina datos.' },
+      ] },
+      { label: 'Cómo se calcula y qué no significa', blocks: [
+        { kind: 'bullets', items: [
+          'Mes, trimestre y año comienzan el primer día del periodo y llegan hasta hoy. En Personalizado eliges ambas fechas; los días de inicio y fin se incluyen.',
+          'Se toman movimientos de gasto, reembolso o comisión registrados en Gastify dentro de esas fechas; los que tengan un estado distinto de completado quedan fuera. Después, categoría, subcategoría, etiqueta o concepto pueden acotar el conjunto.',
+          'Los escenarios son hipotéticos: no mueven dinero, no crean un ahorro y no prometen rendimientos. La inversión usa la tasa y el plazo que tú indiques; sirve para comparar, no para predecir un resultado real.',
+          'Cambiar fechas o filtros solo recalcula la vista. No edita ni elimina tus movimientos.',
+        ] },
       ] },
     ],
+  },
+  'filtros_de_oportunidades': {
+    title: 'Qué significa «Analizar por»',
+    text: 'Elige qué parte de tus gastos quieres mirar. Esto no modifica movimientos ni decide por ti cuáles gastos son buenos o malos.',
+    sections: [{ label: 'Opciones', blocks: [
+      { kind: 'definition', term: 'Todos los gastos', text: 'Reúne los gastos registrados en el periodo. Imaginar un 5 % o 10 % no significa que todo pudiera evitarse.' },
+      { kind: 'definition', term: 'Categoría o subcategoría', text: 'Mira un grupo concreto, como Restaurantes. Sirve para revisar un hábito, no para declararlo innecesario.' },
+      { kind: 'definition', term: 'Etiqueta', text: 'Agrupa movimientos con la misma etiqueta aunque pertenezcan a distintas categorías.' },
+      { kind: 'definition', term: 'Concepto', text: 'Busca palabras del nombre del movimiento, como un comercio. Revisa las coincidencias: nombres parecidos pueden ser gastos distintos.' },
+      { kind: 'p', text: 'Primero se aplica el periodo; después el filtro reduce los movimientos. Solo se suman gastos con importe disponible en tu moneda principal. Reembolsos y comisiones aparecen aparte.' },
+    ] }],
   },
   'tres_alternativas_de_ese_monto': {
     title: 'Tres alternativas para el mismo monto',
@@ -405,7 +427,7 @@ export const APP_INFO = {
       { label: '2. Gasto observado y porcentaje', blocks: [
         { kind: 'equation', left: 'Gasto observado', right: 'Suma de los gastos que coinciden con el periodo y los filtros' },
         { kind: 'equation', left: 'Monto alternativo', right: 'Gasto observado × proporción elegida' },
-        { kind: 'p', text: 'Los botones 25 %, 50 % y 100 % no son calificaciones, alertas ni porcentajes de rendimiento: solo permiten preguntar «¿qué pasaría si apartara esta fracción de ese gasto?». El campo editable acepta otra fracción. Por ejemplo, 25 % de $1,000 equivale a $250. Las tres tarjetas comparan alternativas para ese mismo monto; no se suman entre sí.' },
+        { kind: 'p', text: 'Los botones de porcentaje no son calificaciones, alertas ni rendimientos: preguntan «¿qué pasaría si apartara esta fracción de ese gasto?». La vista sencilla propone 5 % o 10 %; en Personalizar puedes explorar proporciones mayores. Por ejemplo, 10 % de $1,000 equivale a $100.' },
       ] },
       { label: '3. Tres alternativas, el mismo dinero', blocks: [
         { kind: 'table', head: ['Alternativa', 'Qué representa', 'Qué no significa'], rows: [
@@ -416,7 +438,7 @@ export const APP_INFO = {
         { kind: 'p', text: 'En la inversión se muestran dos lecturas distintas: «disponer del monto hoy» lo modela como un depósito único desde hoy; «apartar cada gasto cuando ocurrió» conserva las fechas originales de los gastos incluidos. Por eso pueden dar resultados diferentes.' },
       ] },
       { label: 'Ejemplo de lectura', blocks: [
-        { kind: 'example', text: 'Si el gasto observado es $10,000 y eliges 25 %, el monto alternativo es $2,500. Las tarjetas muestran por separado cuánto representaría ese monto como inversión hipotética, cuánto cubriría de una meta de viaje y cuánto sumaría a un objetivo personal. No son tres bolsas de dinero: son tres usos posibles del mismo monto.' },
+        { kind: 'example', text: 'Si el gasto observado es $10,000 y eliges 10 %, el monto alternativo es $1,000. Las tarjetas muestran distintas posibilidades para esos mismos $1,000, no tres bolsas de dinero.' },
       ] },
     ],
   },
@@ -426,7 +448,7 @@ export const APP_INFO = {
     sections: [
       { label: 'Cálculo', blocks: [
         { kind: 'equation', left: 'Monto de referencia', right: 'Gasto observado × proporción' },
-        { kind: 'table', head: ['Selección', 'Si el gasto observado fuera $1,000'], rows: [['25 %', '$250'], ['50 %', '$500'], ['100 %', '$1,000']] },
+        { kind: 'table', head: ['Selección', 'Si el gasto observado fuera $1,000'], rows: [['5 %', '$50'], ['10 %', '$100'], ['25 %', '$250']] },
         { kind: 'p', text: 'La selección actual aparece como monto destacado y alimenta las tres alternativas. Cambiarla no altera las transacciones ni los presupuestos.' },
       ] },
     ],
@@ -460,8 +482,16 @@ export const APP_INFO = {
   },
   'objetivos_de_ahorro': {
     title: 'Cómo funcionan los objetivos de ahorro',
-    text: 'Un objetivo es una meta que tú defines (por ejemplo, un viaje, un automóvil o un fondo). Puede tener importe, fecha, plan de aportaciones, icono, color y relaciones para dar contexto.',
+    text: 'Un objetivo le pone nombre y rumbo a algo que quieres conseguir: un viaje, un automóvil, tu negocio o un fondo para imprevistos. Puedes ver cuánto te falta y qué pasos te acercan a esa meta.',
     sections: [
+      { label: 'Cómo usarlo', blocks: [
+        { kind: 'bullets', items: [
+          'Elige qué quieres lograr y cuánto necesitas. Añade una fecha si quieres ver un plan de ahorro por aportación.',
+          'Registra lo que ya llevas o vincula una cuenta dedicada. La barra muestra tu avance hacia la cantidad elegida.',
+          'Puedes cambiar la meta, la fecha y el plan si tus circunstancias cambian. Pausarla no borra tu progreso.',
+          'Oportunidades de crecimiento puede comparar un monto hipotético con tu objetivo, pero no añade dinero real ni altera su avance.',
+        ] },
+      ] },
       { label: 'Cómo se calcula y por qué puede verse provisional', blocks: [
         { kind: 'equation', left: 'Avance', right: 'Ahorro reconocido ÷ importe objetivo' },
         { kind: 'bullets', items: [

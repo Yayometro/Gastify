@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Spin } from "antd";
 import UniversalCategoIcon from "./UniversalCategoIcon";
 import { FLUENT_PREFIX } from "@/components/icons/fluentIcons";
@@ -18,23 +18,20 @@ export interface IconDisplayerMenuProps {
   idmIcon: (icon: string) => void;
   // Optional disclosure used in the public demo to make the size of Gastify's catalog explicit.
   showCatalogSummary?: boolean;
-  // Let the demo show a larger first sample while keeping the real app's smaller initial page unchanged.
+  // Optional larger initial sample for the public demo; regular forms default to two responsive rows.
   initialPageSize?: number;
 }
 
-// The icon picker of the form, as in the app: the whole Fluent Emoji library (1,285 icons) shown in place, with a search
-// box (Spanish or English, e.g. "comida", "casa", "avión") and a page at a time with "Mostrar más". The list loads the
-// first time the picker appears. No window of its own: the form it sits in is the window.
-const PAGE = 60;
-
-function IconDisplayerMenu({ idmValue, idmIcon, showCatalogSummary = false, initialPageSize = PAGE }: IconDisplayerMenuProps): React.JSX.Element {
+// The icon picker loads the shared Fluent library on demand and shows two responsive rows initially. The user can expand
+// the scrollable catalog or search it; the form remains the surrounding window.
+function IconDisplayerMenu({ idmValue, idmIcon, showCatalogSummary = false, initialPageSize }: IconDisplayerMenuProps): React.JSX.Element {
   const t = useT();
   const [icons, setIcons] = useState<FluentManifestIcon[] | null>(null);
   const [failed, setFailed] = useState<boolean>(false);
   const [query, setQuery] = useState<string>("");
-  const [limit, setLimit] = useState<number>(initialPageSize);
-  const pageSize = Number.isFinite(initialPageSize) && initialPageSize > 0 ? Math.floor(initialPageSize) : PAGE;
-
+  const [showAll, setShowAll] = useState(false);
+  const [columnCount, setColumnCount] = useState(5);
+  const gridContainer = useRef<HTMLUListElement>(null);
   useEffect(() => {
     let cancelled = false;
     loadFluentManifest()
@@ -49,8 +46,21 @@ function IconDisplayerMenu({ idmValue, idmIcon, showCatalogSummary = false, init
     };
   }, []);
 
+  useEffect(() => {
+    const element = gridContainer.current;
+    if (!element || typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(([entry]) => {
+      setColumnCount(Math.max(1, Math.floor((entry.contentRect.width + 8) / 64)));
+    });
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [icons]);
+
   const found = useMemo(() => (icons ? searchFluentIcons(icons, query) : []), [icons, query]);
-  const matches = found.slice(0, limit);
+  const collapsedLimit = Math.max(1, initialPageSize ?? columnCount * 2);
+  const visibleLimit = showAll ? found.length : collapsedLimit;
+  const matches = found.slice(0, visibleLimit);
+  const collapsedHeight = initialPageSize === undefined ? 120 : Math.ceil(collapsedLimit / columnCount) * 64 - 8;
 
   return (
     <div className="flex w-full flex-col gap-3">
@@ -59,7 +69,7 @@ function IconDisplayerMenu({ idmValue, idmIcon, showCatalogSummary = false, init
         value={query}
         onChange={(e) => {
           setQuery(e.target.value);
-          setLimit(pageSize);
+          setShowAll(false);
         }}
         placeholder={t("navbar.icons.searchPlaceholder")}
         aria-label={t("navbar.icons.search")}
@@ -82,7 +92,11 @@ function IconDisplayerMenu({ idmValue, idmIcon, showCatalogSummary = false, init
           {matches.length === 0 ? (
             <p className="text-sm text-gf-text-muted">{t("navbar.icons.none")}</p>
           ) : (
-            <ul className="flex flex-wrap gap-2">
+            <ul
+              ref={gridContainer}
+              className={`m-0 grid w-full list-none gap-2 p-0 ${showAll ? "max-h-80 overflow-y-auto pr-1" : "overflow-hidden"}`}
+              style={{ gridTemplateColumns: `repeat(${columnCount}, minmax(0, 1fr))`, maxHeight: showAll ? 320 : collapsedHeight }}
+            >
               {matches.map((icon) => {
                 const name = `${FLUENT_PREFIX}${icon.slug}`;
                 const selected = name === idmValue;
@@ -105,13 +119,14 @@ function IconDisplayerMenu({ idmValue, idmIcon, showCatalogSummary = false, init
               })}
             </ul>
           )}
-          {found.length > limit && (
+          {found.length > collapsedLimit && (
             <button
               type="button"
-              onClick={() => setLimit((current) => current + pageSize)}
+              aria-expanded={showAll}
+              onClick={() => setShowAll((shown) => !shown)}
               className="self-center py-2 text-sm font-semibold text-purple-300"
             >
-              {t("navbar.icons.more", { p1: found.length - limit })}
+              {showAll ? t("navbar.icons.less") : t("navbar.icons.more", { p1: found.length - collapsedLimit })}
             </button>
           )}
         </>

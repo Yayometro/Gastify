@@ -11,6 +11,7 @@ export interface OpportunityTransaction {
   category?: unknown;
   subCategory?: unknown;
   tags?: unknown[];
+  budget?: unknown;
   displayMoney?: { primary?: { amountMinor?: number; currency?: string; stale?: boolean } | null };
   money?: unknown;
   amount?: number;

@@ -47,6 +47,7 @@ const categories = {
   "categories.compare.help": "Cada lado ordena sus propias {p1} categorías principales por separado: la fila 1 de la izquierda y la de la derecha no tienen que ser la misma categoría.",
   "categories.colors.classic": "Los de siempre",
   "categories.colors.more": "Más colores",
+  "categories.colors.less": "Mostrar menos colores",
   "categories.colors.hex": "Color exacto (hexadecimal)",
   "categories.colors.hexHelp": "Usa un color como #F57C00 o F57C00.",
   "categories.chart.bills": "Gastos por categoría",
